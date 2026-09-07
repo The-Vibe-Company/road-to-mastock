@@ -1,5 +1,6 @@
 "use client";
 
+import { Spinner } from "@/components/spinner";
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -116,7 +117,7 @@ export default function ExerciseCatalog() {
   if (loading) {
     return (
       <div className="flex min-h-dvh items-center justify-center">
-        <div className="size-8 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
+        <Spinner />
       </div>
     );
   }
