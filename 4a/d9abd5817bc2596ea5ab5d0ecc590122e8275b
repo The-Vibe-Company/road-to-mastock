@@ -1,0 +1,50 @@
+scripts/add-last-pack-type.ts
+  s_6dc77352c5bc09::t_13688f5ef64452 1-11
+src/lib/db/schema.ts
+  s_6dc77352c5bc09::t_13688f5ef64452 27-29
+src/components/exercise-ranking.tsx
+  s_6dc77352c5bc09::t_4cb56dcb528b88 7-14,57,104-105,107-128,131-162
+src/lib/powers.ts
+  s_6dc77352c5bc09::t_8325e92528db7f 934,1021
+  s_6dc77352c5bc09::t_d10f1236a60c45 39-47,216-217,340-341,404-405,492,584,716,793-796,898,900,923,925,932,965,967,991,993,1019
+src/lib/guardians.ts
+  s_6dc77352c5bc09::t_34b381e01a5935 141-153,158-159
+  s_6dc77352c5bc09::t_75733a0e24f244 155-157,160,164-166
+src/app/api/cards/route.ts
+  s_6dc77352c5bc09::t_8aa8c5f2462b2e 16-24
+  s_6dc77352c5bc09::t_4b5bc8b2e2a912 182,187
+  s_6dc77352c5bc09::t_c6f8e98bfec70d 148-165
+src/components/spin-wheel-modal.tsx
+  s_6dc77352c5bc09::t_6d7a24ff19c0ce 26,30-32,35-41,82,89
+src/app/api/cards/open/route.ts
+  s_6dc77352c5bc09::t_0e6c23bd1137fb 13-14,170,246
+  s_6dc77352c5bc09::t_a174c8742dbfac 96-98,100-101
+  s_6dc77352c5bc09::t_736425c0429d38 119-121
+src/app/collection/page.tsx
+  s_6dc77352c5bc09::t_550ac082125fae 433-441,443-450,452-497,499-544,547,549-560,564-592,595,597-605,614-615,617-618,621-622,626,632-634,636-637,640,644-659
+  s_6dc77352c5bc09::t_2fbd938db7c74a 34-35,37-45
+  s_6dc77352c5bc09::t_496919e3d44817 736,785,788-793,808,820,827-877,895
+  s_6dc77352c5bc09::t_f8ffdba9dec193 74-80,83,103,147,149-153,227,244
+  s_6dc77352c5bc09::t_220277b36b6c85 5,7-13
+  s_6dc77352c5bc09::t_2973b8c1b463bf 253-254,301-316,319-335,338,342-343,346,357,360,375,389
+src/app/api/cards/spin/route.ts
+  s_6dc77352c5bc09::t_0e6c23bd1137fb 6,41-42
+src/components/icons.tsx
+  s_6dc77352c5bc09::t_68a85788ed8857 25,88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "4ad9abd5817bc2596ea5ab5d0ecc590122e8275b",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
