@@ -1,5 +1,6 @@
 "use client";
 
+import { Spinner } from "@/components/spinner";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -136,7 +137,7 @@ export function FriendsPage() {
     return (
       <div className="flex min-h-dvh items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="size-8 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
+          <Spinner />
           <p className="text-sm font-medium text-primary/60">Chargement...</p>
         </div>
       </div>

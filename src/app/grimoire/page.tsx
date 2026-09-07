@@ -1,5 +1,6 @@
 "use client";
 
+import { Spinner } from "@/components/spinner";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { BookOpen, HelpCircle, Key } from "@/components/icons";
@@ -69,7 +70,7 @@ export default function GrimoirePage() {
   if (loading) {
     return (
       <div className="flex min-h-dvh items-center justify-center">
-        <div className="size-8 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
+        <Spinner />
       </div>
     );
   }
