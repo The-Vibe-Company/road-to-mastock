@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
-import { setAuthCookie } from "@/lib/auth";
+import { setAuthCookie, signRememberToken } from "@/lib/auth";
 
 export async function POST(request: Request) {
   const { email, password } = await request.json();
@@ -40,5 +40,8 @@ export async function POST(request: Request) {
     id: user.id,
     email: user.email,
     name: user.name,
+    // Le filet iOS : gardé en localStorage, échangé via /api/auth/refresh
+    // quand le cookie de session n'a pas survécu au kill de l'appli.
+    rememberToken: await signRememberToken(user.id),
   });
 }
