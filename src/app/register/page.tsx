@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { storeRememberToken } from "@/lib/remember";
 import { UserPlus } from "@/components/icons";
 
 export default function RegisterPage() {
@@ -35,6 +36,7 @@ export default function RegisterPage() {
         return;
       }
 
+      storeRememberToken(data.rememberToken);
       router.push("/");
     } catch {
       setError("Erreur lors de l'inscription");

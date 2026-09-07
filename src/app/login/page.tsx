@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { LogIn } from "@/components/icons";
+import { clearRememberToken, readRememberToken, storeRememberToken } from "@/lib/remember";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,6 +14,39 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  // La reconnexion silencieuse : tant qu'elle court, pas de formulaire.
+  const [resuming, setResuming] = useState(true);
+
+  // iOS (web-app épinglée) perd parfois le cookie au kill de l'appli : si
+  // un jeton de rappel vit en localStorage, on ré-ouvre la session sans
+  // rien demander — l'écran de connexion ne se montre qu'en dernier recours.
+  useEffect(() => {
+    const token = readRememberToken();
+    if (!token) {
+      // En microtâche : jamais de setState synchrone dans un effet.
+      queueMicrotask(() => setResuming(false));
+      return;
+    }
+    (async () => {
+      try {
+        const res = await fetch("/api/auth/refresh", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          storeRememberToken(data.rememberToken);
+          router.replace("/");
+          return;
+        }
+        clearRememberToken();
+      } catch {
+        // réseau : on laisse le formulaire prendre le relais
+      }
+      setResuming(false);
+    })();
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,12 +68,24 @@ export default function LoginPage() {
         return;
       }
 
+      storeRememberToken(data.rememberToken);
       router.push("/");
     } catch {
       setError("Erreur de connexion");
       setLoading(false);
     }
   };
+
+  if (resuming) {
+    return (
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-4">
+        <div className="size-8 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
+        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          Reconnexion...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center px-6">
