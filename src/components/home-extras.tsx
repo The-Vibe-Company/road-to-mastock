@@ -52,6 +52,7 @@ export function HomeExtras() {
       <TalentAnnounceModal />
       <TrophyAnnounceModal />
       <MagnesieAnnounceModal />
+      <PactesAnnounceModal />
 
       {/* Le Squatteur : le chat traverse le bas de l'écran, sans se presser */}
       {loaded && has("squatteur") && <CatWalker />}
@@ -789,6 +790,139 @@ function TalentAnnounceModal() {
 // ─── L'annonce de la Magnésie ───────────────────────────────────────────────
 // La nouveauté du déliement : la règle, les prix — et les cartes du joueur
 // qui portent la poudre, s'il en a.
+// ─── Les pactes requalifiés : Yéti et Léviathan ─────────────────────────────
+// L'énergie des Gardiens tient désormais jusqu'à la prochaine clôture :
+// leurs deux pouvoirs, qui protégeaient l'OUVERTURE, agissent maintenant
+// à la CLÔTURE. On ne prévient que les joueurs qui possèdent ces cartes.
+// `?pactes` dans l'URL force l'aperçu sans rien marquer.
+
+const PACTES_KEY = "news-pactes-v1";
+
+const PACT_CHANGES: Record<string, { title: string; before: string; after: string }> = {
+  yeti: {
+    title: "Le Blizzard Gardien",
+    before: "jusqu'à 10 tickets par direction survivaient à ta prochaine OUVERTURE de pack.",
+    after: "à la prochaine CLÔTURE, jusqu'à 10 tickets par direction survivent à la remise à zéro.",
+  },
+  leviathan: {
+    title: "Le Pardon des Abysses",
+    before: "si ta prochaine ouverture sortait un pack Basique, tes tickets n'étaient pas consommés.",
+    after: "à la clôture, si ton DERNIER pack ouvert était un Basique, toute ton énergie survit.",
+  },
+};
+
+function isForcedPactes(): boolean {
+  if (typeof window === "undefined") return false;
+  return new URLSearchParams(window.location.search).has("pactes");
+}
+
+function PactesAnnounceModal() {
+  const [open, setOpen] = useState(false);
+  const [cards, setCards] = useState<{ slug: string; name: string; rarity: Rarity; imageUrl: string | null }[]>([]);
+  const [forced] = useState(isForcedPactes);
+
+  useEffect(() => {
+    if (!forced) {
+      try {
+        if (localStorage.getItem(PACTES_KEY)) return;
+        if (!localStorage.getItem(NEWS_KEY)) return; // la grande annonce d'abord
+      } catch {
+        return;
+      }
+    }
+    const t = setTimeout(() => {
+      fetch("/api/pactes")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          const owned = (d?.cards ?? []).filter((c: { slug: string }) => PACT_CHANGES[c.slug]);
+          // Sans carte concernée : rien à annoncer, on marque et on se tait.
+          if (owned.length === 0 && !forced) {
+            try {
+              localStorage.setItem(PACTES_KEY, "1");
+            } catch {}
+            return;
+          }
+          setCards(owned);
+          setOpen(true);
+        })
+        .catch(() => {});
+    }, 1400);
+    return () => clearTimeout(t);
+  }, [forced]);
+
+  const dismiss = () => {
+    if (!forced) {
+      try {
+        localStorage.setItem(PACTES_KEY, "1");
+      } catch {}
+    }
+    setOpen(false);
+  };
+
+  if (!open) return null;
+  const shown = cards.length > 0 ? cards : [];
+
+  return (
+    <div data-pactes="" className="fixed inset-0 z-[103] flex items-end justify-center bg-black/85 backdrop-blur-sm sm:items-center">
+      <div className="relative flex max-h-[90dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border-t-2 border-t-primary/50 bg-background sm:rounded-3xl sm:border-2 sm:border-primary/40">
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4 pt-8">
+          <p className="text-center font-mono text-[10px] font-black uppercase tracking-[0.35em] text-primary/70">
+            Rééquilibrage
+          </p>
+          <h2 className="mt-1 text-center text-2xl font-black leading-tight tracking-tighter">
+            Tes pactes ont <span className="text-gradient-orange">changé</span>
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            L&apos;énergie des Gardiens vaut désormais pour{" "}
+            <strong className="text-foreground">tous tes packs</strong>, jusqu&apos;à
+            la prochaine clôture qui la remplace. Plus rien ne se consomme à
+            l&apos;ouverture — alors tes cartes qui protégeaient l&apos;ouverture
+            protègent maintenant la <strong className="text-foreground">clôture</strong>.
+          </p>
+
+          <div className="mt-4 space-y-3">
+            {(shown.length > 0 ? shown : Object.keys(PACT_CHANGES).map((slug) => ({ slug, name: "", rarity: "legendary" as Rarity, imageUrl: null }))).map((c) => {
+              const chg = PACT_CHANGES[c.slug];
+              if (!chg) return null;
+              return (
+                <div key={c.slug} className="rounded-xl bg-secondary/30 p-3 ring-1 ring-border">
+                  <div className="flex items-center gap-2.5">
+                    {c.imageUrl && (
+                      <div className={`relative size-9 shrink-0 overflow-hidden rounded-lg ${RARITY_COLORS[c.rarity]?.bg ?? ""} ring-1 ${RARITY_COLORS[c.rarity]?.ring ?? "ring-border"}`}>
+                        <Image src={c.imageUrl} alt="" fill unoptimized className="object-cover" />
+                      </div>
+                    )}
+                    <p className={`text-sm font-black ${RARITY_COLORS[c.rarity]?.text ?? ""}`}>
+                      {chg.title}
+                      {c.name && <span className="ml-1.5 text-xs font-bold text-muted-foreground">({c.name})</span>}
+                    </p>
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                    <span className="font-black uppercase tracking-wider text-red-300/80">Avant</span>{" "}
+                    — {chg.before}
+                  </p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                    <span className="font-black uppercase tracking-wider text-emerald-300/80">Maintenant</span>{" "}
+                    — {chg.after}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <div className="border-t border-border/60 px-6 py-4">
+          <button
+            onClick={dismiss}
+            className="w-full rounded-xl bg-gradient-orange-intense py-3 text-sm font-black uppercase tracking-wider text-black transition-all active:scale-95"
+          >
+            Compris
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const MAGNESIE_KEY = "news-magnesie-v1";
 
 interface MagnesieCarrier {
