@@ -11,6 +11,7 @@ import { useTalents } from "./talents-provider";
 import { useTrophies } from "./trophies-provider";
 import { MascotPicker } from "./mascot-picker";
 import { BackButton } from "./back-button";
+import { LogoutButton } from "./logout-button";
 import type { MascotCategory } from "@/lib/mascot-types";
 
 // Trônes disponibles par page — mêmes ids que côté serveur.
@@ -324,6 +325,9 @@ export function SettingsPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* La sortie — retirée du header de la home, elle vit ici. */}
+        <LogoutButton labeled />
       </div>
 
       {hasFeature("banner") && (

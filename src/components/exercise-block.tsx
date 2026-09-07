@@ -18,7 +18,7 @@ import { computeSessionPlan } from "@/lib/session-plan";
 import { MascotBackdrop } from "./mascot-backdrop";
 import type { Mascot } from "@/lib/mascot-types";
 import { powerLabel, powerShorts } from "@/lib/powers";
-import { RARITY_COLORS } from "@/lib/rarities";
+import { RARITY_COLORS, type Rarity } from "@/lib/rarities";
 
 interface ExerciseSet {
   id: number;
@@ -103,10 +103,21 @@ function daysAgo(raw: string): number {
   return Math.round((b - a) / 86400000);
 }
 
-const recordStyles: Record<number, { card: string; badge: string; label: string }> = {
-  1: { card: "card-gradient-gold", badge: "bg-yellow-500/15 text-yellow-500", label: "Record" },
-  2: { card: "card-gradient-silver", badge: "bg-gray-400/15 text-gray-400", label: "2e" },
-  3: { card: "card-gradient-bronze", badge: "bg-amber-700/15 text-amber-700", label: "3e" },
+const recordStyles: Record<number, { badge: string; label: string }> = {
+  1: { badge: "bg-yellow-500/15 text-yellow-500", label: "Record" },
+  2: { badge: "bg-gray-400/15 text-gray-400", label: "2e" },
+  3: { badge: "bg-amber-700/15 text-amber-700", label: "3e" },
+};
+
+// Le cadre du bloc suit la carte gardienne, pas le podium : l'aura de la
+// rareté (voir globals.css). Sans gardien — ou commun — le bloc reste banal.
+const ringStyles: Record<Rarity, string> = {
+  common: "card-gradient-border",
+  uncommon: "card-ring-uncommon",
+  rare: "card-ring-rare",
+  epic: "card-ring-epic",
+  legendary: "card-ring-legendary",
+  mythic: "card-ring-mythic",
 };
 
 export function ExerciseBlock({
@@ -281,7 +292,7 @@ export function ExerciseBlock({
 
   return (
     <Card
-      className={`relative ${medal ? medal.card : "card-gradient-border"} ${
+      className={`relative ${mascot ? ringStyles[mascot.rarity] : "card-gradient-border"} ${
         locked ? "opacity-70" : ""
       }`}
     >
