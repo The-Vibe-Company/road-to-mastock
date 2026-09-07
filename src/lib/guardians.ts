@@ -762,7 +762,25 @@ export async function resolveGuardians(params: {
       .where(eq(users.id, userId));
   }
 
-  // 8. Compteur d'éveils (talents évolutifs : la Légende de la Carpe...).
+  // 8. La mémoire : qui gardait quelle machine à CETTE clôture — pour que
+  // l'historique montre le bon Gardien même après un changement de carte.
+  for (const e of entries) {
+    await db
+      .update(sessionExercises)
+      .set({
+        guardianCategory: e.side.category,
+        guardianCardId: e.side.id,
+        guardianMode: e.mode,
+      })
+      .where(
+        and(
+          eq(sessionExercises.sessionId, sessionId),
+          eq(sessionExercises.exerciseId, e.exerciseId),
+        ),
+      );
+  }
+
+  // 9. Compteur d'éveils (talents évolutifs : la Légende de la Carpe...).
   const awakenedIds = guardians.map((g) => g.exerciseId);
   if (awakenedIds.length > 0) {
     await db

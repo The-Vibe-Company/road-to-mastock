@@ -3,7 +3,7 @@ import { sessions, sessionExercises, sets, exercises, exerciseVariants, exercise
 import { eq, and, sql, inArray, asc } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 import { resolveMuscleGroups } from "@/lib/muscle-groups";
-import { loadMascotsByExercise } from "@/lib/mascots";
+import { loadMascotsByExercise, loadMascotsFromSnapshots } from "@/lib/mascots";
 import { pendingCardioDraws } from "@/lib/guardians";
 import { revalidatePath } from "next/cache";
 
@@ -40,6 +40,8 @@ export async function GET(
       variantName: exerciseVariants.name,
       sortOrder: sessionExercises.sortOrder,
       locked: sessionExercises.locked,
+      guardianCategory: sessionExercises.guardianCategory,
+      guardianCardId: sessionExercises.guardianCardId,
       notes: sessionExercises.notes,
       setId: sets.id,
       setNumber: sets.setNumber,
@@ -88,6 +90,8 @@ export async function GET(
       sortOrder: number;
       locked: boolean;
       notes: string | null;
+      guardianCategory: string | null;
+      guardianCardId: number | null;
       sets: SetEntry[];
     }
   >();
@@ -109,6 +113,8 @@ export async function GET(
         sortOrder: row.sortOrder ?? 0,
         locked: row.locked,
         notes: row.notes,
+        guardianCategory: row.guardianCategory ?? null,
+        guardianCardId: row.guardianCardId ?? null,
         sets: [],
       });
     }
@@ -312,7 +318,20 @@ export async function GET(
   }
 
   // Mascottes des machines : filigrane derrière le bloc pendant la séance.
+  // Séance CLOSE : on préfère la mémoire — le Gardien photographié à la
+  // clôture — au gardien actuel de la machine.
   const mascots = await loadMascotsByExercise(exerciseIds);
+  if (session.tokensGrantedAt) {
+    const snaps = exerciseList
+      .filter((e) => e.guardianCategory && e.guardianCardId)
+      .map((e) => ({
+        exerciseId: e.exerciseId,
+        category: e.guardianCategory as "animal" | "pokemon",
+        cardId: e.guardianCardId as number,
+      }));
+    const remembered = await loadMascotsFromSnapshots(snaps);
+    for (const [exId, m] of remembered) mascots.set(exId, m);
+  }
 
   // L'Échappée : tirages du cardio encore en attente de placement — pour
   // que la cérémonie se re-propose même après un rechargement.

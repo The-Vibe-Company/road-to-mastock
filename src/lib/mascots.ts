@@ -167,3 +167,48 @@ export async function ownsCard(
     );
   return !!row;
 }
+
+// ─── La mémoire des Gardiens ────────────────────────────────────────────────
+// Reconstruit les mascottes depuis les photographies prises à la clôture
+// (session_exercises.guardian_*) : l'historique montre le Gardien de
+// l'époque, pas celui d'aujourd'hui.
+export async function loadMascotsFromSnapshots(
+  snapshots: { exerciseId: number; category: "animal" | "pokemon"; cardId: number }[],
+): Promise<Map<number, Mascot>> {
+  const result = new Map<number, Mascot>();
+  if (snapshots.length === 0) return result;
+
+  const animalIds = [...new Set(snapshots.filter((s) => s.category === "animal").map((s) => s.cardId))];
+  const pokemonIds = [...new Set(snapshots.filter((s) => s.category === "pokemon").map((s) => s.cardId))];
+  const animalRows = animalIds.length
+    ? await db
+        .select({ id: animals.id, slug: animals.slug, name: animals.name, rarity: animals.rarity, imageUrl: animals.imageUrl, number: animals.cardNumber, subtype: animals.lineage })
+        .from(animals)
+        .where(inArray(animals.id, animalIds))
+    : [];
+  const pokemonRows = pokemonIds.length
+    ? await db
+        .select({ id: pokemon.id, slug: pokemon.slug, name: pokemon.name, rarity: pokemon.rarity, imageUrl: pokemon.imageUrl, number: pokemon.pokedexNumber, subtype: pokemon.primaryType })
+        .from(pokemon)
+        .where(inArray(pokemon.id, pokemonIds))
+    : [];
+  const byAnimal = new Map(animalRows.map((r) => [r.id, r]));
+  const byPokemon = new Map(pokemonRows.map((r) => [r.id, r]));
+
+  for (const snap of snapshots) {
+    const source = snap.category === "animal" ? byAnimal.get(snap.cardId) : byPokemon.get(snap.cardId);
+    if (!source) continue;
+    result.set(snap.exerciseId, {
+      category: snap.category,
+      id: source.id,
+      slug: source.slug,
+      name: source.name,
+      rarity: source.rarity as Rarity,
+      imageUrl: source.imageUrl,
+      number: source.number,
+      subtype: source.subtype,
+      evolved: false,
+    });
+  }
+  return result;
+}

@@ -154,6 +154,11 @@ export const sessionExercises = pgTable("session_exercises", {
     onDelete: "set null",
   }),
   sortOrder: integer("sort_order").default(0),
+  // La mémoire des Gardiens : la carte qui gardait la machine au moment
+  // de la clôture — l'historique ne réécrit pas le passé.
+  guardianCategory: text("guardian_category"),
+  guardianCardId: integer("guardian_card_id"),
+  guardianMode: text("guardian_mode"),
   locked: boolean("locked").default(false).notNull(),
   notes: text("notes"),
 });
