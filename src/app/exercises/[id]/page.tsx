@@ -368,6 +368,8 @@ export default function ExerciseDetail({
       </Card>
 
       <MascotPicker
+        exerciseId={Number(id)}
+        blockPostedElsewhere
         open={showMascotPicker}
         onOpenChange={setShowMascotPicker}
         exerciseName={exercise.name}

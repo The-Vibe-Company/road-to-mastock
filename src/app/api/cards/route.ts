@@ -7,6 +7,7 @@ import {
   userPokemonCards,
   userShards,
   users,
+  exercises,
 } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
@@ -119,8 +120,29 @@ export async function GET() {
   const wheel = buildWheel(charges);
   const wheelTotal = wheel.reduce((a, o) => a + o.weight, 0);
 
+  // Qui garde quoi : le sélecteur grise les cartes déjà en poste ailleurs.
+  const guardians = (
+    await db
+      .select({
+        exerciseId: exercises.id,
+        exerciseName: exercises.name,
+        a: exercises.mascotAnimalId,
+        p: exercises.mascotPokemonId,
+      })
+      .from(exercises)
+      .where(eq(exercises.userId, auth.userId))
+  )
+    .filter((r) => r.a != null || r.p != null)
+    .map((r) => ({
+      category: r.a != null ? ("animal" as const) : ("pokemon" as const),
+      cardId: (r.a ?? r.p) as number,
+      exerciseId: r.exerciseId,
+      exerciseName: r.exerciseName,
+    }));
+
   return Response.json({
     charges,
+    guardians,
     odds: {
       hat: Object.fromEntries(
         Object.entries(hat).map(([k, w]) => [k, hatTotal > 0 ? Math.round((w / hatTotal) * 100) : 0]),

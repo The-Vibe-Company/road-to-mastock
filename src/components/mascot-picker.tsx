@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { CreatureCard } from "@/components/creature-card";
-import { Search, PawPrint, Zap, Loader2, Vault, Check, Trash2 } from "@/components/icons";
+import { Search, PawPrint, Zap, Loader2, Vault, Check, Trash2, Lock } from "@/components/icons";
 import { RARITIES, RARITY_LABELS, type Rarity } from "@/lib/rarities";
 import type { Mascot, MascotCategory } from "@/lib/mascot-types";
 import { powerLabel, powerShorts } from "@/lib/powers";
@@ -31,6 +31,8 @@ interface OwnedCard {
 interface CollectionResponse {
   animals: { cards: OwnedCard[] };
   pokemon: { cards: OwnedCard[] };
+  // Qui garde quoi : pour griser les cartes déjà en poste ailleurs.
+  guardians?: { category: MascotCategory; cardId: number; exerciseId: number; exerciseName: string }[];
 }
 
 const TIER_DOT: Record<Rarity, string> = {
@@ -65,6 +67,11 @@ interface MascotPickerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   exerciseName: string;
+  // Un Gardien ne tient qu'un poste : quand on choisit pour une MACHINE,
+  // les cartes déjà en poste ailleurs sont grisées et incliquables.
+  // (Le Totem et l'Étendard, purement décoratifs, restent libres.)
+  exerciseId?: number;
+  blockPostedElsewhere?: boolean;
   // Texte d'entête — par défaut celui des mascottes de machine ; le Totem
   // et autres réemplois passent le leur.
   title?: string;
@@ -79,6 +86,8 @@ export function MascotPicker({
   open,
   onOpenChange,
   exerciseName,
+  exerciseId,
+  blockPostedElsewhere = false,
   title = "Mascotte",
   description,
   current,
@@ -89,6 +98,17 @@ export function MascotPicker({
   const [category, setCategory] = useState<MascotCategory>("animal");
   const [search, setSearch] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Les postes occupés AILLEURS : clé « catégorie:id » → nom de la machine.
+  const postedElsewhere = useMemo(() => {
+    const map = new Map<string, string>();
+    if (!blockPostedElsewhere) return map;
+    for (const g of data?.guardians ?? []) {
+      if (exerciseId != null && g.exerciseId === exerciseId) continue;
+      map.set(`${g.category}:${g.cardId}`, g.exerciseName);
+    }
+    return map;
+  }, [data, blockPostedElsewhere, exerciseId]);
 
   // On ouvre sur la catégorie de la mascotte actuelle : changer de Pikachu
   // pour un autre pokémon ne doit pas commencer par un aller-retour d'onglet.
@@ -256,12 +276,18 @@ export function MascotPicker({
                         {group.map((card) => {
                           const isCurrent =
                             current?.category === category && current.id === card.id;
+                          const busyAt = postedElsewhere.get(`${category}:${card.id}`);
                           return (
                             <button
                               key={card.id}
-                              onClick={() => pick(card)}
-                              disabled={saving}
-                              className="group relative block w-full transition-all duration-150 active:scale-95 disabled:opacity-60"
+                              onClick={() => {
+                                if (busyAt) return;
+                                pick(card);
+                              }}
+                              disabled={saving || !!busyAt}
+                              className={`group relative block w-full transition-all duration-150 active:scale-95 disabled:opacity-60 ${
+                                busyAt ? "opacity-40 grayscale" : ""
+                              }`}
                             >
                               <CreatureCard
                                 name={card.name}
@@ -285,11 +311,18 @@ export function MascotPicker({
                                   <Check className="size-3" strokeWidth={4} />
                                 </span>
                               )}
-                              {/* Ce que fait la carte, en trois mots : on ne
-                                  choisit pas un Gardien à l'aveugle. */}
-                              <p className={`mt-1 truncate text-center text-[9px] font-bold leading-tight ${TIER_TEXT[card.rarity]}`}>
-                                {cardPowerHint(card, category)}
-                              </p>
+                              {/* Ce que fait la carte — ou pourquoi elle est
+                                  indisponible : un Gardien, un seul poste. */}
+                              {busyAt ? (
+                                <p className="mt-1 flex items-center justify-center gap-1 truncate text-center text-[9px] font-bold leading-tight text-amber-400/90">
+                                  <Lock className="size-2.5 shrink-0" />
+                                  Garde « {busyAt} »
+                                </p>
+                              ) : (
+                                <p className={`mt-1 truncate text-center text-[9px] font-bold leading-tight ${TIER_TEXT[card.rarity]}`}>
+                                  {cardPowerHint(card, category)}
+                                </p>
+                              )}
                             </button>
                           );
                         })}
