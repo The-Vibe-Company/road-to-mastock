@@ -23,11 +23,22 @@ const COIN_ITEMS = [
 export function SpinWheelModal({
   onClose,
   onAfterSpin,
+  wheel,
 }: {
   onClose: () => void;
   onAfterSpin?: () => void;
+  // Les VRAIS segments du moment (reward → %), depuis /api/cards — les
+  // sorts des Gardiens transforment la roue, la modale doit le montrer.
+  wheel?: Record<string, number>;
 }) {
   const [phase, setPhase] = useState<"ready" | "spinning" | "result">("ready");
+  // À défaut d'odds (vieux appelant), la roue de base.
+  const segments = Object.entries(wheel ?? { "1": 20, "2": 60, "3": 19, "4": 1 })
+    .map(([r, pct]) => ({ r: Number(r), pct }))
+    .filter((s) => s.pct > 0)
+    .sort((a, b) => a.r - b.r);
+  const minR = segments[0]?.r ?? 1;
+  const maxR = segments[segments.length - 1]?.r ?? 4;
   const [reward, setReward] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,19 +79,14 @@ export function SpinWheelModal({
           </p>
           <h2 className="mt-1 text-3xl font-black tracking-tighter">Tourne la roue</h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Convertit ton jeton spécial en 1 à 4 jetons normaux
+            Convertit ton jeton spécial en {minR} à {maxR} jetons normaux
           </p>
         </div>
 
         <div className="w-full">
           {phase === "ready" && (
             <div className="flex items-end justify-center gap-3 py-3">
-              {[
-                { r: 1, pct: 20 },
-                { r: 2, pct: 60 },
-                { r: 3, pct: 19 },
-                { r: 4, pct: 1 },
-              ].map(({ r, pct }) => (
+              {segments.map(({ r, pct }) => (
                 <div key={r} className="flex flex-col items-center gap-1.5">
                   <JackpotCoin reward={r as 1 | 2 | 3 | 4 | 10} size={72} />
                   <span className="font-mono text-[10px] tabular-nums text-muted-foreground">

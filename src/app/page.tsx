@@ -1,14 +1,12 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { animals, pokemon, users } from "@/lib/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { animals, pokemon, userCards, userCharges, userPokemonCards, users } from "@/lib/db/schema";
+import { and, eq, sql } from "drizzle-orm";
 import { earnedTrophies } from "@/lib/trophies-server";
 import { hasTrophyFeature } from "@/lib/trophies";
-import { Button } from "@/components/ui/button";
-import { BookOpen, Users, Settings, Cards, Trophy } from "@/components/icons";
+import { Users, Settings, Cards, Trophy, Sparkles, Flame } from "@/components/icons";
 import { getAuthUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { LogoutButton } from "@/components/logout-button";
 import { HomeTabs } from "@/components/home-tabs";
 import { NewSessionButton } from "@/components/new-session-button";
 import { RefreshOnReturn } from "@/components/refresh-on-return";
@@ -24,11 +22,27 @@ export default async function Home() {
     .select({
       name: users.name,
       title: users.title,
+      magnesie: users.magnesie,
       bannerCategory: users.bannerCategory,
       bannerCardId: users.bannerCardId,
     })
     .from(users)
     .where(eq(users.id, auth.userId));
+
+  // L'identité du header : magnésie, cartes en tout, jauge de Forge.
+  const [[forgeRow], [ac], [pc]] = await Promise.all([
+    db
+      .select({ points: userCharges.points })
+      .from(userCharges)
+      .where(and(eq(userCharges.userId, auth.userId), eq(userCharges.direction, "forge"))),
+    db.select({ n: sql<number>`COUNT(*)::int` }).from(userCards).where(eq(userCards.userId, auth.userId)),
+    db.select({ n: sql<number>`COUNT(*)::int` }).from(userPokemonCards).where(eq(userPokemonCards.userId, auth.userId)),
+  ]);
+  const wallet = {
+    magnesie: user?.magnesie ?? 0,
+    cards: (ac?.n ?? 0) + (pc?.n ?? 0),
+    forge: forgeRow?.points ?? 0,
+  };
 
   // L'Étendard : la carte en bannière derrière le titre.
   let bannerUrl: string | null = null;
@@ -112,8 +126,9 @@ export default async function Home() {
   return (
     <div className="flex min-h-dvh flex-col px-4 pb-28 pt-10">
       <RefreshOnReturn />
-      {/* Hero — l'affiche : titre pleine largeur, puis la rangée d'outils */}
-      <div className="hero-gradient relative -mx-4 -mt-10 mb-8 overflow-hidden px-4 pb-6 pt-12">
+      {/* Hero — l'affiche : le titre tout en haut, l'identité à sa droite,
+          puis la rangée d'outils pleine largeur */}
+      <div className="hero-gradient relative -mx-4 -mt-10 mb-8 overflow-hidden px-4 pb-6 pt-4">
         {/* L'Étendard : la carte flotte derrière le titre */}
         {/* L'Étendard : une couronne sur le HAUT de la home — l'image
             règne sur le premier écran puis s'efface avant les listes.
@@ -136,66 +151,56 @@ export default async function Home() {
         <h1 className="text-4xl leading-[0.95] tracking-tight">
           ROAD TO <span className="text-gradient-orange">MASTOCK</span>
         </h1>
-        <div className="mt-3 flex items-end justify-between gap-2">
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-muted-foreground">
-              {user?.name ? `Hey ${user.name}` : "Tes séances"} — {allSessions.length} séance{allSessions.length !== 1 ? "s" : ""}
-            </p>
-            {user?.title && (
-              <p className="mt-0.5 text-[10px] font-black uppercase tracking-[0.2em] text-primary/70">
-                {user.title}
-              </p>
-            )}
-          </div>
-          <div className="flex shrink-0 items-center gap-0.5">
-            <Link href="/friends">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-9 rounded-xl text-muted-foreground hover:bg-primary/10 hover:text-primary"
-              >
-                <Users className="size-5" />
-              </Button>
-            </Link>
-            <Link href="/trophees">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-9 rounded-xl text-muted-foreground hover:bg-primary/10 hover:text-primary"
-              >
-                <Trophy className="size-5" />
-              </Button>
-            </Link>
-            <Link href="/collection">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-9 rounded-xl text-muted-foreground hover:bg-primary/10 hover:text-primary"
-              >
-                <Cards className="size-5" />
-              </Button>
-            </Link>
-            <Link href="/exercises">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-9 rounded-xl text-muted-foreground hover:bg-primary/10 hover:text-primary"
-              >
-                <BookOpen className="size-5" />
-              </Button>
-            </Link>
-            <Link href="/settings">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-9 rounded-xl text-muted-foreground hover:bg-primary/10 hover:text-primary"
-              >
-                <Settings className="size-5" />
-              </Button>
-            </Link>
-            <LogoutButton />
+
+        {/* L'identité : le nom aligné sur le haut du titre, et dessous les
+            trois compteurs — magnésie, cartes en tout, Forge. Le compte de
+            séances vit déjà dans le Dashboard, pas besoin de le répéter. */}
+        <div className="absolute right-4 top-4 z-10 text-right">
+          <p className="text-[13px] font-black uppercase leading-none tracking-[0.08em]">
+            {user?.name ?? "Toi"}
+          </p>
+          <div className="mt-1.5 flex items-center justify-end gap-2.5 font-mono text-[10.5px] font-bold tabular-nums">
+            <span className="flex items-center gap-1 text-sky-300">
+              <Sparkles className="size-3" />
+              {wallet.magnesie}
+            </span>
+            <span className="flex items-center gap-1 text-muted-foreground">
+              <Cards className="size-3" />
+              {wallet.cards}
+            </span>
+            <span className="flex items-center gap-1 text-primary">
+              <Flame className="size-3" />
+              {wallet.forge}
+            </span>
           </div>
         </div>
+
+        {user?.title && (
+          <p className="mt-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-primary/70">
+            {user.title}
+          </p>
+        )}
+
+        {/* La rangée d'outils : quatre portes nommées, pleine largeur. Le
+            catalogue vit dans l'onglet Exercices, la déconnexion dans les
+            Réglages. */}
+        <nav className="mt-4 grid grid-cols-4 gap-1.5">
+          {[
+            { href: "/friends", Icon: Users, label: "Amis" },
+            { href: "/trophees", Icon: Trophy, label: "Trophées" },
+            { href: "/collection", Icon: Cards, label: "Cartes" },
+            { href: "/settings", Icon: Settings, label: "Réglages" },
+          ].map(({ href, Icon, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className="flex flex-col items-center gap-1 rounded-[3px] bg-secondary/30 py-2 text-muted-foreground ring-1 ring-border transition-all hover:bg-primary/10 hover:text-primary active:scale-95"
+            >
+              <Icon className="size-5" />
+              <span className="text-[8px] font-black uppercase tracking-[0.18em]">{label}</span>
+            </Link>
+          ))}
+        </nav>
       </div>
 
       <HomeExtras />

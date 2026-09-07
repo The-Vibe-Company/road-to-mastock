@@ -36,14 +36,15 @@ export type Direction =
   | "curee"
   | "orpailleur"
   | "banquise"
-  // Sorts à un coup (consommés à la prochaine ouverture / roue)
-  | "no_basic"        // le prochain pack refuse d'être Basique (1 reroll/charge)
-  | "wheel_no_x1"     // la prochaine roue perd son ×1
-  | "wheel_min2"      // la prochaine roue : le ×1 devient ×2
-  | "wheel_34"        // la prochaine roue : ×3 ou ×4 seulement
-  | "qilin_wheel"     // la prochaine roue : ×2 / ×3 / ×4 / ×10
-  | "hoopa_double"    // la prochaine ouverture pioche deux packs, garde le meilleur
-  | "leviathan_guard" // si le prochain pack est Basique, les tickets survivent
+  // Sorts chargés à l'éveil — comme tout le chapeau, ils tiennent
+  // jusqu'à la prochaine clôture (rien ne se consomme à l'ouverture)
+  | "no_basic"        // tes packs refusent d'être Basiques (1 reroll/charge, par pack)
+  | "wheel_no_x1"     // tes roues perdent leur ×1
+  | "wheel_min2"      // tes roues : le ×1 devient ×2
+  | "wheel_34"        // tes roues : ×3 ou ×4 seulement
+  | "qilin_wheel"     // tes roues : ×2 / ×3 / ×4 / ×10
+  | "hoopa_double"    // tes ouvertures piochent deux packs, gardent le meilleur
+  | "leviathan_guard" // à la clôture : si ton dernier pack était Basique, l'énergie survit
   | "time_hold";      // Dialga : la prochaine remise à zéro épargne le chapeau
 
 export const DIRECTION_CAPS: Record<Direction, number> = {
@@ -212,8 +213,8 @@ export const PRODIGES: Record<string, ProdigeDef> = {
     id: "basilisk",
     name: "Le Regard qui Fige",
     description:
-      "À son éveil, le Basilic pétrifie la malchance elle-même : ta prochaine roue de la fortune perd sa case ×1.",
-    effect: { kind: "hat", add: { wheel_no_x1: 1 }, detail: "ta prochaine roue perd son ×1" },
+      "À son éveil, le Basilic pétrifie la malchance elle-même : tes roues de la fortune perdent leur case ×1 jusqu'à la prochaine clôture.",
+    effect: { kind: "hat", add: { wheel_no_x1: 1 }, detail: "tes roues perdent leur ×1" },
   },
   "animal:kraken": {
     id: "kraken",
@@ -336,8 +337,8 @@ export const PRODIGES: Record<string, ProdigeDef> = {
     id: "sasquatch",
     name: "Le Pas Discret",
     description:
-      "Personne ne le voit passer, et ton pack non plus : à son éveil, ton prochain pack refuse d'être Basique — le sort est retiré une fois.",
-    effect: { kind: "hat", add: { no_basic: 1 }, detail: "ton prochain pack refuse d'être Basique" },
+      "Personne ne le voit passer, et tes packs non plus : à son éveil, tes packs refusent d'être Basiques — un reroll par pack, jusqu'à la prochaine clôture.",
+    effect: { kind: "hat", add: { no_basic: 1 }, detail: "tes packs refusent d'être Basiques" },
   },
   "animal:djinn": {
     id: "djinn",
@@ -400,8 +401,8 @@ export const PRODIGES: Record<string, ProdigeDef> = {
     id: "yeti",
     name: "Le Blizzard Gardien",
     description:
-      "À son éveil, le Yéti gèle ton énergie sur place : jusqu'à 10 tickets par direction survivront à ta prochaine ouverture au lieu d'être consommés.",
-    effect: { kind: "hat", add: { banquise: 10 }, detail: "tes tickets survivront à la prochaine ouverture" },
+      "À son éveil, le Yéti gèle ton énergie sur place : à la prochaine clôture, jusqu'à 10 tickets par direction survivront à la remise à zéro.",
+    effect: { kind: "hat", add: { banquise: 10 }, detail: "tes tickets survivront à la prochaine clôture" },
   },
   "animal:golem": {
     id: "golem",
@@ -488,7 +489,7 @@ export const PRODIGES: Record<string, ProdigeDef> = {
     id: "mothman",
     name: "Le Présage Ailé",
     description:
-      "On ne le voit qu'avant les grandes choses : à son éveil, ton prochain pack refuse d'être Basique, et 0,2 ticket Mythique tombe de ses ailes.",
+      "On ne le voit qu'avant les grandes choses : à son éveil, tes packs refusent d'être Basiques, et 0,2 ticket Mythique tombe de ses ailes.",
     effect: { kind: "hat", add: { no_basic: 1, mythic_sparks: 2 }, detail: "refus de Basique + 0,2 Mythique" },
   },
   "animal:wyvern": {
@@ -580,7 +581,7 @@ export const PRODIGES: Record<string, ProdigeDef> = {
     id: "lugia",
     name: "Le Gardien des Mers",
     description:
-      "Il apaise les tempêtes avant qu'elles n'emportent tout : à son éveil, +4 tickets Pokémon, et jusqu'à 6 tickets par direction survivront à ta prochaine ouverture.",
+      "Il apaise les tempêtes avant qu'elles n'emportent tout : à son éveil, +4 tickets Pokémon, et jusqu'à 6 tickets par direction survivront à la prochaine clôture.",
     effect: { kind: "hat", add: { pack_pokemon: 4, banquise: 6 }, detail: "+4 Pokémon, 6 tickets gelés par direction" },
   },
   "pokemon:regice": {
@@ -712,7 +713,7 @@ export const PRODIGES: Record<string, ProdigeDef> = {
     id: "articuno",
     name: "Le Givre Suspendu",
     description:
-      "Son givre fige la pire case : ta prochaine roue perd son ×1, et +3 tickets Pokémon tombent en flocons.",
+      "Son givre fige la pire case : tes roues perdent leur ×1, et +3 tickets Pokémon tombent en flocons.",
     effect: { kind: "hat", add: { wheel_no_x1: 1, pack_pokemon: 3 }, detail: "roue sans ×1, +3 Pokémon" },
   },
   "pokemon:giratina-altered": {
@@ -789,10 +790,10 @@ function fmtAdd(d: Direction, n: number): string {
     case "inner_animal": return `dans un pack Basique, la carte tirée est animale à 75 % / Pokémon à 25 % — ce curseur bouge de ${n} % vers les animaux`;
     case "wheel_x3": return `+${n} tickets sur la case ×3 de la roue des jetons spéciaux`;
     case "forge": return `+${n} dans la jauge de Forge — visible sur la Collection ; pleine à 20, elle paie un tour de la Roue de la Forge : un fragment garanti, du commun (42 %) à l'épique (10 %)`;
-    case "curee": return `${n} charges de Curée : tes ${n} prochains doublons tirés rapportent chacun 1 fragment de plus`;
-    case "banquise": return `ouvrir un pack consomme normalement tous tes tickets — là, jusqu'à ${n} tickets par direction restent dans le chapeau après ta prochaine ouverture`;
-    case "no_basic": return n > 1 ? `tes ${n} prochains packs refusent d'être Basiques` : `ton prochain pack refuse d'être Basique`;
-    case "wheel_no_x1": return "ta prochaine roue perd sa case ×1";
+    case "curee": return `Curée : chaque doublon tiré rapporte 1 fragment de plus, jusqu'à la prochaine clôture`;
+    case "banquise": return `clôturer une séance balaie normalement le chapeau — là, jusqu'à ${n} tickets par direction survivront à la prochaine remise à zéro`;
+    case "no_basic": return `tes packs refusent d'être Basiques (${n} reroll${n > 1 ? "s" : ""} par pack), jusqu'à la prochaine clôture`;
+    case "wheel_no_x1": return "tes roues perdent leur case ×1, jusqu'à la prochaine clôture";
     case "time_hold": return "clôturer une séance remet normalement le chapeau à zéro — la prochaine remise à zéro est annulée, ton énergie survit (une fois)";
     default: return `+${n} ${DIRECTION_LABELS[d]}`;
   }
@@ -894,9 +895,9 @@ export const MIRACLES: Record<string, Miracle> = {
     id: "festin-songes",
     name: "Le Festin des Songes",
     description:
-      "Une fois par semaine, Baku dévore ton pire cauchemar : sur ta prochaine roue, la case ×1 devient une case ×2. Tu ne peux plus mal tomber.",
+      "Une fois par semaine, Baku dévore ton pire cauchemar : sur tes roues, la case ×1 devient une case ×2 jusqu'à la prochaine clôture. Tu ne peux plus mal tomber.",
     rules:
-      "Une fois par semaine — à l'éveil : ta prochaine roue des jetons spéciaux remplace sa case ×1 par une case ×2. Impossible de repartir avec un seul jeton.",
+      "Une fois par semaine — à l'éveil : tes roues des jetons spéciaux remplacent leur case ×1 par une case ×2, jusqu'à la prochaine clôture. Impossible de repartir avec un seul jeton.",
     weekly: true,
   },
   "animal:hydra-primordial": {
@@ -919,18 +920,18 @@ export const MIRACLES: Record<string, Miracle> = {
     id: "pardon-abysses",
     name: "Le Pardon des Abysses",
     description:
-      "Une fois par semaine, Léviathan pardonne la malchance : si ta prochaine ouverture sort un pack Basique, tes tickets ne sont pas consommés — le chapeau reste chargé.",
+      "Une fois par semaine, Léviathan pardonne la malchance : si ton dernier pack ouvert était un Basique, ton énergie survit entière à la clôture suivante.",
     rules:
-      "Une fois par semaine — à l'éveil : si ta prochaine ouverture sort un pack Basique, le chapeau n'est PAS consommé — tous tes tickets restent pour l'ouverture suivante.",
+      "Une fois par semaine — à l'éveil : à la prochaine clôture, si le DERNIER pack que tu as ouvert était un Basique, le chapeau n'est PAS remis à zéro — toute ton énergie survit.",
     weekly: true,
   },
   "animal:ziz": {
     id: "ombre-des-ailes",
     name: "L'Ombre des Ailes",
     description:
-      "Une fois par semaine, l'oiseau-monde couvre le chapeau de son aile : ton prochain pack refuse d'être Basique — le sort est retiré jusqu'à deux fois.",
+      "Une fois par semaine, l'oiseau-monde couvre le chapeau de son aile : tes packs refusent d'être Basiques — jusqu'à deux rerolls par pack, jusqu'à la prochaine clôture.",
     rules:
-      "Une fois par semaine — à l'éveil : tes 2 prochains packs refusent d'être Basiques (le tirage est relancé, jusqu'à deux fois).",
+      "Une fois par semaine — à l'éveil : tes packs refusent d'être Basiques (jusqu'à deux relances par pack), jusqu'à la prochaine clôture.",
     weekly: true,
   },
   "animal:nidhogg": {
@@ -961,9 +962,9 @@ export const MIRACLES: Record<string, Miracle> = {
     id: "colere-du-pere",
     name: "La Colère du Père",
     description:
-      "Une fois par semaine, le père des monstres secoue la roue : ta prochaine roue ne peut tomber que sur ×3 ou ×4. La colère paie toujours.",
+      "Une fois par semaine, le père des monstres secoue la roue : tes roues ne peuvent tomber que sur ×3 ou ×4, jusqu'à la prochaine clôture. La colère paie toujours.",
     rules:
-      "Une fois par semaine — à l'éveil : ta prochaine roue des jetons spéciaux ne peut tomber que sur ×3 ou ×4.",
+      "Une fois par semaine — à l'éveil : tes roues des jetons spéciaux ne peuvent tomber que sur ×3 ou ×4, jusqu'à la prochaine clôture.",
     weekly: true,
   },
   "animal:apophis": {
@@ -987,9 +988,9 @@ export const MIRACLES: Record<string, Miracle> = {
     id: "pas-fortune",
     name: "Le Pas de la Fortune",
     description:
-      "Si c'est ta première séance de la semaine, le Qilin bénit ta prochaine roue : elle tourne sur ×2, ×3, ×4… ou ×10. La chance marche dans ses pas.",
+      "Si c'est ta première séance de la semaine, le Qilin bénit tes roues : elles tournent sur ×2, ×3, ×4… ou ×10 jusqu'à la prochaine clôture. La chance marche dans ses pas.",
     rules:
-      "Une fois par semaine — si c'est la 1ʳᵉ séance de ta semaine : ta prochaine roue tourne sur ×2 / ×3 / ×4 / ×10 au lieu de ×1 à ×4. Sinon : rien.",
+      "Une fois par semaine — si c'est la 1ʳᵉ séance de ta semaine : tes roues tournent sur ×2 / ×3 / ×4 / ×10 au lieu de ×1 à ×4, jusqu'à la prochaine clôture. Sinon : rien.",
     weekly: true,
   },
 
@@ -1015,9 +1016,9 @@ export const MIRACLES: Record<string, Miracle> = {
     id: "passe-mondes",
     name: "Le Passe-Mondes",
     description:
-      "Une fois par semaine, Hoopa ouvre deux anneaux à la fois : ta prochaine ouverture tire deux packs, et tu reçois le meilleur des deux.",
+      "Une fois par semaine, Hoopa ouvre deux anneaux à la fois : chacune de tes ouvertures tire deux packs et garde le meilleur, jusqu'à la prochaine clôture.",
     rules:
-      "Une fois par semaine — à l'éveil : ta prochaine ouverture tire DEUX packs et te donne le meilleur des deux.",
+      "Une fois par semaine — à l'éveil : chaque ouverture tire DEUX packs et te donne le meilleur des deux, jusqu'à la prochaine clôture.",
     weekly: true,
   },
   "pokemon:shaymin-land": {

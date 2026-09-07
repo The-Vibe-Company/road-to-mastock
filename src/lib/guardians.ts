@@ -138,11 +138,32 @@ async function resetHatForNewSession(userId: number, charges: Charges) {
     return;
   }
 
+  // Le Pardon des Abysses : si le DERNIER pack ouvert était un Basique,
+  // Léviathan épargne toute l'énergie de cette remise à zéro — une fois.
+  if ((charges.leviathan_guard ?? 0) > 0) {
+    const [u] = await db
+      .select({ lastPackType: users.lastPackType })
+      .from(users)
+      .where(eq(users.id, userId));
+    if (u?.lastPackType === "basic") {
+      charges.leviathan_guard = 0;
+      return;
+    }
+  }
+
   const half = !!celebi && posted.some((r) => r.p === celebi.id); // le Second Souffle
+  // Le Blizzard Gardien : jusqu'à N TICKETS par direction du chapeau
+  // survivent à la remise à zéro (les sorts, eux, meurent normalement).
+  // Cumulable avec le Second Souffle — la meilleure protection l'emporte.
+  const preserve = charges.banquise ?? 0;
+  charges.banquise = 0;
+  const hatSet = new Set<string>(HAT_DIRECTIONS);
   for (const d of WIPE_DIRECTIONS) {
     const pts = charges[d] ?? 0;
     if (pts <= 0) continue;
-    charges[d] = half ? Math.floor(pts / 2) : 0;
+    const fromHalf = half ? Math.floor(pts / 2) : 0;
+    const fromIce = hatSet.has(d) ? Math.min(pts, preserve) : 0;
+    charges[d] = Math.max(fromHalf, fromIce);
   }
 }
 

@@ -4,7 +4,26 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronRight, Dumbbell } from "@/components/icons";
+import { ChevronRight, Dumbbell, Sparkles, Funnel, X } from "@/components/icons";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { MUSCLE_GROUPS } from "@/lib/muscle-groups";
+import type { Rarity } from "@/lib/rarities";
+
+interface RankedGuardian {
+  name: string;
+  rarity: Rarity;
+  imageUrl: string | null;
+  // Null : la carte est libre (grâce ou lien expiré) — sinon la date où
+  // le lien se dénoue tout seul.
+  unlockAt: string | null;
+  unbindPrice: number;
+}
 
 interface RankedExercise {
   id: number;
@@ -14,10 +33,28 @@ interface RankedExercise {
   useCount: number;
   setCount: number;
   lastDate: string | null;
+  guardian: RankedGuardian | null;
+}
+
+// Teintes du bandeau gardien, à la rareté de la carte.
+const GUARDIAN_TINT: Record<Rarity, { border: string; text: string }> = {
+  common: { border: "border-zinc-400/30", text: "text-zinc-300" },
+  uncommon: { border: "border-emerald-400/30", text: "text-emerald-300" },
+  rare: { border: "border-sky-400/30", text: "text-sky-300" },
+  epic: { border: "border-violet-400/35", text: "text-violet-300" },
+  legendary: { border: "border-amber-400/40", text: "text-amber-300" },
+  mythic: { border: "border-rose-500/45", text: "text-rose-300" },
+};
+
+function frDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 }
 
 export function ExerciseRanking() {
   const [exercises, setExercises] = useState<RankedExercise[] | null>(null);
+  // Le filtre par groupe musculaire — null : tout le classement.
+  const [filter, setFilter] = useState<string | null>(null);
+  const [showFilter, setShowFilter] = useState(false);
 
   useEffect(() => {
     fetch("/api/exercises/frequent?limit=all")
@@ -53,11 +90,77 @@ export function ExerciseRanking() {
     );
   }
 
-  const maxCount = exercises[0].useCount;
+  // Les chips du filtre : seulement les groupes réellement présents dans le
+  // classement, dans l'ordre canonique — le cardio matche aussi par kind.
+  const inGroup = (ex: RankedExercise, g: string) =>
+    ex.muscleGroups.includes(g) || (g === "Cardio" && ex.kind === "cardio");
+  const groups = MUSCLE_GROUPS.filter((g) => exercises.some((ex) => inGroup(ex, g)));
+  const shown = filter ? exercises.filter((ex) => inGroup(ex, filter)) : exercises;
+  // La barre d'usage se recalcule dans le groupe : un classement par famille.
+  const maxCount = shown[0]?.useCount ?? 1;
 
   return (
     <div className="space-y-2">
-      {exercises.map((ex, i) => (
+      {/* Le filtre par groupe : une ligne discrète — le tag actif se retire
+          d'un tap, l'entonnoir ouvre le tiroir des groupes. */}
+      {groups.length > 1 && (
+        <div className="flex items-center gap-2 pb-1">
+          <span className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground">
+            Classement · {shown.length} machine{shown.length !== 1 ? "s" : ""}
+          </span>
+          {filter && (
+            <button
+              onClick={() => setFilter(null)}
+              className="ml-auto flex h-[30px] items-center gap-1.5 rounded-[3px] bg-primary/15 px-2.5 text-[10px] font-black uppercase tracking-wider text-primary ring-1 ring-primary/50 transition-all active:scale-95"
+            >
+              {filter}
+              <X className="size-3" />
+            </button>
+          )}
+          <button
+            onClick={() => setShowFilter(true)}
+            aria-label="Filtrer par groupe musculaire"
+            className={`flex h-[30px] w-[30px] items-center justify-center rounded-[3px] ring-1 transition-all active:scale-95 ${
+              filter ? "" : "ml-auto"
+            } bg-secondary/30 text-muted-foreground ring-border hover:text-primary`}
+          >
+            <Funnel className="size-3.5" />
+          </button>
+        </div>
+      )}
+
+      <Sheet open={showFilter} onOpenChange={setShowFilter}>
+        <SheetContent side="bottom" className="rounded-t-3xl border-t-2 border-t-primary/20">
+          <SheetHeader>
+            <SheetTitle className="text-lg font-black tracking-tight">Filtrer par groupe</SheetTitle>
+            <SheetDescription className="text-xs">
+              Le classement se recalcule dans le groupe choisi.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="grid grid-cols-3 gap-2 px-4 pb-8">
+            {[null, ...groups].map((g) => {
+              const active = filter === g;
+              return (
+                <button
+                  key={g ?? "tout"}
+                  onClick={() => {
+                    setFilter(g);
+                    setShowFilter(false);
+                  }}
+                  className={`flex h-11 items-center justify-center rounded-[3px] px-1 text-[11px] font-black uppercase tracking-wide transition-all active:scale-95 ${
+                    active
+                      ? "bg-gradient-orange-intense text-black shadow-[2px_2px_0_oklch(0_0_0/0.5)]"
+                      : "bg-secondary/30 text-muted-foreground ring-1 ring-border hover:text-primary"
+                  }`}
+                >
+                  <span className="truncate">{g ?? "Tout"}</span>
+                </button>
+              );
+            })}
+          </div>
+        </SheetContent>
+      </Sheet>
+      {shown.map((ex, i) => (
         <Link key={ex.id} href={`/exercises/${ex.id}`} className="block">
           <Card className="card-gradient-border card-hover">
             <CardContent className="flex items-center gap-3 py-3">
@@ -97,6 +200,43 @@ export function ExerciseRanking() {
 
               <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
             </CardContent>
+
+            {/* Le Gardien en un coup d'œil : qui garde la machine, jusqu'à
+                quand, et le prix de la magnésie pour le libérer avant. */}
+            {ex.guardian && (
+              <div
+                className={`mx-4 -mb-1 -mt-3 flex items-center gap-1.5 rounded-[3px] border ${GUARDIAN_TINT[ex.guardian.rarity].border} bg-black/40 px-1.5 py-0.5`}
+              >
+                {ex.guardian.imageUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={ex.guardian.imageUrl}
+                    alt=""
+                    className={`size-[17px] shrink-0 rounded-[2px] border ${GUARDIAN_TINT[ex.guardian.rarity].border} object-cover object-top`}
+                  />
+                )}
+                <span
+                  className={`truncate text-[10px] font-black ${GUARDIAN_TINT[ex.guardian.rarity].text}`}
+                >
+                  {ex.guardian.name}
+                </span>
+                {ex.guardian.unlockAt ? (
+                  <>
+                    <span className="ml-auto shrink-0 font-mono text-[9px] text-muted-foreground">
+                      → {frDate(ex.guardian.unlockAt)}
+                    </span>
+                    <span className="flex shrink-0 items-center gap-0.5 rounded-[3px] border border-sky-400/35 bg-sky-500/10 px-1 font-mono text-[9px] font-black text-sky-300">
+                      <Sparkles className="size-2.5" />
+                      {ex.guardian.unbindPrice}
+                    </span>
+                  </>
+                ) : (
+                  <span className="ml-auto shrink-0 font-mono text-[9px] text-muted-foreground">
+                    libre
+                  </span>
+                )}
+              </div>
+            )}
           </Card>
         </Link>
       ))}

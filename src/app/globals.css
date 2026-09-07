@@ -493,3 +493,49 @@
       inset 0 0 12px rgba(255, 255, 255, 0.06);
   }
 }
+
+/* L'aura du Gardien : le bloc d'exercice s'encercle à la rareté de sa
+   carte — plus elle est haute, plus le cadre rayonne. Le commun reste
+   card-gradient-border, très banal : c'est voulu. Hors @layer : ces
+   cadres doivent battre bg-card et ring-1 du composant Card, et Tailwind
+   ne doit jamais les purger. */
+.card-ring-mythic {
+  position: relative;
+  border: 3px solid transparent;
+  background:
+    linear-gradient(var(--card), var(--card)) padding-box,
+    conic-gradient(from 210deg, #fb7185, #f9a8d4 25%, #fcd34d 50%, #c084fc 75%, #fb7185) border-box;
+  box-shadow:
+    4px 4px 0 oklch(0 0 0 / 0.5),
+    0 0 30px -6px rgba(251, 113, 133, 0.6);
+}
+.card-ring-legendary {
+  position: relative;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--card), var(--card)) padding-box,
+    linear-gradient(135deg, #fde68a, #b45309 45%, #fcd34d 75%, #fde68a) border-box;
+  box-shadow:
+    4px 4px 0 oklch(0 0 0 / 0.5),
+    0 0 18px -6px rgba(251, 191, 36, 0.4);
+}
+.card-ring-epic {
+  position: relative;
+  border: 1px solid rgba(167, 139, 250, 0.65);
+  background: var(--card);
+  box-shadow:
+    4px 4px 0 oklch(0 0 0 / 0.5),
+    0 0 12px -6px rgba(167, 139, 250, 0.35);
+}
+.card-ring-rare {
+  position: relative;
+  border: 1px solid rgba(125, 211, 252, 0.4);
+  background: var(--card);
+  box-shadow: 4px 4px 0 oklch(0 0 0 / 0.5);
+}
+.card-ring-uncommon {
+  position: relative;
+  border: 1px solid rgba(110, 231, 183, 0.35);
+  background: var(--card);
+  box-shadow: 4px 4px 0 oklch(0 0 0 / 0.5);
+}

@@ -22,7 +22,7 @@ import {
   Ticket as PTicket, Trash, TrendUp, Trophy as PTrophy, LockOpen,
   UserPlus as PUserPlus, Users as PUsers, Vault as PVault, Wall,
   X as PX, Lightning, Package as PPackage, Cards as PCards, Key as PKey,
-  ArrowsClockwise,
+  ArrowsClockwise, Funnel as PFunnel,
 } from "@phosphor-icons/react/dist/ssr";
 
 function bold(Icon: ComponentType<IconProps>) {
@@ -85,6 +85,7 @@ export const Settings = bold(GearSix);
 export const Shield = bold(PShield);
 export const ShieldOff = bold(ShieldSlash);
 export const Sparkles = bold(Sparkle);
+export const Funnel = bold(PFunnel);
 export const Star = bold(PStar);
 export const StickyNote = bold(Note);
 export const Sun = bold(PSun);

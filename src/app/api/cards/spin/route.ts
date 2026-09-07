@@ -3,7 +3,7 @@ import { users } from "@/lib/db/schema";
 import { and, eq, sql } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 import { buildWheel, type Charges } from "@/lib/powers";
-import { loadCharges, saveCharges } from "@/lib/guardians";
+import { loadCharges } from "@/lib/guardians";
 
 // Roue d'un jeton spécial : convertit en jetons normaux. La table de base
 // (×1 à ×4) peut être transformée par les sorts des Gardiens : la Roue
@@ -38,15 +38,8 @@ export async function POST() {
 
   const charges = await loadCharges(auth.userId);
   const reward = rollSpin(charges);
-  // La roue consomme ses tickets et ses sorts, et seulement les siens.
-  await saveCharges(auth.userId, {
-    ...charges,
-    wheel_x3: 0,
-    wheel_no_x1: 0,
-    wheel_min2: 0,
-    wheel_34: 0,
-    qilin_wheel: 0,
-  });
+  // Les sorts de roue tiennent jusqu'à la prochaine clôture : une roue
+  // transformée le reste pour tous tes jetons spéciaux de la fournée.
 
   const [updatedUser] = await db
     .update(users)

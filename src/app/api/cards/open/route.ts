@@ -10,8 +10,8 @@ import {
 import { and, eq, sql } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 import { rollRarityForPack, PACK_TYPES, PACK_CATEGORY_PROB_POKEMON, type PackType } from "@/lib/pack-types";
-import { HAT_DIRECTIONS, buildPackHat, innerPokemonProb, type Charges } from "@/lib/powers";
-import { loadCharges, saveCharges } from "@/lib/guardians";
+import { buildPackHat, innerPokemonProb, type Charges } from "@/lib/powers";
+import { loadCharges } from "@/lib/guardians";
 import { talentOf } from "@/lib/talents";
 
 // Hiérarchie de désirabilité des packs, pour le Passe-Mondes de Hoopa.
@@ -51,28 +51,6 @@ function rollPackTypeFromHat(charges: Charges): PackType {
     if (PACK_RANK[second] > PACK_RANK[pick]) pick = second;
   }
   return pick;
-}
-
-// Consommation : le chapeau se vide à l'ouverture. La Banquise préserve
-// jusqu'à N tickets par direction ; le Pardon des Abysses (Léviathan)
-// épargne tout le chapeau si le pack tiré est un Basique.
-function consumeHat(charges: Charges, packType: PackType): Charges {
-  const next: Charges = { ...charges };
-  // Sorts à un coup : consommés quoi qu'il arrive.
-  next.no_basic = 0;
-  next.hoopa_double = 0;
-  if (packType === "basic" && (charges.leviathan_guard ?? 0) > 0) {
-    next.leviathan_guard = 0;
-    return next; // le chapeau entier survit
-  }
-  next.leviathan_guard = 0;
-  const preserve = charges.banquise ?? 0;
-  for (const d of HAT_DIRECTIONS) {
-    const current = next[d] ?? 0;
-    next[d] = Math.min(current, preserve);
-  }
-  next.banquise = 0;
-  return next;
 }
 
 // Debug knobs (leave unset in prod):
@@ -115,10 +93,12 @@ export async function POST() {
     tokensRemaining = decremented.tokens;
   }
 
-  // Énergie des Gardiens : chargée aux clôtures de séance, consommée ici.
+  // Énergie des Gardiens : chargée aux clôtures de séance, et valable pour
+  // TOUS les packs jusqu'à la prochaine clôture — rien ne se consomme ici,
+  // c'est resetHatForNewSession qui remplace l'énergie à la séance suivante.
   const charges = await loadCharges(auth.userId);
-  // Les odds de CE tirage, photographiées avant consommation : la modale
-  // d'ouverture les affiche — l'impact des cartes, noir sur blanc.
+  // Les odds de CE tirage, photographiées : la modale d'ouverture les
+  // affiche — l'impact des cartes, noir sur blanc.
   const hatUsed = buildPackHat(charges);
   const hatTotal = Object.values(hatUsed).reduce((a, b) => a + b, 0);
   const oddsUsed = {
@@ -135,10 +115,10 @@ export async function POST() {
       : Math.random() < innerPokemonProb(PACK_CATEGORY_PROB_POKEMON[packType], charges)
         ? "pokemon"
         : "animal";
-  // La Curée se lit avant consommation ; le reste du chapeau se vide selon
-  // les pactes (Banquise, Pardon des Abysses).
   const cureeCharges = charges.curee ?? 0;
-  await saveCharges(auth.userId, consumeHat(charges, packType));
+  // Le Pardon des Abysses lira ce type à la clôture : un dernier pack
+  // Basique épargne l'énergie de la remise à zéro.
+  await db.update(users).set({ lastPackType: packType }).where(eq(users.id, auth.userId));
 
   if (category === "animal") {
     let picked;
@@ -187,12 +167,8 @@ export async function POST() {
     let shardsGranted = 0;
     if (isDuplicate) {
       // La Curée : une charge stockée double le fragment du doublon.
+      // La Curée tient jusqu'à la prochaine clôture : pas de décompte ici.
       const bonus = cureeCharges > 0 ? 1 : 0;
-      if (bonus) {
-        const after = await loadCharges(auth.userId);
-        after.curee = Math.max(0, (after.curee ?? 0) - 1);
-        await saveCharges(auth.userId, after);
-      }
       shardsGranted = 1 + bonus;
       await db
         .insert(userShards)
@@ -267,12 +243,8 @@ export async function POST() {
   const isDuplicate = (card?.count ?? 1) > 1;
   let shardsGranted = 0;
   if (isDuplicate) {
+    // La Curée tient jusqu'à la prochaine clôture : pas de décompte ici.
     const bonus = cureeCharges > 0 ? 1 : 0;
-    if (bonus) {
-      const after = await loadCharges(auth.userId);
-      after.curee = Math.max(0, (after.curee ?? 0) - 1);
-      await saveCharges(auth.userId, after);
-    }
     shardsGranted = 1 + bonus;
     await db
       .insert(userShards)
