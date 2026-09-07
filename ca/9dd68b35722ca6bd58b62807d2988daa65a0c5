@@ -1,0 +1,22 @@
+src/app/api/pactes/route.ts
+  s_6dc77352c5bc09::t_20cd654aa86406 1-29
+src/components/home-extras.tsx
+  s_6dc77352c5bc09::t_d5b429a1e6736a 866
+  s_6dc77352c5bc09::t_da17f282c90c65 55,793-865,867-925
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "ca9dd68b35722ca6bd58b62807d2988daa65a0c5",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
