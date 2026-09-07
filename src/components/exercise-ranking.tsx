@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ChevronRight, Dumbbell, Sparkles } from "@/components/icons";
+import { MUSCLE_GROUPS } from "@/lib/muscle-groups";
 import type { Rarity } from "@/lib/rarities";
 
 interface RankedGuardian {
@@ -44,6 +45,8 @@ function frDate(iso: string): string {
 
 export function ExerciseRanking() {
   const [exercises, setExercises] = useState<RankedExercise[] | null>(null);
+  // Le filtre par groupe musculaire — null : tout le classement.
+  const [filter, setFilter] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/exercises/frequent?limit=all")
@@ -79,11 +82,38 @@ export function ExerciseRanking() {
     );
   }
 
-  const maxCount = exercises[0].useCount;
+  // Les chips du filtre : seulement les groupes réellement présents dans le
+  // classement, dans l'ordre canonique — le cardio matche aussi par kind.
+  const inGroup = (ex: RankedExercise, g: string) =>
+    ex.muscleGroups.includes(g) || (g === "Cardio" && ex.kind === "cardio");
+  const groups = MUSCLE_GROUPS.filter((g) => exercises.some((ex) => inGroup(ex, g)));
+  const shown = filter ? exercises.filter((ex) => inGroup(ex, filter)) : exercises;
+  // La barre d'usage se recalcule dans le groupe : un classement par famille.
+  const maxCount = shown[0]?.useCount ?? 1;
 
   return (
     <div className="space-y-2">
-      {exercises.map((ex, i) => (
+      {groups.length > 1 && (
+        <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-2 [scrollbar-width:none]">
+          {[null, ...groups].map((g) => {
+            const active = filter === g;
+            return (
+              <button
+                key={g ?? "tout"}
+                onClick={() => setFilter(g)}
+                className={`shrink-0 rounded-[3px] px-3 py-1.5 text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 ${
+                  active
+                    ? "bg-gradient-orange-intense text-black shadow-[2px_2px_0_oklch(0_0_0/0.5)]"
+                    : "bg-secondary/30 text-muted-foreground ring-1 ring-border hover:text-primary"
+                }`}
+              >
+                {g ?? "Tout"}
+              </button>
+            );
+          })}
+        </div>
+      )}
+      {shown.map((ex, i) => (
         <Link key={ex.id} href={`/exercises/${ex.id}`} className="block">
           <Card className="card-gradient-border card-hover">
             <CardContent className="flex items-center gap-3 py-3">
