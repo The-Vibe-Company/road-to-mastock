@@ -1,0 +1,21 @@
+src/components/exercise-ranking.tsx
+  s_6dc77352c5bc09::t_d6e5ea59db436d 85-92,96-116
+  s_6dc77352c5bc09::t_00f9e488c19026 8
+  s_6dc77352c5bc09::t_be1db379f70f3f 48-49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "2041e76f540736532fa84b1dc1be5345f999e9cd",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
