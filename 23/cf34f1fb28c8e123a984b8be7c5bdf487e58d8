@@ -1,0 +1,37 @@
+src/components/logout-button.tsx
+  s_6dc77352c5bc09::t_cc8cb425d84701 7,16
+src/proxy.ts
+  s_6dc77352c5bc09::t_ea6ac0d277b5d6 11,18-24,64
+src/app/login/page.tsx
+  s_6dc77352c5bc09::t_f7cef17d2251e9 3,9,17-25,28-49,71,79-88
+  s_6dc77352c5bc09::t_1bfddbed6c7094 26-27
+  s_6dc77352c5bc09::t_891102af9dfce6 89
+src/app/register/page.tsx
+  s_6dc77352c5bc09::t_cc8cb425d84701 8,39
+src/lib/auth.ts
+  s_6dc77352c5bc09::t_f98fba56eb59f2 7-10,16,31-56,64,67
+src/lib/remember.ts
+  s_6dc77352c5bc09::t_be4b8ead8cfb8b 1-27
+src/app/api/auth/refresh/route.ts
+  s_6dc77352c5bc09::t_fcae016bed4fdf 1-29
+src/app/api/auth/login/route.ts
+  s_6dc77352c5bc09::t_b51955d3562f5f 5,43-45
+src/app/api/auth/register/route.ts
+  s_6dc77352c5bc09::t_353c6a9a2b98b5 5,66-69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "23cf34f1fb28c8e123a984b8be7c5bdf487e58d8",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
