@@ -24,6 +24,9 @@ export const users = pgTable("users", {
   theme: text("theme").default("dark"),
   cardsTokens: integer("cards_tokens").notNull().default(0),
   cardsSpecialTokens: integer("cards_special_tokens").notNull().default(0),
+  // Le type du dernier pack ouvert — le Pardon des Abysses (Léviathan) le lit
+  // à la clôture : un dernier pack Basique épargne l'énergie de la remise à zéro.
+  lastPackType: text("last_pack_type"),
   // ── Privilèges des Talents cachés ──
   // Totem (aura de Typhon) : carte affichée à côté du nom chez les amis.
   totemCategory: text("totem_category"),

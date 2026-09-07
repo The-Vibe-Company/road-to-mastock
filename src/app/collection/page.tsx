@@ -2,8 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Flame, PawPrint, Zap, Vault, Star, Package } from "@/components/icons";
+import { Flame, PawPrint, Zap, Vault, Star, Package, Sparkles, Shield, BookOpen, ChevronDown, ChevronUp, Funnel } from "@/components/icons";
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { BackButton } from "@/components/back-button";
 import { PackOpenModal, type OpenResult } from "@/components/pack-open-modal";
 import { CreatureCard } from "@/components/creature-card";
@@ -24,7 +31,18 @@ import { ThroneBackdrop } from "@/components/throne-backdrop";
 import { Spinner } from "@/components/spinner";
 
 type Category = "animal" | "pokemon";
+// La vue catégorie : « Tous » mélange les deux classeurs.
+type CatView = "all" | Category;
 type Filter = "all" | Rarity;
+// Les critères du tiroir : cumulables, chaque carte doit tous les cocher.
+type Crit = "magnesie" | "talent" | "forge" | "guardian";
+
+const CRIT_DEFS: { key: Crit; label: string; hint: string; Icon: typeof Flame; tint: string; ring: string }[] = [
+  { key: "magnesie", label: "Magnésie", hint: "la carte rapporte de la magnésie à l'éveil", Icon: Sparkles, tint: "text-sky-300", ring: "ring-sky-400/40 bg-sky-500/10" },
+  { key: "talent", label: "Grimoire", hint: "la carte porte un talent caché", Icon: BookOpen, tint: "text-violet-300", ring: "ring-violet-400/40 bg-violet-500/10" },
+  { key: "forge", label: "Forge", hint: "son pouvoir nourrit la jauge de Forge", Icon: Flame, tint: "text-primary", ring: "ring-primary/40 bg-primary/10" },
+  { key: "guardian", label: "Gardiens", hint: "actuellement postée sur une machine", Icon: Shield, tint: "text-amber-300", ring: "ring-amber-400/40 bg-amber-500/10" },
+];
 
 const TIER_DOT: Record<Rarity, string> = {
   common:    "bg-zinc-400",
@@ -53,8 +71,16 @@ const TIER_FILL: Record<Rarity, string> = {
   mythic:    "bg-rose-500/15 ring-rose-500/70",
 };
 
+interface CardTraits {
+  magnesie: boolean;
+  talent: boolean;
+  forge: boolean;
+  guardian: boolean;
+}
+
 interface AnimalCard {
   id: number;
+  traits?: CardTraits;
   count: number;
   firstObtainedAt: string;
   slug: string;
@@ -74,6 +100,7 @@ interface AnimalCard {
 
 interface PokemonCard {
   id: number;
+  traits?: CardTraits;
   count: number;
   firstObtainedAt: string;
   slug: string;
@@ -117,8 +144,13 @@ function StableCount({ owned, total }: { owned: number; total: number }) {
 export default function CollectionPage() {
   const [data, setData] = useState<CollectionData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState<Category>("animal");
+  const [activeCategory, setActiveCategory] = useState<CatView>("all");
   const [activeFilter, setActiveFilter] = useState<Filter>("all");
+  // Le panneau ▾ : jetons spéciaux, énergie, progression, Forge.
+  const [detailOpen, setDetailOpen] = useState(false);
+  // Le tiroir des critères, et les critères cochés.
+  const [showCrits, setShowCrits] = useState(false);
+  const [crits, setCrits] = useState<Crit[]>([]);
   const [opening, setOpening] = useState(false);
   const [fusing, setFusing] = useState<Rarity | null>(null);
   const [converting, setConverting] = useState<Rarity | null>(null);
@@ -192,7 +224,7 @@ export default function CollectionPage() {
       const r = await fetch("/api/cards/fusion", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fromRarity: rarity, category: activeCategory }),
+        body: JSON.stringify({ fromRarity: rarity, category: activeCategory === "all" ? "animal" : activeCategory }),
       });
       if (!r.ok) return;
       setModalResult(await r.json());
@@ -209,7 +241,7 @@ export default function CollectionPage() {
       const r = await fetch("/api/cards/convert", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rarity, category: activeCategory }),
+        body: JSON.stringify({ rarity, category: activeCategory === "all" ? "animal" : activeCategory }),
       });
       if (!r.ok) return;
       await refresh();
@@ -218,8 +250,8 @@ export default function CollectionPage() {
     }
   };
 
-  const openDetail = (c: AnimalCard | PokemonCard) => {
-    if (activeCategory === "pokemon") {
+  const openDetail = (c: Tagged) => {
+    if (c.cat === "pokemon") {
       const p = c as PokemonCard;
       setDetailCreature({
         kind: "pokemon", id: p.id, slug: p.slug, name: p.name, nickname: p.nickname, rarity: p.rarity,
@@ -266,25 +298,52 @@ export default function CollectionPage() {
     );
   }
 
-  const section = activeCategory === "animal" ? data.animals : data.pokemon;
-  const cardsByRarity: Record<Rarity, (AnimalCard | PokemonCard)[]> = {
+  // Chaque carte porte sa catégorie : la vue « Tous » mélange les classeurs.
+  type Tagged = (AnimalCard | PokemonCard) & { cat: Category };
+  const animalsTagged: Tagged[] = data.animals.cards.map((c) => ({ ...c, cat: "animal" as const }));
+  const pokemonTagged: Tagged[] = data.pokemon.cards.map((c) => ({ ...c, cat: "pokemon" as const }));
+  const viewCards: Tagged[] =
+    activeCategory === "all"
+      ? [...animalsTagged, ...pokemonTagged]
+      : activeCategory === "animal"
+        ? animalsTagged
+        : pokemonTagged;
+  // Les critères cochés : la carte doit tous les cocher.
+  const passCrits = (c: Tagged) => crits.every((k) => c.traits?.[k]);
+  const shownCards = crits.length > 0 ? viewCards.filter(passCrits) : viewCards;
+  const critCount = (k: Crit) => viewCards.filter((c) => c.traits?.[k]).length;
+
+  const cardsByRarity: Record<Rarity, Tagged[]> = {
     common: [], uncommon: [], rare: [], epic: [], legendary: [], mythic: [],
   };
-  for (const c of section.cards) cardsByRarity[c.rarity].push(c);
+  for (const c of shownCards) cardsByRarity[c.rarity].push(c);
 
-  const totalUnique = section.cards.length;
-  const totalAll = Object.values(section.totalsByRarity).reduce((a, b) => a + b, 0);
-  const fusionRarity = activeFilter !== "all" ? activeFilter : null;
+  // Totaux du catalogue pour la vue : somme des deux classeurs en « Tous ».
+  const totalsView: Record<Rarity, number> = { ...data.animals.totalsByRarity };
+  for (const r of RARITIES) {
+    totalsView[r] =
+      activeCategory === "all"
+        ? (data.animals.totalsByRarity[r] || 0) + (data.pokemon.totalsByRarity[r] || 0)
+        : activeCategory === "animal"
+          ? data.animals.totalsByRarity[r] || 0
+          : data.pokemon.totalsByRarity[r] || 0;
+  }
+  const totalUnique = viewCards.length;
+  const totalAll = Object.values(totalsView).reduce((a, b) => a + b, 0);
+  // Fragments et fusion : par classeur — masqués dans la vue « Tous ».
+  const section = activeCategory === "pokemon" ? data.pokemon : data.animals;
+  const fusionRarity = activeCategory !== "all" && activeFilter !== "all" ? activeFilter : null;
   const fusionShards = fusionRarity ? (section.shards[fusionRarity] || 0) : 0;
   const canFuse = fusionRarity ? FUSION_NEXT[fusionRarity] !== null && fusionShards >= FUSION_COST : false;
+  const forgePoints = data.charges?.forge ?? 0;
 
   // Tri par défaut : le numéro de carte, comme un vrai classeur.
   // L'Inclassable (talent) ajoute ses tris absurdes par-dessus.
-  const numberOf = (c: AnimalCard | PokemonCard) =>
-    activeCategory === "pokemon"
+  const numberOf = (c: Tagged) =>
+    c.cat === "pokemon"
       ? (c as PokemonCard).pokedexNumber ?? Number.MAX_SAFE_INTEGER
       : (c as AnimalCard).cardNumber ?? Number.MAX_SAFE_INTEGER;
-  const sortCards = (cards: (AnimalCard | PokemonCard)[]) => {
+  const sortCards = (cards: Tagged[]) => {
     const sorted = [...cards];
     if (sortMode === "rarity") sorted.sort((a, b) => numberOf(a) - numberOf(b));
     if (sortMode === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
@@ -295,10 +354,10 @@ export default function CollectionPage() {
     return sorted;
   };
 
-  const renderGrid = (cards: (AnimalCard | PokemonCard)[]) => (
+  const renderGrid = (cards: Tagged[]) => (
     <div className="grid grid-cols-3 gap-2.5">
       {sortCards(cards).map((c) => {
-        const isPokemon = activeCategory === "pokemon";
+        const isPokemon = c.cat === "pokemon";
         const number = isPokemon
           ? (c as PokemonCard).pokedexNumber
           : (c as AnimalCard).cardNumber;
@@ -313,7 +372,7 @@ export default function CollectionPage() {
               rarity={c.rarity}
               imageUrl={c.imageUrl}
               number={number}
-              category={activeCategory}
+              category={c.cat}
               primaryType={isPokemon ? (c as PokemonCard).primaryType : undefined}
               secondaryType={isPokemon ? (c as PokemonCard).secondaryType : undefined}
               count={c.count}
@@ -327,7 +386,7 @@ export default function CollectionPage() {
     </div>
   );
 
-  const tabCards = activeFilter === "all" ? section.cards : cardsByRarity[activeFilter];
+  const tabCards = activeFilter === "all" ? shownCards : cardsByRarity[activeFilter];
 
   return (
     <div className="relative min-h-dvh px-4 pb-12 pt-6">
@@ -371,134 +430,180 @@ export default function CollectionPage() {
         </div>
       </header>
 
-      {/* Hero panel */}
-      <div className="card-gradient-border relative mb-6 overflow-hidden rounded-3xl">
-        <div className="relative flex items-stretch gap-4 px-5 pb-4 pt-5">
-          <div className="flex flex-col justify-center">
-            <p className="text-[9px] font-black uppercase tracking-[0.25em] text-muted-foreground">
-              Jetons
-            </p>
-            <p className="font-mono text-[3.5rem] font-black leading-none tracking-tighter tabular-nums text-primary">
-              {data.tokens.toString().padStart(2, "0")}
-            </p>
-          </div>
-          <div className="my-1 w-px bg-border" />
-          <div className="flex flex-1 flex-col justify-center">
-            <p className="text-xs font-black tracking-tight">
-              {data.tokens > 0 ? "Pack disponible" : "Aucun pack"}
-            </p>
-            <p className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">
-              Pack surprise — basic, animal, pokémon, premium ou mythique
-            </p>
-            <Button
-              onClick={handleOpenPack}
-              disabled={data.tokens < 1 || opening}
-              className="mt-3 h-10 self-start rounded-xl bg-gradient-orange-intense px-4 text-xs font-black uppercase tracking-wider text-black disabled:opacity-50"
-            >
-              <Package className="size-3.5" />
-              {opening ? "Ouverture..." : "Ouvrir un pack"}
-            </Button>
-          </div>
+      {/* La barre d'action : tout le rituel du pack sur UNE ligne. */}
+      <div className="mb-2 flex items-stretch gap-2">
+        <div className="flex min-w-[52px] flex-col items-center justify-center rounded-[3px] bg-secondary/30 ring-1 ring-border">
+          <span className="font-mono text-lg font-black leading-none tabular-nums text-primary">
+            {data.tokens}
+          </span>
+          <span className="mt-0.5 text-[7px] font-black tracking-[0.16em] text-muted-foreground">
+            JETONS
+          </span>
         </div>
-
-        {/* Special token row */}
+        <Button
+          onClick={handleOpenPack}
+          disabled={data.tokens < 1 || opening}
+          className="h-auto flex-1 rounded-[3px] bg-gradient-orange-intense text-xs font-black uppercase tracking-wider text-black disabled:opacity-50"
+        >
+          <Package className="size-3.5" />
+          {opening ? "Ouverture..." : "Ouvrir un pack"}
+        </Button>
         {data.specialTokens > 0 && (
-          <div className="relative mx-5 mb-3 flex items-center gap-3 rounded-2xl bg-amber-500/10 px-3 py-2.5 ring-1 ring-amber-500/40 shadow-[0_0_28px_-8px_rgba(251,191,36,0.6)]">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-amber-500/20 ring-1 ring-amber-500/50">
-              <Star className="size-4 text-amber-300" strokeWidth={2.5} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-300/80">
-                Jeton{data.specialTokens > 1 ? "s" : ""} spécial{data.specialTokens > 1 ? "ux" : ""} ×{data.specialTokens}
-              </p>
-              <p className="text-[10px] text-muted-foreground leading-tight">
-                Tourne la roue : 1, 2, 3 ou 4 jetons normaux
-              </p>
-            </div>
-            <Button
-              onClick={() => setShowSpinWheel(true)}
-              className="h-9 rounded-lg bg-amber-400 px-3 text-[10px] font-black uppercase tracking-wider text-black hover:bg-amber-300"
-            >
-              Tourner
-            </Button>
-          </div>
+          <button
+            onClick={() => setShowSpinWheel(true)}
+            title="Jeton spécial — tourne la roue pour des jetons normaux"
+            className="flex min-w-[44px] items-center justify-center gap-1 rounded-[3px] bg-amber-500/10 text-xs font-black text-amber-300 ring-1 ring-amber-500/50 transition-all active:scale-95"
+          >
+            <Star className="size-3.5" strokeWidth={2.5} />
+            {data.specialTokens}
+          </button>
         )}
-
-        {/* Le chapeau : l'énergie des Gardiens change les odds du prochain pack */}
-        {data.odds && data.charges && Object.values(data.charges).some((n) => n > 0) && (
-          <div className="relative mx-5 mb-3 rounded-2xl bg-secondary/30 px-3 py-2.5 ring-1 ring-border">
-            <p className="mb-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-primary/70">
-              Énergie des gardiens — prochain pack
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {(
-                [
-                  ["basic", "Basique", PACK_TYPE_WEIGHTS.basic],
-                  ["animal_only", "Animal", PACK_TYPE_WEIGHTS.animal_only],
-                  ["pokemon_only", "Pokémon", PACK_TYPE_WEIGHTS.pokemon_only],
-                  ["premium", "Premium", PACK_TYPE_WEIGHTS.premium],
-                  ["mythic", "Mythique", PACK_TYPE_WEIGHTS.mythic],
-                ] as [PackType, string, number][]
-              ).map(([key, label, base]) => {
-                const pct = data.odds!.hat[key];
-                const boosted = pct > base;
-                const nerfed = pct < base;
-                return (
-                  <span
-                    key={key}
-                    className={`rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold tabular-nums ring-1 ${
-                      boosted
-                        ? "bg-emerald-500/10 text-emerald-300 ring-emerald-500/30"
-                        : nerfed
-                          ? "bg-red-500/10 text-red-300 ring-red-500/30"
-                          : "bg-secondary/50 text-muted-foreground ring-transparent"
-                    }`}
-                  >
-                    {label}{" "}
-                    {boosted || nerfed ? (
-                      <>
-                        <span className="text-muted-foreground/50 line-through decoration-1">{base}%</span>
-                        {"\u2009→\u2009"}
-                        {pct}%
-                      </>
-                    ) : (
-                      <>{pct}%</>
-                    )}
-                  </span>
-                );
-              })}
-              {(data.odds.wheel["4"] ?? 1) > 1 && (
-                <span className="rounded-md bg-amber-500/15 px-1.5 py-0.5 font-mono text-[10px] font-bold tabular-nums text-amber-300">
-                  Roue ×4 : {data.odds.wheel["4"]}%
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-
-        <div className="relative px-5 pb-4">
-          <div className="mb-1.5 flex items-center justify-between text-[10px] font-mono tabular-nums uppercase tracking-widest text-muted-foreground">
-            <span>Progression</span>
-            <span>
-              <span className="text-foreground/80">{totalUnique}</span> / {totalAll}
-            </span>
-          </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-secondary/40">
-            <div
-              className="h-full bg-gradient-orange-intense transition-all duration-500"
-              style={{ width: `${Math.round((totalUnique / Math.max(totalAll, 1)) * 100)}%` }}
-            />
-          </div>
-        </div>
+        <button
+          onClick={() => (forgePoints >= 20 ? handleForgeWheel() : setDetailOpen((v) => !v))}
+          title={
+            forgePoints >= 20
+              ? "Roue de la Forge — un fragment garanti : 42 % commun, 30 % peu commun, 18 % rare, 10 % épique"
+              : "La Forge — les Gardiens forgerons la remplissent à chaque éveil"
+          }
+          className={`flex min-w-[52px] flex-col items-center justify-center rounded-[3px] ring-1 transition-all active:scale-95 ${
+            forgePoints >= 20
+              ? "animate-pulse bg-primary/20 text-primary ring-primary/50"
+              : "bg-secondary/30 text-muted-foreground ring-border"
+          }`}
+        >
+          <span className="font-mono text-[10px] font-black tabular-nums">
+            {forging ? "..." : `${forgePoints}/20`}
+          </span>
+          <span className="text-[7px] font-black tracking-[0.14em]">
+            {forgePoints >= 20 ? "ROUE !" : "FORGE"}
+          </span>
+        </button>
+        <button
+          onClick={() => setDetailOpen((v) => !v)}
+          aria-label="Détail des tirages"
+          className="flex w-8 items-center justify-center rounded-[3px] bg-secondary/30 text-muted-foreground ring-1 ring-border transition-all active:scale-95"
+        >
+          {detailOpen ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+        </button>
       </div>
 
-      {/* Category segmented control */}
-      <div className="mb-3 grid grid-cols-2 gap-1 rounded-2xl bg-secondary/30 p-1">
-        {(["animal", "pokemon"] as Category[]).map((cat) => {
+      {/* Le panneau détail : l'explication des prochains tirages — AU-DESSUS
+          des filtres, qui restent collés aux cartes. */}
+      {detailOpen && (
+        <div className="mb-2 space-y-4 rounded-[3px] bg-secondary/20 p-3.5 ring-1 ring-border">
+          {data.odds && data.charges && Object.values(data.charges).some((n) => n > 0) && (
+            <div>
+              <p className="mb-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-primary/70">
+                Énergie des gardiens — tes prochains packs
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {(
+                  [
+                    ["basic", "Basique", PACK_TYPE_WEIGHTS.basic],
+                    ["animal_only", "Animal", PACK_TYPE_WEIGHTS.animal_only],
+                    ["pokemon_only", "Pokémon", PACK_TYPE_WEIGHTS.pokemon_only],
+                    ["premium", "Premium", PACK_TYPE_WEIGHTS.premium],
+                    ["mythic", "Mythique", PACK_TYPE_WEIGHTS.mythic],
+                  ] as [PackType, string, number][]
+                ).map(([key, label, base]) => {
+                  const pct = data.odds!.hat[key];
+                  const boosted = pct > base;
+                  const nerfed = pct < base;
+                  return (
+                    <span
+                      key={key}
+                      className={`rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold tabular-nums ring-1 ${
+                        boosted
+                          ? "bg-emerald-500/10 text-emerald-300 ring-emerald-500/30"
+                          : nerfed
+                            ? "bg-red-500/10 text-red-300 ring-red-500/30"
+                            : "bg-secondary/50 text-muted-foreground ring-transparent"
+                      }`}
+                    >
+                      {label}{" "}
+                      {boosted || nerfed ? (
+                        <>
+                          <span className="text-muted-foreground/50 line-through decoration-1">{base}%</span>
+                          {"\u2009→\u2009"}
+                          {pct}%
+                        </>
+                      ) : (
+                        <>{pct}%</>
+                      )}
+                    </span>
+                  );
+                })}
+                {(data.odds.wheel["4"] ?? 1) > 1 && (
+                  <span className="rounded-md bg-amber-500/15 px-1.5 py-0.5 font-mono text-[10px] font-bold tabular-nums text-amber-300">
+                    Roue ×4 : {data.odds.wheel["4"]}%
+                  </span>
+                )}
+              </div>
+              <p className="mt-1.5 text-[10px] leading-relaxed text-muted-foreground">
+                Valable pour TOUS tes packs — la prochaine clôture de séance remplace
+                cette énergie par celle de tes nouveaux éveils.
+              </p>
+            </div>
+          )}
+
+          <div>
+            <div className="mb-1.5 flex items-center justify-between font-mono text-[10px] uppercase tabular-nums tracking-widest text-muted-foreground">
+              <span>Progression</span>
+              <span>
+                <span className="text-foreground/80">{totalUnique}</span> / {totalAll}
+              </span>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-secondary/40">
+              <div
+                className="h-full bg-gradient-orange-intense transition-all duration-500"
+                style={{ width: `${Math.round((totalUnique / Math.max(totalAll, 1)) * 100)}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <Flame className="size-4 shrink-0 text-primary" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-black uppercase tracking-widest text-primary/80">
+                La Forge
+              </p>
+              <div className="mt-1 flex h-1.5 w-full max-w-40 overflow-hidden rounded-full bg-secondary/60">
+                <div
+                  className="rounded-full bg-gradient-orange"
+                  style={{ width: `${Math.min(100, (forgePoints / 20) * 100)}%` }}
+                />
+              </div>
+            </div>
+            {forgePoints >= 20 ? (
+              <button
+                onClick={handleForgeWheel}
+                disabled={forging}
+                className="animate-pulse rounded-lg bg-primary/20 px-2.5 py-1.5 font-mono text-[10px] font-black uppercase tracking-wider text-primary ring-1 ring-primary/50 transition-all active:scale-95"
+              >
+                {forging ? "Elle tourne..." : "Lancer la Roue"}
+              </button>
+            ) : (
+              <span
+                className="font-mono text-[10px] font-black tabular-nums text-muted-foreground"
+                title="Les Gardiens forgerons la remplissent à chaque éveil — pleine, un fragment t'attend au tirage"
+              >
+                {forgePoints}/20
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* TOUT le filtrage sur une ligne : catégorie, raretés, critères. */}
+      <div className="mb-4 flex items-center gap-1.5">
+        {(
+          [
+            ["all", "Tous", null],
+            ["animal", "Animaux", PawPrint],
+            ["pokemon", "Pokémon", Zap],
+          ] as [CatView, string, typeof PawPrint | null][]
+        ).map(([cat, label, Icon]) => {
           const isActive = activeCategory === cat;
-          const sec = data[cat === "animal" ? "animals" : "pokemon"];
-          const Icon = cat === "animal" ? PawPrint : Zap;
-          const total = Object.values(sec.totalsByRarity).reduce((a, b) => a + b, 0);
           return (
             <button
               key={cat}
@@ -506,68 +611,52 @@ export default function CollectionPage() {
                 setActiveCategory(cat);
                 setActiveFilter("all");
               }}
-              className={`flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-black transition-colors ${
+              title={label}
+              className={`flex h-[30px] items-center justify-center gap-1 rounded-[3px] text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 ${
                 isActive
-                  ? "bg-gradient-orange-intense text-black shadow-lg"
-                  : "text-muted-foreground hover:bg-accent/50"
+                  ? "bg-gradient-orange-intense px-2.5 text-black shadow-[2px_2px_0_oklch(0_0_0/0.5)]"
+                  : "w-[30px] bg-secondary/30 text-muted-foreground ring-1 ring-border hover:text-primary"
               }`}
             >
-              <Icon className="size-4" strokeWidth={2.5} />
-              <span>{cat === "animal" ? "Animaux" : "Pokémon"}</span>
-              <span className={`opacity-70 ${isActive ? "text-black/70" : ""}`}>
-                <StableCount owned={sec.cards.length} total={total} />
-              </span>
+              {Icon ? <Icon className="size-3.5" strokeWidth={2.5} /> : isActive ? "Tous" : "∴"}
+              {isActive && Icon && label}
             </button>
           );
         })}
-      </div>
-
-      {/* Filter row — pills that expand only when active. One line, no scroll. */}
-      <div className="mb-5 flex items-center gap-1.5">
-        <button
-          onClick={() => setActiveFilter("all")}
-          className={`flex h-9 items-center gap-1.5 overflow-hidden rounded-xl text-xs font-bold transition-all active:scale-95 ${
-            activeFilter === "all"
-              ? "bg-primary px-3 text-black shadow-md shadow-primary/30"
-              : "size-9 justify-center bg-secondary/40 text-muted-foreground hover:bg-accent"
-          }`}
-          title={`Tout — ${section.cards.length}`}
-        >
-          <span className={`size-2 shrink-0 rounded-full ${activeFilter === "all" ? "bg-black" : "bg-primary"}`} />
-          {activeFilter === "all" && (
-            <>
-              <span>Tout</span>
-              <span className="font-mono tabular-nums opacity-70">{section.cards.length}</span>
-            </>
-          )}
-        </button>
+        <span className="mx-0.5 h-5 w-px shrink-0 bg-border" />
         {[...RARITIES].reverse().map((r) => {
           const isActive = activeFilter === r;
-          const owned = cardsByRarity[r].length;
-          const total = section.totalsByRarity[r] || 0;
           return (
             <button
               key={r}
-              onClick={() => setActiveFilter(r)}
-              className={`flex h-9 items-center gap-1.5 overflow-hidden rounded-xl text-xs font-bold transition-all active:scale-95 ${
+              onClick={() => setActiveFilter(isActive ? "all" : r)}
+              title={`${RARITY_LABELS[r]} — ${cardsByRarity[r].length}/${totalsView[r] || 0}`}
+              className={`flex h-[30px] w-[30px] items-center justify-center rounded-[3px] transition-all active:scale-95 ${
                 isActive
-                  ? `flex-1 justify-center px-3 ${TIER_FILL[r]} ring-1 ${TIER_TEXT[r]} shadow-md`
-                  : "size-9 justify-center bg-secondary/40 text-muted-foreground hover:bg-accent"
+                  ? `${TIER_FILL[r]} ring-1`
+                  : "bg-secondary/30 ring-1 ring-border hover:ring-foreground/30"
               }`}
-              title={`${RARITY_LABELS[r]} — ${owned}/${total}`}
             >
-              <span className={`size-2 shrink-0 rounded-full ${TIER_DOT[r]}`} />
-              {isActive && (
-                <>
-                  <span className="truncate">{RARITY_LABELS[r]}</span>
-                  <span className="font-mono tabular-nums opacity-70">
-                    {owned}/{total}
-                  </span>
-                </>
-              )}
+              <span className={`size-2 rounded-full ${TIER_DOT[r]}`} />
             </button>
           );
         })}
+        <button
+          onClick={() => setShowCrits(true)}
+          aria-label="Filtrer par critère"
+          className={`relative ml-auto flex h-[30px] w-[30px] items-center justify-center rounded-[3px] transition-all active:scale-95 ${
+            crits.length > 0
+              ? "bg-primary/15 text-primary ring-1 ring-primary/50"
+              : "bg-secondary/30 text-muted-foreground ring-1 ring-border hover:text-primary"
+          }`}
+        >
+          <Funnel className="size-3.5" />
+          {crits.length > 0 && (
+            <span className="absolute -right-1 -top-1 flex size-3.5 items-center justify-center rounded-full bg-primary font-mono text-[8px] font-black text-black">
+              {crits.length}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* L'Inclassable : le sélecteur de tris absurdes */}
@@ -625,42 +714,6 @@ export default function CollectionPage() {
         </div>
       )}
 
-      {/* La Forge : sa jauge est TOUJOURS là, même vide — pleine (20),
-          elle paie un tour de la Roue (un fragment garanti, au tirage). */}
-      {(
-        <div className="mb-3 flex items-center gap-2.5 rounded-2xl bg-secondary/30 px-4 py-2.5 ring-1 ring-border">
-          <Flame className="size-4 text-primary" />
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-black uppercase tracking-widest text-primary/80">
-              La Forge
-            </p>
-            <div className="mt-1 flex h-1.5 w-full max-w-40 overflow-hidden rounded-full bg-secondary/60">
-              <div
-                className="bg-gradient-orange rounded-full"
-                style={{ width: `${Math.min(100, ((data.charges?.forge ?? 0) / 20) * 100)}%` }}
-              />
-            </div>
-          </div>
-          {(data.charges?.forge ?? 0) >= 20 ? (
-            <button
-              onClick={handleForgeWheel}
-              disabled={forging}
-              className="animate-pulse rounded-lg bg-primary/20 px-2.5 py-1.5 font-mono text-[10px] font-black uppercase tracking-wider text-primary ring-1 ring-primary/50 transition-all active:scale-95"
-              title="Roue de la Forge — un fragment garanti : 42 % commun, 30 % peu commun, 18 % rare, 10 % épique"
-            >
-              {forging ? "Elle tourne..." : "Lancer la Roue"}
-            </button>
-          ) : (
-            <span
-              className="font-mono text-[10px] font-black tabular-nums text-muted-foreground"
-              title="Les Gardiens forgerons la remplissent à chaque éveil — pleine, un fragment t'attend au tirage"
-            >
-              {data.charges?.forge ?? 0}/20
-            </span>
-          )}
-        </div>
-      )}
-
       {/* Fusion bar — single tier when filter active, summary when "Tout" */}
       {fusionRarity && FUSION_NEXT[fusionRarity] ? (
         <div className="mb-5 flex items-center justify-between rounded-2xl bg-secondary/30 px-4 py-3 ring-1 ring-border">
@@ -680,7 +733,7 @@ export default function CollectionPage() {
             {fusing === fusionRarity ? "Fusion..." : `Fusionner ${FUSION_COST}→1`}
           </Button>
         </div>
-      ) : activeFilter === "all" && Object.values(section.shards).some((n) => n > 0) ? (
+      ) : activeCategory !== "all" && activeFilter === "all" && Object.values(section.shards).some((n) => n > 0) ? (
         // Fragments : une seule ligne de pastilles. Les actions (fusion,
         // conversion) n'apparaissent que quand elles sont possibles —
         // sinon la pastille reste un simple compteur.
@@ -729,11 +782,15 @@ export default function CollectionPage() {
 
       {/* Cards display */}
       {activeFilter === "all" ? (
-        section.cards.length === 0 ? (
+        shownCards.length === 0 ? (
           <EmptyState
             big
-            title="Vault vide"
-            subtitle="Termine une séance pour gagner ton premier jeton et ouvrir ton premier pack."
+            title={crits.length > 0 ? "Aucune carte à ces critères" : "Vault vide"}
+            subtitle={
+              crits.length > 0
+                ? "Aucune de tes cartes ne coche tous les critères choisis — retire-en un dans l'entonnoir."
+                : "Termine une séance pour gagner ton premier jeton et ouvrir ton premier pack."
+            }
           />
         ) : (
           <div className="space-y-7">
@@ -748,7 +805,7 @@ export default function CollectionPage() {
                       {RARITY_LABELS[r]}
                     </h3>
                     <span className="font-mono text-[10px] tabular-nums text-muted-foreground">
-                      {cards.length}/{section.totalsByRarity[r] || 0}
+                      {crits.length > 0 ? cards.length : `${cards.length}/${totalsView[r] || 0}`}
                     </span>
                     <div className={`h-px flex-1 ${TIER_DOT[r]} opacity-20`} />
                   </div>
@@ -760,12 +817,63 @@ export default function CollectionPage() {
         )
       ) : tabCards.length === 0 ? (
         <EmptyState
-          title={`Aucun ${activeCategory === "animal" ? "animal" : "pokémon"} ${RARITY_LABELS[activeFilter as Rarity].toLowerCase()}`}
+          title={`Aucune carte ${RARITY_LABELS[activeFilter as Rarity].toLowerCase()}${crits.length > 0 ? " à ces critères" : ""}`}
           subtitle="Ouvre des packs ou fusionne des fragments pour étendre cette section."
         />
       ) : (
         renderGrid(tabCards)
       )}
+
+      {/* Le tiroir des critères : cumulables, comptes en direct. */}
+      <Sheet open={showCrits} onOpenChange={setShowCrits}>
+        <SheetContent side="bottom" className="rounded-t-3xl border-t-2 border-t-primary/20">
+          <SheetHeader>
+            <SheetTitle className="text-lg font-black tracking-tight">Filtrer par critère</SheetTitle>
+            <SheetDescription className="text-xs">
+              Cumulables — seules restent les cartes qui cochent tous les critères choisis.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="grid grid-cols-2 gap-2 px-4 pb-6">
+            {CRIT_DEFS.map(({ key, label, hint, Icon, tint, ring }) => {
+              const active = crits.includes(key);
+              return (
+                <button
+                  key={key}
+                  onClick={() =>
+                    setCrits((prev) => (active ? prev.filter((k) => k !== key) : [...prev, key]))
+                  }
+                  className={`flex items-center gap-2.5 rounded-[3px] px-3 py-3 text-left ring-1 transition-all active:scale-95 ${
+                    active ? ring : "bg-secondary/30 ring-border"
+                  }`}
+                >
+                  <Icon className={`size-4 shrink-0 ${tint}`} />
+                  <span className="min-w-0">
+                    <span className={`block text-xs font-black ${active ? tint : ""}`}>
+                      {label}
+                      <span className="ml-1.5 font-mono text-[10px] font-bold tabular-nums text-muted-foreground">
+                        {critCount(key)}
+                      </span>
+                    </span>
+                    <span className="mt-0.5 block text-[10px] leading-tight text-muted-foreground">
+                      {hint}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          {crits.length > 0 && (
+            <div className="px-4 pb-6">
+              <button
+                onClick={() => setCrits([])}
+                className="w-full rounded-[3px] bg-secondary/40 py-2.5 text-xs font-bold text-muted-foreground ring-1 ring-border transition-colors hover:text-primary"
+              >
+                Tout effacer
+              </button>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
 
       {modalResult && (
         <PackOpenModal result={modalResult} onClose={() => setModalResult(null)} odds={data.odds} />
@@ -784,6 +892,7 @@ export default function CollectionPage() {
         <SpinWheelModal
           onClose={() => setShowSpinWheel(false)}
           onAfterSpin={refresh}
+          wheel={data.odds?.wheel}
         />
       )}
     </div>

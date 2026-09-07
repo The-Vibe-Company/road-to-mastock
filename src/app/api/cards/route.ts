@@ -13,7 +13,15 @@ import { eq } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 import { RARITIES, type Rarity } from "@/lib/rarities";
 import { loadCharges } from "@/lib/guardians";
-import { buildPackHat, buildWheel } from "@/lib/powers";
+import { buildPackHat, buildWheel, magnesieOf, PRODIGES, MIRACLES } from "@/lib/powers";
+import { talentOf } from "@/lib/talents";
+
+// La carte nourrit-elle la Forge ? Vrai si son prodige/miracle touche à la
+// jauge (add.forge, forge-vivante…) — détecté sur la définition elle-même.
+function forgeOf(category: Category, slug: string): boolean {
+  const def = PRODIGES[`${category}:${slug}`] ?? MIRACLES[`${category}:${slug}`];
+  return !!def && JSON.stringify(def).toLowerCase().includes("forge");
+}
 
 type Category = "animal" | "pokemon";
 
@@ -110,8 +118,6 @@ export async function GET() {
     .from(userCardNames)
     .where(eq(userCardNames.userId, auth.userId));
   const nicknames = new Map(nicknameRows.map((n) => [`${n.category}:${n.cardId}`, n.nickname]));
-  const withNick = <T extends { id: number }>(cards: T[], category: string) =>
-    cards.map((c) => ({ ...c, nickname: nicknames.get(`${category}:${c.id}`) ?? null }));
 
   // Énergie des Gardiens + aperçu du chapeau qu'elle produit.
   const charges = await loadCharges(auth.userId);
@@ -139,6 +145,24 @@ export async function GET() {
       exerciseId: r.exerciseId,
       exerciseName: r.exerciseName,
     }));
+  const guardianSet = new Set(guardians.map((g) => `${g.category}:${g.cardId}`));
+
+  // Les critères de la Collection : surnom + ce que la carte fait pour toi.
+  // Le talent n'est révélé QUE sur une carte possédée — c'est le Grimoire.
+  const enrich = <T extends { id: number; slug: string; rarity: string }>(
+    cards: T[],
+    category: Category,
+  ) =>
+    cards.map((c) => ({
+      ...c,
+      nickname: nicknames.get(`${category}:${c.id}`) ?? null,
+      traits: {
+        magnesie: magnesieOf(category, c.slug, c.rarity as Rarity) != null,
+        talent: talentOf(category, c.slug) != null,
+        forge: forgeOf(category, c.slug),
+        guardian: guardianSet.has(`${category}:${c.id}`),
+      },
+    }));
 
   return Response.json({
     charges,
@@ -155,12 +179,12 @@ export async function GET() {
       innerShift: (charges.inner_pokemon ?? 0) - (charges.inner_animal ?? 0),
     },
     animals: {
-      cards: withNick(ownedAnimals, "animal"),
+      cards: enrich(ownedAnimals, "animal"),
       totalsByRarity: animalTotalsByRarity,
       shards: shards.animal,
     },
     pokemon: {
-      cards: withNick(ownedPokemon, "pokemon"),
+      cards: enrich(ownedPokemon, "pokemon"),
       totalsByRarity: pokemonTotalsByRarity,
       shards: shards.pokemon,
     },

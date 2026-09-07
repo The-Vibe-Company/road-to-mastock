@@ -4,7 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronRight, Dumbbell, Sparkles } from "@/components/icons";
+import { ChevronRight, Dumbbell, Sparkles, Funnel, X } from "@/components/icons";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { MUSCLE_GROUPS } from "@/lib/muscle-groups";
 import type { Rarity } from "@/lib/rarities";
 
@@ -47,6 +54,7 @@ export function ExerciseRanking() {
   const [exercises, setExercises] = useState<RankedExercise[] | null>(null);
   // Le filtre par groupe musculaire — null : tout le classement.
   const [filter, setFilter] = useState<string | null>(null);
+  const [showFilter, setShowFilter] = useState(false);
 
   useEffect(() => {
     fetch("/api/exercises/frequent?limit=all")
@@ -93,26 +101,65 @@ export function ExerciseRanking() {
 
   return (
     <div className="space-y-2">
+      {/* Le filtre par groupe : une ligne discrète — le tag actif se retire
+          d'un tap, l'entonnoir ouvre le tiroir des groupes. */}
       {groups.length > 1 && (
-        <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-2 [scrollbar-width:none]">
-          {[null, ...groups].map((g) => {
-            const active = filter === g;
-            return (
-              <button
-                key={g ?? "tout"}
-                onClick={() => setFilter(g)}
-                className={`shrink-0 rounded-[3px] px-3 py-1.5 text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 ${
-                  active
-                    ? "bg-gradient-orange-intense text-black shadow-[2px_2px_0_oklch(0_0_0/0.5)]"
-                    : "bg-secondary/30 text-muted-foreground ring-1 ring-border hover:text-primary"
-                }`}
-              >
-                {g ?? "Tout"}
-              </button>
-            );
-          })}
+        <div className="flex items-center gap-2 pb-1">
+          <span className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground">
+            Classement · {shown.length} machine{shown.length !== 1 ? "s" : ""}
+          </span>
+          {filter && (
+            <button
+              onClick={() => setFilter(null)}
+              className="ml-auto flex h-[30px] items-center gap-1.5 rounded-[3px] bg-primary/15 px-2.5 text-[10px] font-black uppercase tracking-wider text-primary ring-1 ring-primary/50 transition-all active:scale-95"
+            >
+              {filter}
+              <X className="size-3" />
+            </button>
+          )}
+          <button
+            onClick={() => setShowFilter(true)}
+            aria-label="Filtrer par groupe musculaire"
+            className={`flex h-[30px] w-[30px] items-center justify-center rounded-[3px] ring-1 transition-all active:scale-95 ${
+              filter ? "" : "ml-auto"
+            } bg-secondary/30 text-muted-foreground ring-border hover:text-primary`}
+          >
+            <Funnel className="size-3.5" />
+          </button>
         </div>
       )}
+
+      <Sheet open={showFilter} onOpenChange={setShowFilter}>
+        <SheetContent side="bottom" className="rounded-t-3xl border-t-2 border-t-primary/20">
+          <SheetHeader>
+            <SheetTitle className="text-lg font-black tracking-tight">Filtrer par groupe</SheetTitle>
+            <SheetDescription className="text-xs">
+              Le classement se recalcule dans le groupe choisi.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="grid grid-cols-3 gap-2 px-4 pb-8">
+            {[null, ...groups].map((g) => {
+              const active = filter === g;
+              return (
+                <button
+                  key={g ?? "tout"}
+                  onClick={() => {
+                    setFilter(g);
+                    setShowFilter(false);
+                  }}
+                  className={`flex h-11 items-center justify-center rounded-[3px] px-1 text-[11px] font-black uppercase tracking-wide transition-all active:scale-95 ${
+                    active
+                      ? "bg-gradient-orange-intense text-black shadow-[2px_2px_0_oklch(0_0_0/0.5)]"
+                      : "bg-secondary/30 text-muted-foreground ring-1 ring-border hover:text-primary"
+                  }`}
+                >
+                  <span className="truncate">{g ?? "Tout"}</span>
+                </button>
+              );
+            })}
+          </div>
+        </SheetContent>
+      </Sheet>
       {shown.map((ex, i) => (
         <Link key={ex.id} href={`/exercises/${ex.id}`} className="block">
           <Card className="card-gradient-border card-hover">
