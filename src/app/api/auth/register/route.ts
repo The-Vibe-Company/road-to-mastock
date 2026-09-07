@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { exerciseCatalog, exercises, users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
-import { setAuthCookie } from "@/lib/auth";
+import { setAuthCookie, signRememberToken } from "@/lib/auth";
 
 export async function POST(request: Request) {
   const { email, password, name } = await request.json();
@@ -63,5 +63,8 @@ export async function POST(request: Request) {
 
   await setAuthCookie(user.id);
 
-  return Response.json(user, { status: 201 });
+  return Response.json(
+    { ...user, rememberToken: await signRememberToken(user.id) },
+    { status: 201 },
+  );
 }

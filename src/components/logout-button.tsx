@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { LogOut, Loader2 } from "@/components/icons";
+import { clearRememberToken } from "@/lib/remember";
 
 export function LogoutButton({ labeled = false }: { labeled?: boolean }) {
   const router = useRouter();
@@ -12,6 +13,7 @@ export function LogoutButton({ labeled = false }: { labeled?: boolean }) {
   const handleLogout = async () => {
     if (pending) return;
     setPending(true);
+    clearRememberToken();
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
   };

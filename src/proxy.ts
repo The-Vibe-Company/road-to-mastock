@@ -8,16 +8,20 @@ const publicPaths = [
   "/register",
   "/api/auth/login",
   "/api/auth/register",
+  "/api/auth/refresh",
   "/manifest.webmanifest",
   "/icon",
   "/apple-icon",
   "/favicon.ico",
 ];
 
-const SESSION_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
-// Only re-issue the cookie when it's more than a day old, to avoid
-// rewriting Set-Cookie on every single request.
-const REFRESH_AFTER = 60 * 60 * 24; // 1 day
+const SESSION_MAX_AGE = 60 * 60 * 24 * 90; // 90 days
+// Re-issue the cookie early and often : sur iOS standalone, un cookie posé
+// par une réponse fetch peut ne pas survivre au kill de l'appli — celui
+// posé par une NAVIGATION est fiable. Chaque ouverture re-signe donc la
+// session (au plus toutes les 10 minutes, pour ne pas réécrire Set-Cookie
+// sur chaque requête).
+const REFRESH_AFTER = 60 * 10; // 10 minutes
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -57,7 +61,7 @@ export async function proxy(request: NextRequest) {
       const fresh = await new SignJWT({ userId: payload.userId })
         .setProtectedHeader({ alg: "HS256" })
         .setIssuedAt()
-        .setExpirationTime("30d")
+        .setExpirationTime("90d")
         .sign(secret);
       response.cookies.set("rtm-token", fresh, {
         httpOnly: true,
