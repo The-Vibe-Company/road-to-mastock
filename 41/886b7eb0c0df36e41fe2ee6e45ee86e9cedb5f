@@ -1,0 +1,58 @@
+src/lib/guardians.ts
+  s_6dc77352c5bc09::t_8007059c299da5 4,15,30,113,174-236,491-494,507-508
+  s_6dc77352c5bc09::t_712d26cc52fae6 509
+src/components/terminate-session-button.tsx
+  s_6dc77352c5bc09::t_a25ad9aecc594e 98-102,162,166-167,301-304,308,322-363
+  s_6dc77352c5bc09::t_15889a17a2f974 364-366
+src/app/api/cards/skin/route.ts
+  s_6dc77352c5bc09::t_1f8794c3c96e5d 1-44
+src/app/page.tsx
+  s_6dc77352c5bc09::t_52a52e82ebdea8 47-48,57-67
+src/lib/mascots.ts
+  s_6dc77352c5bc09::t_58156d6992cb61 9,15-43,157-175,225-226,263-272
+  s_6dc77352c5bc09::t_c5ae0c7bc0ed55 273
+src/app/api/cards/open/route.ts
+  s_6dc77352c5bc09::t_b766e0d748f18f 13,103-105,112-113,143,220
+scripts/generate-skins.ts
+  s_6dc77352c5bc09::t_76052baa806025 94
+  s_6dc77352c5bc09::t_3267f28b04d660 1-93,95-191
+src/lib/pack-types.ts
+  s_6dc77352c5bc09::t_6063c8c4c37c15 71-76,78,80-85
+scripts/seed-skins.ts
+  s_6dc77352c5bc09::t_d289a75699346c 1-137
+src/app/api/sessions/[id]/route.ts
+  s_6dc77352c5bc09::t_02ad5ad2c82906 332
+src/app/api/cards/route.ts
+  s_6dc77352c5bc09::t_1f8794c3c96e5d 4,10,14,42,65,126-146,181-185,188-191,198-199
+scripts/add-skins.ts
+  s_6dc77352c5bc09::t_03d7b5f0a0bf9e 33-34
+  s_6dc77352c5bc09::t_e3c04e0bec77d7 1-32
+src/components/card-detail-modal.tsx
+  s_6dc77352c5bc09::t_e73d392380578b 36-39,58,63,69-88,206-265
+  s_6dc77352c5bc09::t_15e64f6b4098ec 266
+src/app/api/sessions/[id]/terminate/route.ts
+  s_6dc77352c5bc09::t_8bd46663e50d22 10,58,129-130,193
+src/lib/db/schema.ts
+  s_6dc77352c5bc09::t_e3c04e0bec77d7 259-260,306-307,317-353
+src/app/collection/page.tsx
+  s_6dc77352c5bc09::t_fc0408a53a5d4d 74-80,91-93,114-116,272,281,904
+src/lib/powers.ts
+  s_6dc77352c5bc09::t_6063c8c4c37c15 48-51,78,106-107,1366-1401
+  s_6dc77352c5bc09::t_2c8d3f10b2a887 1402-1403
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "41886b7eb0c0df36e41fe2ee6e45ee86e9cedb5f",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
