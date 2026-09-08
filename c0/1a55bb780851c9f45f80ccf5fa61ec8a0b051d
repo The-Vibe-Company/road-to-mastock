@@ -1,0 +1,23 @@
+src/lib/guardians.ts
+  s_6dc77352c5bc09::t_9b083a08d3d41b 31,209-232,244,251
+scripts/add-last-pack-type.ts
+  s_6dc77352c5bc09::t_03d7b5f0a0bf9e 12-13
+src/lib/powers.ts
+  s_6dc77352c5bc09::t_9b083a08d3d41b 1381-1387
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "c01a55bb780851c9f45f80ccf5fa61ec8a0b051d",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
