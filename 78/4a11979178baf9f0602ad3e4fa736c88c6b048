@@ -1,0 +1,24 @@
+src/app/api/sessions/[id]/route.ts
+  s_6dc77352c5bc09::t_7d65db33305894 259,282-286,294,299,359
+src/components/session-editor.tsx
+  s_6dc77352c5bc09::t_972e2c6b5ffdbe 54-56,509
+src/components/exercise-block.tsx
+  s_6dc77352c5bc09::t_02a641a3c500a9 15,65-67,143,173-177,337,343-349
+  s_6dc77352c5bc09::t_e894315c23cb27 350-351
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "784a11979178baf9f0602ad3e4fa736c88c6b048",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
