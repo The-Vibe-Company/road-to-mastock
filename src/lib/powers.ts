@@ -1378,6 +1378,13 @@ export const SKIN_SHIFT_TENTHS: Record<number, Partial<Record<Rarity, number>>> 
   5: { common: -120, uncommon: -45, rare: 80, epic: 60, legendary: 20, mythic: 5 },
 };
 
+
+// Le tirage du skin de séance : le niveau se mérite. Poids de drop —
+// un niveau 5 tombe environ une séance sur vingt.
+export const SKIN_DROP_WEIGHTS: Record<number, number> = {
+  1: 40, 2: 26, 3: 18, 4: 11, 5: 5,
+};
+
 // Le cumul est plafonné : jamais plus de −20 points de % sur le commun —
 // au-delà, tout le shift est réduit proportionnellement.
 const SKIN_COMMON_FLOOR_TENTHS = -200;

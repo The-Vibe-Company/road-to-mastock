@@ -9,3 +9,5 @@ async function main() {
   console.log("users.last_pack_type ok");
 }
 main();
+
+export {};

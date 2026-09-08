@@ -28,6 +28,7 @@ import {
   POLARITY_POINTS,
   RECORD_MIN_HISTORY,
   SKIN_DIRECTIONS,
+  SKIN_DROP_WEIGHTS,
   WHEEL_SPELLS,
   metierOf,
   miracleOf,
@@ -205,6 +206,30 @@ export interface SkinReward {
 }
 
 export async function drawSessionSkin(userId: number): Promise<SkinReward | null> {
+  // Le niveau d'abord, au poids (1 fréquent → 5 très rare), parmi les
+  // niveaux où il reste au moins un skin à gagner ; la carte ensuite,
+  // au hasard dans ce niveau.
+  const levelRows = (await db.execute(sql`
+    SELECT cs.level, COUNT(*)::int AS n
+    FROM card_skins cs
+    WHERE (
+      (cs.category = 'animal' AND cs.card_id IN (SELECT animal_id FROM user_cards WHERE user_id = ${userId}))
+      OR (cs.category = 'pokemon' AND cs.card_id IN (SELECT pokemon_id FROM user_pokemon_cards WHERE user_id = ${userId}))
+    )
+    AND cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
+    GROUP BY cs.level
+  `)) as unknown as { rows?: { level: number; n: number }[] };
+  const available = ((levelRows.rows ?? levelRows) as unknown as { level: number; n: number }[])
+    .map((r) => Number(r.level));
+  if (available.length === 0) return null; // collection de skins complète
+  const totalW = available.reduce((a, l) => a + (SKIN_DROP_WEIGHTS[l] ?? 1), 0);
+  let roll = Math.random() * totalW;
+  let chosenLevel = available[0];
+  for (const l of available) {
+    roll -= SKIN_DROP_WEIGHTS[l] ?? 1;
+    if (roll <= 0) { chosenLevel = l; break; }
+  }
+
   const rows = (await db.execute(sql`
     SELECT cs.id, cs.level, cs.name, cs.image_url,
            COALESCE(a.name, p.name) AS card_name, cs.category
@@ -216,13 +241,14 @@ export async function drawSessionSkin(userId: number): Promise<SkinReward | null
       OR (cs.category = 'pokemon' AND cs.card_id IN (SELECT pokemon_id FROM user_pokemon_cards WHERE user_id = ${userId}))
     )
     AND cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
+    AND cs.level = ${chosenLevel}
     ORDER BY random()
     LIMIT 1
   `)) as unknown as { rows?: Record<string, unknown>[] };
   const [pick] = ((rows.rows ?? rows) as unknown as {
     id: number; level: number; name: string; image_url: string | null; card_name: string; category: "animal" | "pokemon";
   }[]);
-  if (!pick) return null; // collection de skins complète
+  if (!pick) return null;
   await db.insert(userSkins).values({ userId, skinId: pick.id }).onConflictDoNothing();
   return {
     skinId: pick.id,
