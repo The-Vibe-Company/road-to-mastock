@@ -71,6 +71,13 @@ const TIER_FILL: Record<Rarity, string> = {
   mythic:    "bg-rose-500/15 ring-rose-500/70",
 };
 
+interface CardSkin {
+  level: number;
+  name: string;
+  imageUrl: string | null;
+  owned: boolean;
+}
+
 interface CardTraits {
   magnesie: boolean;
   talent: boolean;
@@ -81,6 +88,9 @@ interface CardTraits {
 interface AnimalCard {
   id: number;
   traits?: CardTraits;
+  skins?: CardSkin[];
+  equippedSkinLevel?: number | null;
+  baseImageUrl?: string | null;
   count: number;
   firstObtainedAt: string;
   slug: string;
@@ -101,6 +111,9 @@ interface AnimalCard {
 interface PokemonCard {
   id: number;
   traits?: CardTraits;
+  skins?: CardSkin[];
+  equippedSkinLevel?: number | null;
+  baseImageUrl?: string | null;
   count: number;
   firstObtainedAt: string;
   slug: string;
@@ -256,6 +269,7 @@ export default function CollectionPage() {
       setDetailCreature({
         kind: "pokemon", id: p.id, slug: p.slug, name: p.name, nickname: p.nickname, rarity: p.rarity,
         imageUrl: p.imageUrl, count: p.count, flavor: p.flavor,
+        skins: p.skins, equippedSkinLevel: p.equippedSkinLevel, baseImageUrl: p.baseImageUrl,
         heightCm: p.heightCm, weightKg: p.weightKg, habitat: p.habitat,
         pokedexNumber: p.pokedexNumber, primaryType: p.primaryType, secondaryType: p.secondaryType,
       });
@@ -264,6 +278,7 @@ export default function CollectionPage() {
       setDetailCreature({
         kind: "animal", id: a.id, slug: a.slug, name: a.name, nickname: a.nickname, rarity: a.rarity,
         imageUrl: a.imageUrl, count: a.count, flavor: a.flavor,
+        skins: a.skins, equippedSkinLevel: a.equippedSkinLevel, baseImageUrl: a.baseImageUrl,
         heightCm: a.heightCm, weightKg: a.weightKg, habitat: a.habitat,
         cardNumber: a.cardNumber, scientificName: a.scientificName, description: a.description,
         lineage: a.lineage,
@@ -886,6 +901,7 @@ export default function CollectionPage() {
             setDetailCreature(null);
             refresh();
           }}
+          onSkinChange={refresh}
         />
       )}
       {showSpinWheel && (

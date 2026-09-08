@@ -10,7 +10,7 @@ import {
 import { and, eq, sql } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 import { rollRarityForPack, PACK_TYPES, PACK_CATEGORY_PROB_POKEMON, type PackType } from "@/lib/pack-types";
-import { buildPackHat, innerPokemonProb, type Charges } from "@/lib/powers";
+import { buildPackHat, innerPokemonProb, skinRarityShiftTenths, type Charges } from "@/lib/powers";
 import { loadCharges } from "@/lib/guardians";
 import { talentOf } from "@/lib/talents";
 
@@ -100,12 +100,17 @@ export async function POST() {
   // Les odds de CE tirage, photographiées : la modale d'ouverture les
   // affiche — l'impact des cartes, noir sur blanc.
   const hatUsed = buildPackHat(charges);
+  // Les Skins des gardiens éveillés : le dé de rareté est déformé jusqu'à
+  // la prochaine clôture — visible dans oddsUsed comme le reste.
+  const rarityShift = skinRarityShiftTenths(charges);
   const hatTotal = Object.values(hatUsed).reduce((a, b) => a + b, 0);
   const oddsUsed = {
     hat: Object.fromEntries(
       Object.entries(hatUsed).map(([k, w]) => [k, hatTotal > 0 ? Math.round((w / hatTotal) * 100) : 0]),
     ),
     innerShift: (charges.inner_pokemon ?? 0) - (charges.inner_animal ?? 0),
+    // En dixièmes de point de % par rareté (ex. { common: -60, rare: 50 }).
+    rarityShift,
   };
   const packType: PackType = DEBUG_FORCE_PACK ?? rollPackTypeFromHat(charges);
   const category = DEBUG_FORCE_ANIMAL
@@ -135,7 +140,7 @@ export async function POST() {
         );
       }
     } else {
-      const rarity = rollRarityForPack(packType);
+      const rarity = rollRarityForPack(packType, rarityShift);
       const candidates = await db
         .select()
         .from(animals)
@@ -212,7 +217,7 @@ export async function POST() {
       );
     }
   } else {
-    const rarity = rollRarityForPack(packType);
+    const rarity = rollRarityForPack(packType, rarityShift);
     const candidates = await db
       .select()
       .from(pokemon)

@@ -95,6 +95,11 @@ export function TerminateSessionButton({ sessionId }: { sessionId: number }) {
   const [busy, setBusy] = useState(false);
   const [reward, setReward] = useState<RewardInfo | null>(null);
   const [guardians, setGuardians] = useState<AwakenedGuardian[]>([]);
+  // Le skin de la séance : révélé après le carrousel de l'Éveil.
+  const [skinReward, setSkinReward] = useState<{
+    level: number; name: string; imageUrl: string | null; cardName: string;
+  } | null>(null);
+  const [showSkin, setShowSkin] = useState(false);
   const [recordCount, setRecordCount] = useState(0);
   const [newTrophies, setNewTrophies] = useState<{ id: string; name: string; rewardLabel: string }[]>([]);
   const [trophyProgress, setTrophyProgress] = useState<TrophyProgressStep[]>([]);
@@ -154,9 +159,12 @@ export function TerminateSessionButton({ sessionId }: { sessionId: number }) {
       }
       const awakened = Array.isArray(data.guardians) ? data.guardians : [];
       setGuardians(awakened);
+      if (data.skinReward) setSkinReward(data.skinReward);
       if (awakened.length > 0) {
         setAwakeStep(0);
         setShowAwakening(true);
+      } else if (data.skinReward) {
+        setShowSkin(true);
       }
       setRecordCount(data.recordCount ?? 0);
       setNewTrophies(Array.isArray(data.newTrophies) ? data.newTrophies : []);
@@ -290,11 +298,14 @@ export function TerminateSessionButton({ sessionId }: { sessionId: number }) {
                 </div>
                 {awakeLast ? (
                   <Button
-                    onClick={() => setShowAwakening(false)}
+                    onClick={() => {
+                      setShowAwakening(false);
+                      if (skinReward) setShowSkin(true);
+                    }}
                     className="h-12 w-full rounded-2xl bg-gradient-orange-intense text-sm font-black uppercase tracking-wider text-black"
                   >
                     <CheckCircle2 className="size-4" />
-                    {draws.length > 0 ? "Voir l'Échappée" : "Compris"}
+                    {skinReward ? "Et ce n'est pas tout..." : draws.length > 0 ? "Voir l'Échappée" : "Compris"}
                   </Button>
                 ) : (
                   <Button
@@ -304,6 +315,51 @@ export function TerminateSessionButton({ sessionId }: { sessionId: number }) {
                     Gardien suivant
                   </Button>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+        {/* ── La révélation du skin de la séance : un par clôture ── */}
+        {showSkin && skinReward && (
+          <div className="fixed inset-0 z-[116] flex items-end justify-center bg-black/85 backdrop-blur-sm sm:items-center">
+            <div className="relative flex max-h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border-t-2 border-t-primary/40 bg-background sm:rounded-3xl sm:border-2 sm:border-primary/30">
+              <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4 pt-8">
+                <p className="text-center font-mono text-[10px] font-black uppercase tracking-[0.35em] text-primary/70">
+                  Nouveau skin · niveau {skinReward.level}
+                </p>
+                <div className="animate-card-reveal mt-4 flex flex-col items-center text-center">
+                  {skinReward.imageUrl ? (
+                    <div className="relative aspect-square w-56 overflow-hidden rounded-2xl ring-2 ring-primary/50 drop-shadow-2xl">
+                      <Image src={skinReward.imageUrl} alt="" fill unoptimized className="object-cover" />
+                    </div>
+                  ) : (
+                    <div className="flex aspect-square w-56 items-center justify-center rounded-2xl bg-secondary/40 ring-1 ring-border">
+                      <p className="px-6 font-mono text-xs text-muted-foreground">
+                        L&apos;image se révèle bientôt...
+                      </p>
+                    </div>
+                  )}
+                  <p className="mt-4 text-xl font-black tracking-tight text-primary">
+                    {skinReward.name}
+                  </p>
+                  <p className="mt-1 text-sm font-bold text-muted-foreground">
+                    pour {skinReward.cardName}
+                  </p>
+                  <p className="mt-3 max-w-xs text-xs leading-relaxed text-muted-foreground">
+                    Équipe-le dans le vestiaire de la carte (Collection) : porté par
+                    un Gardien qui s&apos;éveille, il améliore la rareté de tes packs
+                    jusqu&apos;à la clôture suivante.
+                  </p>
+                </div>
+              </div>
+              <div className="border-t border-border/60 px-6 py-4">
+                <Button
+                  onClick={() => setShowSkin(false)}
+                  className="h-12 w-full rounded-2xl bg-gradient-orange-intense text-sm font-black uppercase tracking-wider text-black"
+                >
+                  <CheckCircle2 className="size-4" />
+                  {draws.length > 0 ? "Voir l'Échappée" : "Compris"}
+                </Button>
               </div>
             </div>
           </div>

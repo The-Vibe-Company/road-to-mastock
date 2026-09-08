@@ -1,15 +1,17 @@
 import { db } from "@/lib/db";
 import {
   animals,
+  cardSkins,
   pokemon,
   userCardNames,
   userCards,
   userPokemonCards,
   userShards,
+  userSkins,
   users,
   exercises,
 } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 import { RARITIES, type Rarity } from "@/lib/rarities";
 import { loadCharges } from "@/lib/guardians";
@@ -37,6 +39,7 @@ export async function GET() {
     .select({
       id: userCards.animalId,
       count: userCards.count,
+      equippedSkinLevel: userCards.equippedSkinLevel,
       firstObtainedAt: userCards.firstObtainedAt,
       slug: animals.slug,
       name: animals.name,
@@ -59,6 +62,7 @@ export async function GET() {
     .select({
       id: userPokemonCards.pokemonId,
       count: userPokemonCards.count,
+      equippedSkinLevel: userPokemonCards.equippedSkinLevel,
       firstObtainedAt: userPokemonCards.firstObtainedAt,
       slug: pokemon.slug,
       name: pokemon.name,
@@ -119,6 +123,27 @@ export async function GET() {
     .where(eq(userCardNames.userId, auth.userId));
   const nicknames = new Map(nicknameRows.map((n) => [`${n.category}:${n.cardId}`, n.nickname]));
 
+  // Les Skins : les 5 slots de chaque carte possédée, avec possession et
+  // équipement — le vestiaire de la fiche carte s'en nourrit.
+  const skinRows = (await db.execute(sql`
+    SELECT cs.category, cs.card_id, cs.level, cs.name, cs.image_url,
+           (us.id IS NOT NULL) AS owned
+    FROM card_skins cs
+    LEFT JOIN user_skins us ON us.skin_id = cs.id AND us.user_id = ${auth.userId}
+    WHERE (cs.category = 'animal' AND cs.card_id IN (SELECT animal_id FROM user_cards WHERE user_id = ${auth.userId}))
+       OR (cs.category = 'pokemon' AND cs.card_id IN (SELECT pokemon_id FROM user_pokemon_cards WHERE user_id = ${auth.userId}))
+    ORDER BY cs.level
+  `)) as unknown as { rows?: Record<string, unknown>[] };
+  const skinList = ((skinRows.rows ?? skinRows) as unknown as {
+    category: string; card_id: number; level: number; name: string; image_url: string | null; owned: boolean;
+  }[]);
+  const skinsByCard = new Map<string, { level: number; name: string; imageUrl: string | null; owned: boolean }[]>();
+  for (const r of skinList) {
+    const key = `${r.category}:${r.card_id}`;
+    if (!skinsByCard.has(key)) skinsByCard.set(key, []);
+    skinsByCard.get(key)!.push({ level: Number(r.level), name: r.name, imageUrl: r.image_url, owned: !!r.owned });
+  }
+
   // Énergie des Gardiens + aperçu du chapeau qu'elle produit.
   const charges = await loadCharges(auth.userId);
   const hat = buildPackHat(charges);
@@ -153,16 +178,25 @@ export async function GET() {
     cards: T[],
     category: Category,
   ) =>
-    cards.map((c) => ({
+    cards.map((c) => {
+      const skins = skinsByCard.get(`${category}:${c.id}`) ?? [];
+      const lvl = (c as { equippedSkinLevel?: number | null }).equippedSkinLevel ?? null;
+      const equipped = lvl != null ? skins.find((sk) => sk.level === lvl && sk.owned && sk.imageUrl) : null;
+      return {
       ...c,
       nickname: nicknames.get(`${category}:${c.id}`) ?? null,
+      // Le skin équipé habille la carte partout — l'original reste à portée.
+      imageUrl: equipped?.imageUrl ?? (c as { imageUrl?: string | null }).imageUrl ?? null,
+      baseImageUrl: (c as { imageUrl?: string | null }).imageUrl ?? null,
+      skins,
       traits: {
         magnesie: magnesieOf(category, c.slug, c.rarity as Rarity) != null,
         talent: talentOf(category, c.slug) != null,
         forge: forgeOf(category, c.slug),
         guardian: guardianSet.has(`${category}:${c.id}`),
       },
-    }));
+      };
+    });
 
   return Response.json({
     charges,

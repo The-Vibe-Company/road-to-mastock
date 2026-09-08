@@ -329,7 +329,7 @@ export async function GET(
         category: e.guardianCategory as "animal" | "pokemon",
         cardId: e.guardianCardId as number,
       }));
-    const remembered = await loadMascotsFromSnapshots(snaps);
+    const remembered = await loadMascotsFromSnapshots(snaps, auth.userId);
     for (const [exId, m] of remembered) mascots.set(exId, m);
   }
 

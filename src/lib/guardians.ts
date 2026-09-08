@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import {
   animals,
+  cardSkins,
   exercises,
   pokemon,
   sessionCardioDraws,
@@ -11,6 +12,7 @@ import {
   userMiracleUses,
   userPokemonCards,
   userShards,
+  userSkins,
   users,
 } from "@/lib/db/schema";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
@@ -25,6 +27,7 @@ import {
   HAT_DIRECTIONS,
   POLARITY_POINTS,
   RECORD_MIN_HISTORY,
+  SKIN_DIRECTIONS,
   WHEEL_SPELLS,
   metierOf,
   miracleOf,
@@ -107,6 +110,7 @@ export async function saveCharges(userId: number, charges: Charges) {
 const WIPE_DIRECTIONS: Direction[] = [
   ...HAT_DIRECTIONS,
   ...WHEEL_SPELLS,
+  ...SKIN_DIRECTIONS,
   "no_basic",
   "hoopa_double",
   "leviathan_guard",
@@ -165,6 +169,69 @@ async function resetHatForNewSession(userId: number, charges: Charges) {
     const fromIce = hatSet.has(d) ? Math.min(pts, preserve) : 0;
     charges[d] = Math.max(fromHalf, fromIce);
   }
+}
+
+
+// ─── Les Skins des gardiens ─────────────────────────────────────────────────
+// Le skin équipé d'une carte ne compte que s'il est réellement possédé.
+// Map "category:cardId" → niveau (1..5).
+async function loadEquippedSkins(userId: number): Promise<Map<string, number>> {
+  const rows = (await db.execute(sql`
+    SELECT 'animal' AS category, uc.animal_id AS card_id, uc.equipped_skin_level AS level
+    FROM user_cards uc
+    JOIN card_skins cs ON cs.category = 'animal' AND cs.card_id = uc.animal_id AND cs.level = uc.equipped_skin_level
+    JOIN user_skins us ON us.skin_id = cs.id AND us.user_id = uc.user_id
+    WHERE uc.user_id = ${userId} AND uc.equipped_skin_level IS NOT NULL
+    UNION ALL
+    SELECT 'pokemon', up.pokemon_id, up.equipped_skin_level
+    FROM user_pokemon_cards up
+    JOIN card_skins cs ON cs.category = 'pokemon' AND cs.card_id = up.pokemon_id AND cs.level = up.equipped_skin_level
+    JOIN user_skins us ON us.skin_id = cs.id AND us.user_id = up.user_id
+    WHERE up.user_id = ${userId} AND up.equipped_skin_level IS NOT NULL
+  `)) as unknown as { rows?: { category: string; card_id: number; level: number }[] };
+  const list = (rows.rows ?? rows) as unknown as { category: string; card_id: number; level: number }[];
+  return new Map(list.map((r) => [`${r.category}:${r.card_id}`, Number(r.level)]));
+}
+
+// Le skin de la séance : un par clôture, tiré parmi les couples
+// (carte possédée × niveau) encore manquants — jamais de doublon.
+export interface SkinReward {
+  skinId: number;
+  level: number;
+  name: string;
+  imageUrl: string | null;
+  cardName: string;
+  category: "animal" | "pokemon";
+}
+
+export async function drawSessionSkin(userId: number): Promise<SkinReward | null> {
+  const rows = (await db.execute(sql`
+    SELECT cs.id, cs.level, cs.name, cs.image_url,
+           COALESCE(a.name, p.name) AS card_name, cs.category
+    FROM card_skins cs
+    LEFT JOIN animals a ON cs.category = 'animal' AND a.id = cs.card_id
+    LEFT JOIN pokemon p ON cs.category = 'pokemon' AND p.id = cs.card_id
+    WHERE (
+      (cs.category = 'animal' AND cs.card_id IN (SELECT animal_id FROM user_cards WHERE user_id = ${userId}))
+      OR (cs.category = 'pokemon' AND cs.card_id IN (SELECT pokemon_id FROM user_pokemon_cards WHERE user_id = ${userId}))
+    )
+    AND cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
+    ORDER BY random()
+    LIMIT 1
+  `)) as unknown as { rows?: Record<string, unknown>[] };
+  const [pick] = ((rows.rows ?? rows) as unknown as {
+    id: number; level: number; name: string; image_url: string | null; card_name: string; category: "animal" | "pokemon";
+  }[]);
+  if (!pick) return null; // collection de skins complète
+  await db.insert(userSkins).values({ userId, skinId: pick.id }).onConflictDoNothing();
+  return {
+    skinId: pick.id,
+    level: Number(pick.level),
+    name: pick.name,
+    imageUrl: pick.image_url,
+    cardName: pick.card_name,
+    category: pick.category,
+  };
 }
 
 // ─── Miracles hebdomadaires ─────────────────────────────────────────────────
@@ -421,6 +488,10 @@ export async function resolveGuardians(params: {
   // Le geste ± le plus fort de la séance, pour l'Écho.
   let strongestPolarity: { direction: Direction; points: number } | null = null;
 
+  // Les Skins : chaque gardien éveillé portant son skin équipé déforme le
+  // dé de rareté des packs jusqu'à la prochaine clôture.
+  const equippedSkins = await loadEquippedSkins(userId);
+
   for (const { e, card, isRecord } of planned) {
     const rarity = card.rarity as Rarity;
     const g: AwakenedGuardian = {
@@ -432,6 +503,9 @@ export async function resolveGuardians(params: {
       record: isRecord,
       fragmentRarity: null,
     };
+
+    const skinLevel = equippedSkins.get(`${e.side.category}:${e.side.id}`);
+    if (skinLevel) add(`skin_l${skinLevel}` as Direction, 1);
 
     if (rarity !== "legendary" && rarity !== "mythic") {
       // ── Étage 1 : la Polarité, selon le métier de la carte ──
