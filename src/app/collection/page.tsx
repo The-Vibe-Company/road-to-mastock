@@ -142,7 +142,19 @@ interface CollectionData {
     innerShift?: number;
     wheel: Record<string, number>;
   };
+  // Les skins mystère : gagnés aux packs pour des cartes pas encore
+  // possédées — comptés sans révéler la carte.
+  skinReserve?: { category: "animal" | "pokemon"; rarity: Rarity; level: number; count: number }[];
 }
+
+const RESERVE_TEXT: Record<Rarity, string> = {
+  common: "text-zinc-300",
+  uncommon: "text-emerald-300",
+  rare: "text-sky-300",
+  epic: "text-violet-300",
+  legendary: "text-amber-300",
+  mythic: "text-rose-300",
+};
 
 function StableCount({ owned, total }: { owned: number; total: number }) {
   return (
@@ -506,6 +518,31 @@ export default function CollectionPage() {
           des filtres, qui restent collés aux cartes. */}
       {detailOpen && (
         <div className="mb-2 space-y-4 rounded-[3px] bg-secondary/20 p-3.5 ring-1 ring-border">
+          {(data.skinReserve?.length ?? 0) > 0 && (
+            <div>
+              <p className="mb-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-primary/70">
+                Skins en réserve — {data.skinReserve!.reduce((a, r) => a + r.count, 0)} mystère{data.skinReserve!.reduce((a, r) => a + r.count, 0) > 1 ? "s" : ""}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {data.skinReserve!.map((r, i) => (
+                  <span
+                    key={i}
+                    className="inline-flex items-center gap-1 rounded-md bg-secondary/50 px-1.5 py-0.5 font-mono text-[10px] font-bold tabular-nums ring-1 ring-border"
+                  >
+                    <span className="text-muted-foreground">?</span>
+                    <span className={RESERVE_TEXT[r.rarity]}>
+                      {r.category === "animal" ? "Animal" : "Pokémon"} {RARITY_LABELS[r.rarity].toLowerCase()}
+                    </span>
+                    <span className="text-muted-foreground">· N{r.level}</span>
+                    {r.count > 1 && <span className="text-primary">×{r.count}</span>}
+                  </span>
+                ))}
+              </div>
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                Un skin mystère se révèle le jour où tu tires sa carte.
+              </p>
+            </div>
+          )}
           {data.odds && data.charges && Object.values(data.charges).some((n) => n > 0) && (
             <div>
               <p className="mb-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-primary/70">

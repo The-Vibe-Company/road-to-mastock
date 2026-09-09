@@ -11,7 +11,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 import { rollRarityForPack, PACK_TYPES, PACK_CATEGORY_PROB_POKEMON, type PackType } from "@/lib/pack-types";
 import { buildPackHat, innerPokemonProb, skinRarityShiftTenths, type Charges } from "@/lib/powers";
-import { loadCharges } from "@/lib/guardians";
+import { drawPackSkins, loadCharges, skinsAwaitingFor } from "@/lib/guardians";
 import { talentOf } from "@/lib/talents";
 
 // Hiérarchie de désirabilité des packs, pour le Passe-Mondes de Hoopa.
@@ -112,6 +112,10 @@ export async function POST() {
     // En dixièmes de point de % par rareté (ex. { common: -60, rare: 50 }).
     rarityShift,
   };
+  // Les 3 skins du pack, tirés AVANT la carte — révélés si la carte visée
+  // est possédée, mystères (catégorie + rareté + niveau) sinon.
+  const packSkins = await drawPackSkins(auth.userId, 3);
+
   const packType: PackType = DEBUG_FORCE_PACK ?? rollPackTypeFromHat(charges);
   const category = DEBUG_FORCE_ANIMAL
     ? "animal"
@@ -186,6 +190,8 @@ export async function POST() {
 
     // Talent caché : révélé à la première obtention de la carte.
     const talent = !isDuplicate ? talentOf("animal", picked.slug) : null;
+    // Les skins mystère qui visaient cette carte se révèlent avec elle.
+    const awaitingSkins = !isDuplicate ? await skinsAwaitingFor(auth.userId, "animal", picked.id) : [];
 
     return Response.json({
       packType,
@@ -194,6 +200,8 @@ export async function POST() {
       creature: { ...picked, kind: "animal" },
       isDuplicate,
       shardsGranted,
+      skins: packSkins,
+      awaitingSkins,
       talent: talent
         ? { id: talent.id, family: talent.family, name: talent.name, description: talent.description }
         : null,
@@ -261,6 +269,8 @@ export async function POST() {
   }
 
   const talent = !isDuplicate ? talentOf("pokemon", picked.slug) : null;
+  // Les skins mystère qui visaient cette carte se révèlent avec elle.
+  const awaitingSkins = !isDuplicate ? await skinsAwaitingFor(auth.userId, "pokemon", picked.id) : [];
 
   return Response.json({
     packType,
@@ -269,6 +279,8 @@ export async function POST() {
     creature: { ...picked, kind: "pokemon" },
     isDuplicate,
     shardsGranted,
+    skins: packSkins,
+    awaitingSkins,
     talent: talent
       ? { id: talent.id, family: talent.family, name: talent.name, description: talent.description }
       : null,

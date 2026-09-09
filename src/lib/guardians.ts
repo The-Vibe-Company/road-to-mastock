@@ -194,70 +194,99 @@ async function loadEquippedSkins(userId: number): Promise<Map<string, number>> {
   return new Map(list.map((r) => [`${r.category}:${r.card_id}`, Number(r.level)]));
 }
 
-// Le skin de la séance : un par clôture, tiré parmi les couples
-// (carte possédée × niveau) encore manquants — jamais de doublon.
-export interface SkinReward {
-  skinId: number;
+// Les skins du pack : 3 tirages AVANT la carte, sur tout le catalogue
+// (cartes possédées ou non), jamais de doublon. Le niveau se mérite
+// (poids 40/26/18/11/5) ; la carte visée est au hasard total. Un skin
+// d'une carte non possédée reste MYSTÈRE : le serveur ne révèle que
+// catégorie + rareté de la carte + niveau — l'identité tombera le jour
+// où le joueur tire la carte.
+export interface PackSkinDraw {
+  level: number;
+  category: "animal" | "pokemon";
+  cardRarity: string;
+  owned: boolean;
+  // Présents uniquement si owned (révélé) :
+  skinName?: string;
+  cardName?: string;
+  imageUrl?: string | null;
+}
+
+export async function drawPackSkins(userId: number, count = 3): Promise<PackSkinDraw[]> {
+  const draws: PackSkinDraw[] = [];
+  for (let i = 0; i < count; i++) {
+    const levelRows = (await db.execute(sql`
+      SELECT cs.level, COUNT(*)::int AS n
+      FROM card_skins cs
+      WHERE cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
+      GROUP BY cs.level
+    `)) as unknown as { rows?: { level: number }[] };
+    const available = ((levelRows.rows ?? levelRows) as unknown as { level: number }[])
+      .map((r) => Number(r.level));
+    if (available.length === 0) break; // les 10 000 skins sont à lui
+    const totalW = available.reduce((a, l) => a + (SKIN_DROP_WEIGHTS[l] ?? 1), 0);
+    let roll = Math.random() * totalW;
+    let chosenLevel = available[0];
+    for (const l of available) {
+      roll -= SKIN_DROP_WEIGHTS[l] ?? 1;
+      if (roll <= 0) { chosenLevel = l; break; }
+    }
+
+    const rows = (await db.execute(sql`
+      SELECT cs.id, cs.level, cs.name, cs.image_url, cs.category,
+             COALESCE(a.name, p.name) AS card_name,
+             COALESCE(a.rarity, p.rarity) AS card_rarity,
+             (CASE WHEN cs.category = 'animal'
+                   THEN cs.card_id IN (SELECT animal_id FROM user_cards WHERE user_id = ${userId})
+                   ELSE cs.card_id IN (SELECT pokemon_id FROM user_pokemon_cards WHERE user_id = ${userId}) END) AS owned
+      FROM card_skins cs
+      LEFT JOIN animals a ON cs.category = 'animal' AND a.id = cs.card_id
+      LEFT JOIN pokemon p ON cs.category = 'pokemon' AND p.id = cs.card_id
+      WHERE cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
+      AND cs.level = ${chosenLevel}
+      ORDER BY random()
+      LIMIT 1
+    `)) as unknown as { rows?: Record<string, unknown>[] };
+    const [pick] = ((rows.rows ?? rows) as unknown as {
+      id: number; level: number; name: string; image_url: string | null;
+      category: "animal" | "pokemon"; card_name: string; card_rarity: string; owned: boolean;
+    }[]);
+    if (!pick) break;
+    await db.insert(userSkins).values({ userId, skinId: pick.id }).onConflictDoNothing();
+    const owned = Boolean(pick.owned);
+    draws.push(
+      owned
+        ? {
+            level: Number(pick.level), category: pick.category, cardRarity: pick.card_rarity,
+            owned, skinName: pick.name, cardName: pick.card_name, imageUrl: pick.image_url,
+          }
+        : { level: Number(pick.level), category: pick.category, cardRarity: pick.card_rarity, owned },
+    );
+  }
+  return draws;
+}
+
+// Les skins qui « attendaient » une carte : tirés en mystère avant de la
+// posséder, révélés au moment où elle est obtenue.
+export interface AwaitingSkin {
   level: number;
   name: string;
   imageUrl: string | null;
-  cardName: string;
-  category: "animal" | "pokemon";
 }
 
-export async function drawSessionSkin(userId: number): Promise<SkinReward | null> {
-  // Le niveau d'abord, au poids (1 fréquent → 5 très rare), parmi les
-  // niveaux où il reste au moins un skin à gagner ; la carte ensuite,
-  // au hasard dans ce niveau.
-  const levelRows = (await db.execute(sql`
-    SELECT cs.level, COUNT(*)::int AS n
-    FROM card_skins cs
-    WHERE (
-      (cs.category = 'animal' AND cs.card_id IN (SELECT animal_id FROM user_cards WHERE user_id = ${userId}))
-      OR (cs.category = 'pokemon' AND cs.card_id IN (SELECT pokemon_id FROM user_pokemon_cards WHERE user_id = ${userId}))
-    )
-    AND cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
-    GROUP BY cs.level
-  `)) as unknown as { rows?: { level: number; n: number }[] };
-  const available = ((levelRows.rows ?? levelRows) as unknown as { level: number; n: number }[])
-    .map((r) => Number(r.level));
-  if (available.length === 0) return null; // collection de skins complète
-  const totalW = available.reduce((a, l) => a + (SKIN_DROP_WEIGHTS[l] ?? 1), 0);
-  let roll = Math.random() * totalW;
-  let chosenLevel = available[0];
-  for (const l of available) {
-    roll -= SKIN_DROP_WEIGHTS[l] ?? 1;
-    if (roll <= 0) { chosenLevel = l; break; }
-  }
-
+export async function skinsAwaitingFor(
+  userId: number,
+  category: "animal" | "pokemon",
+  cardId: number,
+): Promise<AwaitingSkin[]> {
   const rows = (await db.execute(sql`
-    SELECT cs.id, cs.level, cs.name, cs.image_url,
-           COALESCE(a.name, p.name) AS card_name, cs.category
-    FROM card_skins cs
-    LEFT JOIN animals a ON cs.category = 'animal' AND a.id = cs.card_id
-    LEFT JOIN pokemon p ON cs.category = 'pokemon' AND p.id = cs.card_id
-    WHERE (
-      (cs.category = 'animal' AND cs.card_id IN (SELECT animal_id FROM user_cards WHERE user_id = ${userId}))
-      OR (cs.category = 'pokemon' AND cs.card_id IN (SELECT pokemon_id FROM user_pokemon_cards WHERE user_id = ${userId}))
-    )
-    AND cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
-    AND cs.level = ${chosenLevel}
-    ORDER BY random()
-    LIMIT 1
-  `)) as unknown as { rows?: Record<string, unknown>[] };
-  const [pick] = ((rows.rows ?? rows) as unknown as {
-    id: number; level: number; name: string; image_url: string | null; card_name: string; category: "animal" | "pokemon";
-  }[]);
-  if (!pick) return null;
-  await db.insert(userSkins).values({ userId, skinId: pick.id }).onConflictDoNothing();
-  return {
-    skinId: pick.id,
-    level: Number(pick.level),
-    name: pick.name,
-    imageUrl: pick.image_url,
-    cardName: pick.card_name,
-    category: pick.category,
-  };
+    SELECT cs.level, cs.name, cs.image_url
+    FROM user_skins us
+    JOIN card_skins cs ON cs.id = us.skin_id
+    WHERE us.user_id = ${userId} AND cs.category = ${category} AND cs.card_id = ${cardId}
+    ORDER BY cs.level
+  `)) as unknown as { rows?: { level: number; name: string; image_url: string | null }[] };
+  return (((rows.rows ?? rows) as unknown as { level: number; name: string; image_url: string | null }[]) ?? [])
+    .map((r) => ({ level: Number(r.level), name: r.name, imageUrl: r.image_url }));
 }
 
 // ─── Miracles hebdomadaires ─────────────────────────────────────────────────

@@ -198,9 +198,28 @@ export async function GET() {
       };
     });
 
+  // La réserve : les skins mystère (cartes non possédées), comptés par
+  // catégorie × rareté de carte × niveau — sans jamais révéler la carte.
+  const reserveRows = (await db.execute(sql`
+    SELECT cs.category, COALESCE(a.rarity, p.rarity) AS rarity, cs.level, COUNT(*)::int AS n
+    FROM user_skins us
+    JOIN card_skins cs ON cs.id = us.skin_id
+    LEFT JOIN animals a ON cs.category = 'animal' AND a.id = cs.card_id
+    LEFT JOIN pokemon p ON cs.category = 'pokemon' AND p.id = cs.card_id
+    WHERE us.user_id = ${auth.userId}
+      AND NOT (CASE WHEN cs.category = 'animal'
+                    THEN cs.card_id IN (SELECT animal_id FROM user_cards WHERE user_id = ${auth.userId})
+                    ELSE cs.card_id IN (SELECT pokemon_id FROM user_pokemon_cards WHERE user_id = ${auth.userId}) END)
+    GROUP BY cs.category, COALESCE(a.rarity, p.rarity), cs.level
+    ORDER BY cs.level DESC, rarity
+  `)) as unknown as { rows?: { category: string; rarity: string; level: number; n: number }[] };
+  const skinReserve = (((reserveRows.rows ?? reserveRows) as unknown as { category: string; rarity: string; level: number; n: number }[]) ?? [])
+    .map((r) => ({ category: r.category, rarity: r.rarity, level: Number(r.level), count: Number(r.n) }));
+
   return Response.json({
     charges,
     guardians,
+    skinReserve,
     odds: {
       hat: Object.fromEntries(
         Object.entries(hat).map(([k, w]) => [k, hatTotal > 0 ? Math.round((w / hatTotal) * 100) : 0]),

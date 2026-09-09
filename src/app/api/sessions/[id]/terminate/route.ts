@@ -7,7 +7,7 @@ import {
 } from "@/lib/db/schema";
 import { and, eq, sql } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
-import { drawCardioReserves, drawSessionSkin, resolveGuardians, type CardioDraw, type GuardianResolution, type SkinReward } from "@/lib/guardians";
+import { drawCardioReserves, resolveGuardians, type CardioDraw, type GuardianResolution } from "@/lib/guardians";
 import { claimNewTrophies, sessionTrophyProgress, type TrophyProgressStep } from "@/lib/trophies-server";
 import { TROPHIES } from "@/lib/trophies";
 import { revalidatePath } from "next/cache";
@@ -55,7 +55,6 @@ export async function POST(
   let newTrophies: string[] = [];
   // L'Échappée : cartes tirées par le cardio, à placer dans la cérémonie.
   let cardioDraws: CardioDraw[] = [];
-  let skinReward: SkinReward | null = null;
   // L'avancée : ce que la séance a fait progresser vers les trophées.
   let trophyProgress: TrophyProgressStep[] = [];
   // 1ʳᵉ et 4ᵉ séance terminée de la semaine ISO (basée sur sessions.date,
@@ -126,8 +125,7 @@ export async function POST(
       newTrophies = await claimNewTrophies(auth.userId);
       trophyProgress = await sessionTrophyProgress(auth.userId, sessionId);
       cardioDraws = await drawCardioReserves(auth.userId, sessionId);
-      // Le skin de la séance : un par clôture, sans doublon.
-      skinReward = await drawSessionSkin(auth.userId);
+      // Les skins se gagnent désormais à l'ouverture des packs (3 par pack).
 
       const isSpecialPosition = weekPosition === 1 || weekPosition === 4;
       if (isSpecialPosition) {
@@ -190,7 +188,6 @@ export async function POST(
       .filter(Boolean)
       .map((t) => ({ id: t!.id, name: t!.name, rewardLabel: t!.rewardLabel })),
     cardioDraws,
-    skinReward,
     trophyProgress,
   });
 }
