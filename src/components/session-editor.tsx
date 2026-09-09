@@ -51,6 +51,9 @@ interface SessionExercise {
   locked: boolean;
   notes: string | null;
   record: number | null;
+  // Séances pesées sur la machine (celle-ci comprise) : sous 4, un record
+  // n'entre pas encore au compteur des trophées — le badge le dit.
+  recordHistory?: number;
   lastPerf: LastPerf | null;
   knownWeights: number[];
   sets: ExerciseSet[];
@@ -503,6 +506,7 @@ export function SessionEditor({ sessionId }: { sessionId: number }) {
                 locked={ex.locked}
                 notes={ex.notes}
                 record={ex.record}
+                recordHistory={ex.recordHistory ?? 0}
                 lastPerf={ex.lastPerf}
                 knownWeights={ex.knownWeights}
                 sets={ex.sets}
