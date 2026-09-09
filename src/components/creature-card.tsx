@@ -115,7 +115,7 @@ export function CreatureCard({
             alt={name}
             width={size === "lg" ? 320 : 110}
             height={size === "lg" ? 320 : 110}
-            className="size-full object-cover drop-shadow-lg"
+            className="size-full scale-[1.22] object-cover drop-shadow-lg"
             unoptimized
           />
         ) : (

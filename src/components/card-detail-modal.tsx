@@ -235,17 +235,14 @@ export function CardDetailModal({
                     title={sk.owned ? `${sk.name} (niv. ${sk.level})` : `Niveau ${sk.level} — à gagner en séance`}
                     className={`relative aspect-square overflow-hidden rounded-[3px] ring-1 transition-all active:scale-95 ${
                       isEquipped ? "ring-2 ring-primary" : "ring-border"
-                    } ${!sk.owned ? "opacity-60" : ""}`}
+                    }`}
                   >
-                    {sk.imageUrl ? (
+                    {sk.owned && sk.imageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={sk.imageUrl}
-                        alt=""
-                        className={`size-full object-cover ${!sk.owned ? "brightness-[0.25] saturate-0" : ""}`}
-                      />
+                      <img src={sk.imageUrl} alt="" className="size-full object-cover" />
                     ) : (
-                      <span className="flex size-full items-center justify-center bg-secondary/40 font-mono text-[10px] text-muted-foreground">
+                      // Non possédé : rien à deviner — un « ? » et c'est tout.
+                      <span className="flex size-full items-center justify-center bg-secondary/40 font-mono text-sm font-black text-muted-foreground/70">
                         ?
                       </span>
                     )}
