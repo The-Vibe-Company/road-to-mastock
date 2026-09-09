@@ -12,7 +12,7 @@ import { CardioSetRow } from "./cardio-set-row";
 import { AssistedSetForm, type AssistedPayload } from "./assisted-set-form";
 import { AssistedSetRow } from "./assisted-set-row";
 import { RestTimer } from "./rest-timer";
-import { Lock, Unlock, Trophy, ChevronUp, ChevronDown, StickyNote, Check, Trash2, History, Loader2, AlertTriangle, MapPin, ListOrdered, Shield, Hourglass } from "@/components/icons";
+import { Lock, Unlock, Trophy, ChevronUp, ChevronDown, StickyNote, Check, Trash2, History, Loader2, AlertTriangle, MapPin, ListOrdered, Shield } from "@/components/icons";
 import { cardioMachineFromName } from "@/lib/cardio";
 import { computeSessionPlan } from "@/lib/session-plan";
 import { MascotBackdrop } from "./mascot-backdrop";
@@ -62,9 +62,6 @@ interface ExerciseBlockProps {
   locked: boolean;
   notes: string | null;
   record: number | null;
-  // Séances pesées sur la machine — sous 4, le record est « en rodage » :
-  // affiché, mais pas encore compté par les trophées.
-  recordHistory?: number;
   lastPerf: LastPerf | null;
   knownWeights: number[];
   sets: ExerciseSet[];
@@ -140,7 +137,6 @@ export function ExerciseBlock({
   locked,
   notes,
   record,
-  recordHistory = 0,
   lastPerf,
   knownWeights,
   sets,
@@ -170,11 +166,6 @@ export function ExerciseBlock({
     ? sets.reduce((sum, s) => sum + (s.calories ?? 0), 0)
     : 0;
   const medal = !isCardio && record && record <= 3 ? recordStyles[record] : null;
-  // Même verrou que le compteur de trophées (RECORD_MIN_HISTORY = 3) : le
-  // badge « Record » d'une machine en rodage annonce quand il comptera.
-  const rodage = medal && record === 1 && recordHistory > 0 && recordHistory < 4
-    ? 4 - recordHistory
-    : 0;
   const [applyToken, setApplyToken] = useState(0);
   const [showVariants, setShowVariants] = useState(false);
   const [variantOptions, setVariantOptions] = useState<{ id: number; name: string }[]>([]);
@@ -334,19 +325,10 @@ export function ExerciseBlock({
                   : powerShorts(mascot.category, mascot.subtype, mascot.rarity).tiny}
               </Badge>
             )}
-            {medal && rodage === 0 && (
+            {medal && (
               <Badge className={`${medal.badge} text-[10px] font-bold`}>
                 <Trophy className="mr-1 size-3" />
                 {medal.label}
-              </Badge>
-            )}
-            {medal && rodage > 0 && (
-              <Badge
-                className="bg-yellow-500/8 text-[10px] font-bold text-yellow-500/70"
-                title="Une machine compte ses records à partir de sa 4e séance — sinon la première serait un record automatique."
-              >
-                <Hourglass className="mr-1 size-3" />
-                {rodage === 1 ? "Record · dès la prochaine" : `Record · dans ${rodage} séances`}
               </Badge>
             )}
             {muscleGroups.map((mg) => (

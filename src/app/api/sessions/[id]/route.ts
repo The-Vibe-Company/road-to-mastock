@@ -256,7 +256,7 @@ export async function GET(
   }
 
   // Compute rankings for each exercise (max weight & total volume across all user sessions)
-  const rankings: Record<number, { weightRank: number | null; volumeRank: number | null; history: number }> = {};
+  const rankings: Record<number, { weightRank: number | null; volumeRank: number | null }> = {};
 
   if (exerciseIds.length > 0) {
     const rankRows = (await db.execute(sql`
@@ -279,11 +279,7 @@ export async function GET(
           se_id,
           exercise_id,
           RANK() OVER (PARTITION BY exercise_id, variant_id ORDER BY max_weight DESC) AS weight_rank,
-          RANK() OVER (PARTITION BY exercise_id, variant_id ORDER BY total_volume DESC) AS volume_rank,
-          -- Le rodage : nombre de séances pesées sur cette machine (celle-ci
-          -- comprise). Le trophée ne compte un record qu'à la 4e — même
-          -- verrou que computeTrophyStats (RECORD_MIN_HISTORY = 3).
-          COUNT(*) OVER (PARTITION BY exercise_id, variant_id) AS history
+          RANK() OVER (PARTITION BY exercise_id, variant_id ORDER BY total_volume DESC) AS volume_rank
         FROM exercise_stats
         WHERE max_weight > 0
       )
@@ -291,12 +287,11 @@ export async function GET(
       WHERE se_id IN (${sql.join(exerciseList.map(e => sql`${e.sessionExerciseId}`), sql`, `)})
     `)) as unknown as { rows?: { se_id: number; weight_rank: number; volume_rank: number }[] };
 
-    const rows = (rankRows.rows ?? rankRows) as unknown as { se_id: number; weight_rank: number; volume_rank: number; history: number }[];
+    const rows = (rankRows.rows ?? rankRows) as unknown as { se_id: number; weight_rank: number; volume_rank: number }[];
     for (const row of rows) {
       rankings[row.se_id] = {
         weightRank: Number(row.weight_rank),
         volumeRank: Number(row.volume_rank),
-        history: Number(row.history),
       };
     }
   }
@@ -356,7 +351,6 @@ export async function GET(
             rankings[e.sessionExerciseId].volumeRank ?? 999
           )
         : null,
-      recordHistory: rankings[e.sessionExerciseId]?.history ?? 0,
       lastPerf: lastPerf[variantKey(e.exerciseId, e.variantId)] || null,
       knownWeights: knownWeightsMap[variantKey(e.exerciseId, e.variantId)] || [],
     })),

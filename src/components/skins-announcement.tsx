@@ -1,22 +1,45 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Cards, Shield, Sparkles, X } from "@/components/icons";
 
-const SEEN_KEY = "rtm-announce-skins-v1";
+// v2 : la v1 (sans le cadeau) a été vue par les premiers connectés — on
+// remontre l'annonce une fois pour que le 🎁 arrive à tout le monde.
+const SEEN_KEY = "rtm-announce-skins-v2";
+
+interface GiftSkin {
+  level: number;
+  name: string;
+  imageUrl: string | null;
+  cardName: string;
+}
 
 // L'annonce de la feature Skins : montrée une fois par appareil, à la
-// première reconnexion après le déploiement.
+// première reconnexion après le déploiement — avec un skin niveau 1
+// offert (une fois par joueur, côté serveur) sur une carte possédée.
 export function SkinsAnnouncement() {
   const [open, setOpen] = useState(false);
+  const [gift, setGift] = useState<GiftSkin | null>(null);
 
   useEffect(() => {
+    let seen = false;
     try {
-      if (!localStorage.getItem(SEEN_KEY)) setOpen(true);
+      seen = Boolean(localStorage.getItem(SEEN_KEY));
     } catch {
       // stockage indisponible : pas d'annonce plutôt qu'une annonce en boucle
+      seen = true;
     }
+    if (seen) return;
+    setOpen(true);
+    // Le cadeau de bienvenue — le serveur garantit l'unicité par joueur.
+    fetch("/api/cards/skin-gift", { method: "POST" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.granted && d.skin) setGift(d.skin);
+      })
+      .catch(() => {});
   }, []);
 
   const dismiss = () => {
@@ -49,6 +72,30 @@ export function SkinsAnnouncement() {
           <p className="mt-1 text-center text-xs text-muted-foreground">
             Chaque carte a désormais 5 tenues à collectionner.
           </p>
+
+          {gift && (
+            <div className="animate-card-reveal mt-5 rounded-2xl bg-primary/10 p-3 ring-1 ring-primary/40">
+              <p className="text-center text-[10px] font-black uppercase tracking-[0.25em] text-primary">
+                🎁 Ton premier skin est offert
+              </p>
+              <div className="mt-2.5 flex items-center gap-3">
+                {gift.imageUrl && (
+                  <div className="relative size-20 shrink-0 overflow-hidden rounded-xl ring-1 ring-primary/40 bg-black/40">
+                    <Image src={gift.imageUrl} alt="" fill unoptimized className="object-contain" />
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-black tracking-tight">« {gift.name} »</p>
+                  <p className="mt-0.5 text-xs font-bold text-muted-foreground">
+                    pour {gift.cardName} · niveau 1
+                  </p>
+                  <p className="mt-1 text-[10px] text-muted-foreground">
+                    Déjà dans sa garde-robe — équipe-le !
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="mt-5 space-y-3">
             <div className="flex items-start gap-3 rounded-2xl bg-secondary/30 p-3 ring-1 ring-border">

@@ -13,7 +13,7 @@ import { mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 config({ path: ".env.local" });
 
 const DA_SKIN =
-  "Same vibrant stylized 3D cartoon VIDEO-GAME art style as the reference (Clash Royale × Zelda): chunky appealing proportions, big expressive glossy eyes, smooth hand-painted textures, bold saturated colors, punchy lighting — NOT photorealistic. KEEP the character recognizable: same species, same face, same colors and markings — but DO NOT copy the reference's default expression, use the EXPRESSION written in the scene. REMOVE its default gear — this skin has a new outfit. REPLACE the reference's pedestal and studio background entirely with the scene below.";
+  "Same vibrant stylized 3D cartoon VIDEO-GAME art style as the reference (Clash Royale × Zelda): chunky appealing proportions, big expressive glossy eyes, smooth hand-painted textures, bold saturated colors, punchy lighting — NOT photorealistic. The ENTIRE scene — background, props, foliage, sky, water — must be painted in that same chunky stylized hand-painted game-art style: simplified shapes, saturated colors, painterly lighting. NO photorealistic background, NO photographic depth-of-field, NO realistic nature photography. KEEP the character recognizable: same species, same face, same colors and markings — but DO NOT copy the reference's default expression, use the EXPRESSION written in the scene. REMOVE its default gear — this skin has a new outfit. REPLACE the reference's pedestal and studio background entirely with the scene below.";
 const FIN = "Full character visible, centered, square composition. No text, no borders, no card frame.";
 const DENSITY: Record<number, string> = {
   1: "Skin tier 1 of 5 — a simple, calm, minimal scene with very few elements.",
@@ -128,7 +128,8 @@ async function main() {
         const refPath = `${CACHE}/${row.category}-${row.slug}.png`;
         if (!existsSync(refPath)) {
           const buster = encodeURIComponent(row.base_done_at ?? Date.now());
-          const res = await fetch(`${row.image_url}?v=${buster}`);
+          const sep = row.image_url.includes("?") ? "&" : "?";
+          const res = await fetch(`${row.image_url}${sep}v=${buster}`);
           if (!res.ok) throw new Error(`fetch ref HTTP ${res.status}`);
           writeFileSync(refPath, Buffer.from(await res.arrayBuffer()));
         }
@@ -150,9 +151,15 @@ async function main() {
         if (done % 50 === 0) console.log(`JALON: ${done} skins générés, ${queue.length} restants`);
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
-        consecFails++; okStreak = 0;
-        const next = attempt + 1;
-        if (next >= MAX_ATTEMPTS) {
+        // Un bloc de modération est un problème d'image, pas de capacité :
+        // il ne doit pas déclencher le disjoncteur de saturation.
+        const isModeration = /moderation/i.test(msg);
+        // Un 429 de quota n'est pas un essai : l'image n'a jamais été générée.
+        const isRateLimit = /pricing tier|rate limit|429/i.test(msg);
+        if (!isModeration) consecFails++;
+        okStreak = 0;
+        const next = isRateLimit ? attempt : attempt + 1;
+        if (next >= MAX_ATTEMPTS && !isRateLimit) {
           await sqlc`UPDATE card_skins SET status = 'blocked', attempts = ${next}, updated_at = NOW() WHERE id = ${row.id}`;
           blocked++;
           console.log(`BLOQUÉ ${row.category}/${row.slug} n${row.level} après ${next} essais — ${msg.slice(0, 90)}`);
@@ -182,6 +189,16 @@ async function main() {
   for (let cycle = 1; cycle <= MAX_CYCLES; cycle++) {
     if (queue.length === 0) queue = await load();
     if (queue.length === 0) {
+      // Des bases encore en fabrication ? On attend qu'elles débloquent de
+      // nouveaux skins plutôt que de conclure — le cycle ne compte pas.
+      const [bases] = (await sqlc.query(`SELECT COUNT(*)::int n FROM base_regen WHERE status IN ('pending','retry')`)) as unknown as { n: number }[];
+      if (bases.n > 0) {
+        console.log(`file vide mais ${bases.n} bases encore en fabrication — pause 5 min`);
+        await new Promise((r) => setTimeout(r, 300000));
+        cycle--;
+        queue = await load();
+        continue;
+      }
       const [b] = (await sqlc.query(`SELECT COUNT(*)::int n FROM card_skins WHERE status='blocked'`)) as unknown as { n: number }[];
       if (b.n === 0) break;
       console.log(`CYCLE ${cycle}: requeue de ${b.n} bloqués après pause 20 min`);
