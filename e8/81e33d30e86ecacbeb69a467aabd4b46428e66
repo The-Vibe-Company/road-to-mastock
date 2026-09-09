@@ -1,0 +1,42 @@
+scripts/latest-images.ts
+  s_6dc77352c5bc09::t_f5884f7c3adc1d 17-18
+  s_6dc77352c5bc09::t_b3dd765da0628a 1-16,19-26,28-44
+  s_6dc77352c5bc09::t_b662904d1505c9 27
+scripts/progress-report.ts
+  s_6dc77352c5bc09::t_b11353bb3cc932 1-52,60-73
+  s_6dc77352c5bc09::t_66e88b073e80b3 53-59
+.claude/launch.json
+  s_6dc77352c5bc09::t_c81550de350aed 1-11
+scripts/add-skin-gift.ts
+  s_6dc77352c5bc09::t_2e18b536df236f 1-13
+scripts/generate-bases.ts
+  s_6dc77352c5bc09::t_75417c0fcd4cf8 20,160-161,163,166-171,183-191
+scripts/generate-skins-v2.ts
+  s_6dc77352c5bc09::t_ca8b1d7f128f99 16,131-132,154-162,192-201
+src/app/api/cards/skin-gift/route.ts
+  s_6dc77352c5bc09::t_fcfc775a8f0d00 1-46
+src/app/api/sessions/[id]/route.ts
+  s_6dc77352c5bc09::t_3f1d43accb069e 259,282,290
+src/components/exercise-block.tsx
+  s_6dc77352c5bc09::t_1c15a4d4022811 15,328
+src/components/skins-announcement.tsx
+  s_6dc77352c5bc09::t_d0e50388b72c79 4,10-16,18-19,22,25,27,30,32-40,74-97
+src/lib/db/schema.ts
+  s_6dc77352c5bc09::t_773af6331b53bf 30-31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "e881e33d30e86ecacbeb69a467aabd4b46428e66",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
