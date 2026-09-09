@@ -18,7 +18,7 @@ config({ path: ".env.local" });
 
 const DA =
   "REPAINTED in a vibrant stylized 3D cartoon VIDEO-GAME art style (Clash Royale × Zelda): chunky appealing proportions, big expressive glossy eyes, smooth hand-painted textures, bold saturated colors, punchy lighting — NOT photorealistic. KEEP the character itself: same species, same face, same colors and markings, same personality. This BASE CARD drops the old uniform dress-up kits: REMOVE the generic accessories seen in the reference (eye bandanas, scarves, satchels, flowers, bell collars, necklaces) — keep only an item that is truly iconic for THIS character (a crown, an armor, a legendary weapon). IMPORTANT: if the reference wears a dark band or mask across the eyes, it is a COSTUME, NOT the animal's face — remove it completely and paint the species' TRUE natural facial fur and colors instead. THEN give the creature ONE small fun signature detail of your own invention that fits its personality, species or name — a quirky little prop or trait, unique to this creature, never the same from one card to another (or none, if the creature is more striking plain).";
-const FIN = "The character is LARGE in frame and fills most of the canvas with its pedestal — tight heroic composition, minimal empty background around it. Full character visible, centered, square composition. No text, no borders, no card frame.";
+const FIN = "Full character visible, centered, square composition. No text, no borders, no card frame.";
 const PEDESTALS: Record<string, string> = {
   common:
     "on a small plain round stone base with a tuft of grass — COMMON tier: simple rough stone pedestal, no ornaments, soft neutral studio gradient background, clean and iconic",
