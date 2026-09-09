@@ -1,0 +1,20 @@
+src/components/creature-card.tsx
+  s_6dc77352c5bc09::t_b3a290d71799f4 94
+  s_6dc77352c5bc09::t_beee4ef9de546f 101
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "081a7b200e3278b41ce4a1e6cc13870ab626ee76",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
