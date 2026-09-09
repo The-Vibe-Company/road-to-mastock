@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Flame, PawPrint, Zap, Vault, Star, Package, Sparkles, Shield, BookOpen, ChevronDown, ChevronUp, Funnel } from "@/components/icons";
 import { Button } from "@/components/ui/button";
@@ -145,7 +146,26 @@ interface CollectionData {
   // Les skins mystère : gagnés aux packs pour des cartes pas encore
   // possédées — comptés sans révéler la carte.
   skinReserve?: { category: "animal" | "pokemon"; rarity: Rarity; level: number; count: number }[];
+  mysterySkins?: { category: "animal" | "pokemon"; rarity: Rarity; level: number }[];
 }
+
+// La vue « Tous mes skins » : anneaux et badges par niveau.
+const LEVEL_RING: Record<number, string> = {
+  1: "ring-zinc-500/50", 2: "ring-emerald-500/60", 3: "ring-sky-500/60",
+  4: "ring-violet-500/70", 5: "ring-amber-500/90",
+};
+const LEVEL_BADGE: Record<number, string> = {
+  1: "bg-zinc-600 text-zinc-100", 2: "bg-emerald-600 text-emerald-50", 3: "bg-sky-600 text-sky-50",
+  4: "bg-violet-600 text-violet-50", 5: "bg-gradient-to-br from-amber-300 to-amber-600 text-black",
+};
+const MYST_BG: Record<Rarity, string> = {
+  common: "from-zinc-700 via-zinc-900 to-zinc-950",
+  uncommon: "from-emerald-700 via-emerald-900 to-emerald-950",
+  rare: "from-sky-700 via-sky-900 to-sky-950",
+  epic: "from-violet-700 via-violet-900 to-violet-950",
+  legendary: "from-amber-700 via-amber-900 to-amber-950",
+  mythic: "from-rose-700 via-fuchsia-900 to-rose-950",
+};
 
 const RESERVE_TEXT: Record<Rarity, string> = {
   common: "text-zinc-300",
@@ -173,6 +193,8 @@ export default function CollectionPage() {
   const [activeFilter, setActiveFilter] = useState<Filter>("all");
   // Le panneau ▾ : jetons spéciaux, énergie, progression, Forge.
   const [detailOpen, setDetailOpen] = useState(false);
+  // La vue « Tous mes skins » : remplace la grille des cartes.
+  const [showSkins, setShowSkins] = useState(false);
   // Le tiroir des critères, et les critères cochés.
   const [showCrits, setShowCrits] = useState(false);
   const [crits, setCrits] = useState<Crit[]>([]);
@@ -506,6 +528,22 @@ export default function CollectionPage() {
           </span>
         </button>
         <button
+          onClick={() => setShowSkins((v) => !v)}
+          aria-label="Tous mes skins"
+          className={`flex items-center gap-1 rounded-[3px] px-2 text-[9px] font-black uppercase tracking-widest ring-1 transition-all active:scale-95 ${
+            showSkins
+              ? "bg-primary/15 text-primary ring-primary/40"
+              : "bg-secondary/30 text-muted-foreground ring-border"
+          }`}
+        >
+          Skins
+          <span className="font-mono tabular-nums">
+            {(data.animals.cards.reduce((a, c) => a + (c.skins?.filter((s) => s.owned).length ?? 0), 0) +
+              data.pokemon.cards.reduce((a, c) => a + (c.skins?.filter((s) => s.owned).length ?? 0), 0) +
+              (data.mysterySkins?.length ?? 0))}
+          </span>
+        </button>
+        <button
           onClick={() => setDetailOpen((v) => !v)}
           aria-label="Détail des tirages"
           className="flex w-8 items-center justify-center rounded-[3px] bg-secondary/30 text-muted-foreground ring-1 ring-border transition-all active:scale-95"
@@ -646,6 +684,98 @@ export default function CollectionPage() {
         </div>
       )}
 
+      {/* La vue « Tous mes skins » : révélés puis mystères, à la place de la grille. */}
+      {showSkins ? (
+        (() => {
+          const revealed = [
+            ...data.animals.cards.flatMap((c) =>
+              (c.skins ?? []).filter((s) => s.owned).map((s) => ({
+                ...s, cardName: c.name, equipped: c.equippedSkinLevel === s.level,
+              })),
+            ),
+            ...data.pokemon.cards.flatMap((c) =>
+              (c.skins ?? []).filter((s) => s.owned).map((s) => ({
+                ...s, cardName: c.name, equipped: c.equippedSkinLevel === s.level,
+              })),
+            ),
+          ].sort((a, b) => b.level - a.level || a.cardName.localeCompare(b.cardName));
+          const mysteries = data.mysterySkins ?? [];
+          return (
+            <div className="space-y-6 pb-8">
+              <section>
+                <p className="mb-2 text-[9px] font-black uppercase tracking-[0.2em] text-primary/70">
+                  Révélés — {revealed.length}
+                </p>
+                {revealed.length === 0 ? (
+                  <p className="rounded-[3px] bg-secondary/20 p-3 text-xs text-muted-foreground ring-1 ring-border">
+                    Aucun skin révélé pour l&apos;instant — ouvre des packs, ou tire les cartes de tes mystères.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2.5">
+                    {revealed.map((s, i) => (
+                      <div key={i} className={`overflow-hidden rounded-[10px] bg-card ring-2 ${LEVEL_RING[s.level] ?? "ring-border"}`}>
+                        <div className="relative aspect-square w-full bg-black/40">
+                          {s.imageUrl ? (
+                            <Image src={s.imageUrl} alt="" fill unoptimized className="object-cover" />
+                          ) : (
+                            <div className="flex h-full items-center justify-center text-[9px] text-muted-foreground">Bientôt…</div>
+                          )}
+                          <span className={`absolute right-1 top-1 rounded-full px-1.5 py-0.5 text-[8px] font-black ${LEVEL_BADGE[s.level] ?? ""}`}>
+                            N{s.level}
+                          </span>
+                          {s.equipped && (
+                            <span className="absolute left-1 top-1 rounded-full bg-primary px-1.5 py-0.5 text-[8px] font-black text-black">
+                              ÉQUIPÉ
+                            </span>
+                          )}
+                        </div>
+                        <div className="px-1.5 py-1.5 text-center">
+                          <p className="truncate text-[10px] font-black leading-tight">« {s.name} »</p>
+                          <p className="truncate text-[9px] font-bold text-muted-foreground">{s.cardName}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section>
+                <p className="mb-2 text-[9px] font-black uppercase tracking-[0.2em] text-primary/70">
+                  Mystères — {mysteries.length}
+                </p>
+                {mysteries.length === 0 ? (
+                  <p className="rounded-[3px] bg-secondary/20 p-3 text-xs text-muted-foreground ring-1 ring-border">
+                    Aucun mystère en réserve.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2.5">
+                    {mysteries.map((m, i) => (
+                      <div
+                        key={i}
+                        className={`flex aspect-square flex-col items-center justify-center gap-1 rounded-[10px] bg-gradient-to-b ring-1 ring-white/10 ${MYST_BG[m.rarity] ?? MYST_BG.common}`}
+                      >
+                        <span className="text-2xl font-black text-white/30">?</span>
+                        <span className="px-1 text-center text-[9px] font-black leading-tight">
+                          {m.category === "animal" ? "Animal" : "Pokémon"}
+                          <br />
+                          {RARITY_LABELS[m.rarity].toLowerCase()}
+                        </span>
+                        <span className={`rounded-full px-1.5 py-0.5 text-[8px] font-black ${LEVEL_BADGE[m.level] ?? ""}`}>
+                          N{m.level}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <p className="mt-2 text-[10px] text-muted-foreground">
+                  Un mystère se révèle le jour où tu tires sa carte.
+                </p>
+              </section>
+            </div>
+          );
+        })()
+      ) : (
+        <>
       {/* TOUT le filtrage sur une ligne : catégorie, raretés, critères. */}
       <div className="mb-4 flex items-center gap-1.5">
         {(
@@ -926,6 +1056,8 @@ export default function CollectionPage() {
           )}
         </SheetContent>
       </Sheet>
+        </>
+      )}
 
       {modalResult && (
         <PackOpenModal result={modalResult} onClose={() => setModalResult(null)} odds={data.odds} />
