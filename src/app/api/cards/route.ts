@@ -15,7 +15,7 @@ import { eq, sql } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 import { RARITIES, type Rarity } from "@/lib/rarities";
 import { loadCharges } from "@/lib/guardians";
-import { buildPackHat, buildWheel, magnesieOf, PRODIGES, MIRACLES } from "@/lib/powers";
+import { buildPackHat, buildWheel, magnesieOf, skinRarityShiftTenths, PRODIGES, MIRACLES } from "@/lib/powers";
 import { talentOf } from "@/lib/talents";
 
 // La carte nourrit-elle la Forge ? Vrai si son prodige/miracle touche à la
@@ -216,10 +216,28 @@ export async function GET() {
   const skinReserve = (((reserveRows.rows ?? reserveRows) as unknown as { category: string; rarity: string; level: number; n: number }[]) ?? [])
     .map((r) => ({ category: r.category, rarity: r.rarity, level: Number(r.level), count: Number(r.n) }));
 
+  // Le détail des mystères, un par un (sans identité de carte) — pour la
+  // vue « Tous mes skins ».
+  const mysteryRows = (await db.execute(sql`
+    SELECT cs.category, COALESCE(a.rarity, p.rarity) AS rarity, cs.level
+    FROM user_skins us
+    JOIN card_skins cs ON cs.id = us.skin_id
+    LEFT JOIN animals a ON cs.category = 'animal' AND a.id = cs.card_id
+    LEFT JOIN pokemon p ON cs.category = 'pokemon' AND p.id = cs.card_id
+    WHERE us.user_id = ${auth.userId}
+      AND NOT (CASE WHEN cs.category = 'animal'
+                    THEN cs.card_id IN (SELECT animal_id FROM user_cards WHERE user_id = ${auth.userId})
+                    ELSE cs.card_id IN (SELECT pokemon_id FROM user_pokemon_cards WHERE user_id = ${auth.userId}) END)
+    ORDER BY cs.level DESC, rarity
+  `)) as unknown as { rows?: { category: string; rarity: string; level: number }[] };
+  const mysterySkins = (((mysteryRows.rows ?? mysteryRows) as unknown as { category: string; rarity: string; level: number }[]) ?? [])
+    .map((r) => ({ category: r.category, rarity: r.rarity, level: Number(r.level) }));
+
   return Response.json({
     charges,
     guardians,
     skinReserve,
+    mysterySkins,
     odds: {
       hat: Object.fromEntries(
         Object.entries(hat).map(([k, w]) => [k, hatTotal > 0 ? Math.round((w / hatTotal) * 100) : 0]),
@@ -230,6 +248,9 @@ export async function GET() {
       // La Balance : décalage du curseur animal/pokémon des packs mixtes,
       // en points de pourcentage (positif = vers les Pokémon).
       innerShift: (charges.inner_pokemon ?? 0) - (charges.inner_animal ?? 0),
+      // Le dé de rareté déformé par les Skins équipés des gardiens éveillés
+      // (dixièmes de point de % par rareté) — la roue d'ouverture l'affiche.
+      rarityShift: skinRarityShiftTenths(charges),
     },
     animals: {
       cards: enrich(ownedAnimals, "animal"),

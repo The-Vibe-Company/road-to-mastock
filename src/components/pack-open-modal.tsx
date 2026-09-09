@@ -234,6 +234,9 @@ const RARITY_ITEMS: ReelItem[] = RARITIES.map((r) => ({
 export interface LiveOdds {
   hat: Partial<Record<PackType, number>>;
   innerShift?: number;
+  // Le dé de rareté déformé par les Skins des gardiens éveillés — en
+  // dixièmes de point de % par rareté (ex. { common: -60, legendary: 10 }).
+  rarityShift?: Partial<Record<Rarity, number>>;
 }
 
 function LivePct({
@@ -319,14 +322,18 @@ function CategoryPreviewRow({ packType, odds }: { packType: PackType; odds?: Liv
   );
 }
 
-function RarityPreviewRow({ packType }: { packType: PackType }) {
+function RarityPreviewRow({ packType, shift }: { packType: PackType; shift?: Partial<Record<Rarity, number>> }) {
   const weights = PACK_RARITY_WEIGHTS[packType];
   const total = Object.values(weights).reduce((a, b) => a + b, 0);
   return (
     <div className="flex w-full items-end justify-between gap-1.5">
       {RARITIES.map((r) => {
         const pct = total > 0 ? Math.round((weights[r] / total) * 100) : 0;
-        const dim = weights[r] === 0;
+        // Les Skins des gardiens éveillés déforment le dé (dixièmes de %) —
+        // la roue montre les VRAIS pourcentages du tirage.
+        const delta = (shift?.[r] ?? 0) / 10;
+        const live = Math.max(0, Math.round((pct + delta) * 10) / 10);
+        const dim = weights[r] === 0 && live === 0;
         return (
           <div
             key={r}
@@ -338,9 +345,7 @@ function RarityPreviewRow({ packType }: { packType: PackType }) {
             <p className="text-[9px] font-black uppercase tracking-wider text-foreground/80 text-center leading-tight">
               {RARITY_LABELS[r]}
             </p>
-            <span className="font-mono text-[10px] font-bold tabular-nums text-muted-foreground">
-              {pct}%
-            </span>
+            <LivePct live={live} base={pct} className="font-mono text-[10px] font-bold tabular-nums" />
           </div>
         );
       })}
@@ -680,7 +685,7 @@ export function PackOpenModal({
 
             {phase === "ready" && (
               <>
-                <RarityPreviewRow packType={result.packType} />
+                <RarityPreviewRow packType={result.packType} shift={liveOdds?.rarityShift} />
                 <Button
                   onClick={(e) => {
                     e.stopPropagation();
