@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Cards, Shield, Sparkles, X } from "@/components/icons";
 
 const SEEN_KEY = "rtm-announce-skins-v1";
@@ -96,13 +95,13 @@ export function SkinsAnnouncement() {
         </div>
 
         <div className="border-t border-border/60 px-6 py-4">
-          <Button
-            asChild
+          <Link
+            href="/collection"
             onClick={dismiss}
-            className="h-12 w-full rounded-2xl bg-gradient-orange-intense text-sm font-black uppercase tracking-wider text-black"
+            className="flex h-12 w-full items-center justify-center rounded-2xl bg-gradient-orange-intense text-sm font-black uppercase tracking-wider text-black"
           >
-            <Link href="/collection">Ouvrir un pack</Link>
-          </Button>
+            Ouvrir un pack
+          </Link>
           <button
             onClick={dismiss}
             className="mt-2 w-full py-2 text-center text-xs font-bold text-muted-foreground transition-colors hover:text-foreground"
