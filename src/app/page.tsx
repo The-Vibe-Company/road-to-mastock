@@ -8,6 +8,7 @@ import { Users, Settings, Cards, Trophy, Sparkles, Flame } from "@/components/ic
 import { getAuthUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { HomeTabs } from "@/components/home-tabs";
+import { SkinsAnnouncement } from "@/components/skins-announcement";
 import { NewSessionButton } from "@/components/new-session-button";
 import { RefreshOnReturn } from "@/components/refresh-on-return";
 import { HomeExtras, HomeTrinkets } from "@/components/home-extras";
@@ -138,6 +139,8 @@ export default async function Home() {
   return (
     <div className="flex min-h-dvh flex-col px-4 pb-28 pt-10">
       <RefreshOnReturn />
+      {/* L'annonce des Skins : une fois par appareil, à la reconnexion */}
+      <SkinsAnnouncement />
       {/* Hero — l'affiche : le titre tout en haut, l'identité à sa droite,
           puis la rangée d'outils pleine largeur */}
       <div className="hero-gradient relative -mx-4 -mt-10 mb-8 overflow-hidden px-4 pb-6 pt-4">

@@ -214,10 +214,13 @@ export interface PackSkinDraw {
 export async function drawPackSkins(userId: number, count = 3): Promise<PackSkinDraw[]> {
   const draws: PackSkinDraw[] = [];
   for (let i = 0; i < count; i++) {
+    // Seuls les skins dont l'image est générée entrent dans le chapeau —
+    // jamais de placeholder ; le pool grossit au fil de l'usine.
     const levelRows = (await db.execute(sql`
       SELECT cs.level, COUNT(*)::int AS n
       FROM card_skins cs
-      WHERE cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
+      WHERE cs.status = 'done' AND cs.image_url IS NOT NULL
+      AND cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
       GROUP BY cs.level
     `)) as unknown as { rows?: { level: number }[] };
     const available = ((levelRows.rows ?? levelRows) as unknown as { level: number }[])
@@ -241,7 +244,8 @@ export async function drawPackSkins(userId: number, count = 3): Promise<PackSkin
       FROM card_skins cs
       LEFT JOIN animals a ON cs.category = 'animal' AND a.id = cs.card_id
       LEFT JOIN pokemon p ON cs.category = 'pokemon' AND p.id = cs.card_id
-      WHERE cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
+      WHERE cs.status = 'done' AND cs.image_url IS NOT NULL
+      AND cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
       AND cs.level = ${chosenLevel}
       ORDER BY random()
       LIMIT 1

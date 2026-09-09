@@ -1,0 +1,116 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Cards, Shield, Sparkles, X } from "@/components/icons";
+
+const SEEN_KEY = "rtm-announce-skins-v1";
+
+// L'annonce de la feature Skins : montrée une fois par appareil, à la
+// première reconnexion après le déploiement.
+export function SkinsAnnouncement() {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (!localStorage.getItem(SEEN_KEY)) setOpen(true);
+    } catch {
+      // stockage indisponible : pas d'annonce plutôt qu'une annonce en boucle
+    }
+  }, []);
+
+  const dismiss = () => {
+    try {
+      localStorage.setItem(SEEN_KEY, "1");
+    } catch {}
+    setOpen(false);
+  };
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[130] flex items-end justify-center bg-black/85 backdrop-blur-sm sm:items-center">
+      <div className="relative flex max-h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border-t-2 border-t-primary/40 bg-background sm:rounded-3xl sm:border-2 sm:border-primary/30">
+        <button
+          onClick={dismiss}
+          aria-label="Fermer"
+          className="absolute right-3 top-3 z-10 flex size-9 items-center justify-center rounded-xl bg-secondary/60 text-muted-foreground transition-colors hover:text-primary"
+        >
+          <X className="size-4" />
+        </button>
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4 pt-8">
+          <p className="text-center font-mono text-[10px] font-black uppercase tracking-[0.35em] text-primary/70">
+            Nouveauté
+          </p>
+          <h2 className="mt-1 text-center text-3xl font-black tracking-tighter">
+            Les <span className="text-gradient-orange">Skins</span>
+          </h2>
+          <p className="mt-1 text-center text-xs text-muted-foreground">
+            Chaque carte a désormais 5 tenues à collectionner.
+          </p>
+
+          <div className="mt-5 space-y-3">
+            <div className="flex items-start gap-3 rounded-2xl bg-secondary/30 p-3 ring-1 ring-border">
+              <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                <Cards className="size-4" />
+              </span>
+              <div>
+                <p className="text-sm font-black tracking-tight">3 skins par pack</p>
+                <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                  À chaque ouverture, 3 skins tombent avant ta carte — niveau 1
+                  (fréquent) à 5 (une ouverture sur vingt).
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 rounded-2xl bg-secondary/30 p-3 ring-1 ring-border">
+              <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-xl bg-violet-500/15 text-violet-300">
+                <Sparkles className="size-4" />
+              </span>
+              <div>
+                <p className="text-sm font-black tracking-tight">Des skins mystère</p>
+                <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                  Un skin d&apos;une carte que tu n&apos;as pas encore reste secret —
+                  il se révèle le jour où tu tires sa carte, et t&apos;attend dans
+                  ta réserve (Collection).
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 rounded-2xl bg-secondary/30 p-3 ring-1 ring-border">
+              <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-300">
+                <Shield className="size-4" />
+              </span>
+              <div>
+                <p className="text-sm font-black tracking-tight">Équipe, et gagne</p>
+                <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                  Habille tes cartes dans leur garde-robe. Porté par un Gardien
+                  qui s&apos;éveille, un beau skin améliore la rareté de tes packs
+                  jusqu&apos;à ta prochaine séance.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-border/60 px-6 py-4">
+          <Button
+            asChild
+            onClick={dismiss}
+            className="h-12 w-full rounded-2xl bg-gradient-orange-intense text-sm font-black uppercase tracking-wider text-black"
+          >
+            <Link href="/collection">Ouvrir un pack</Link>
+          </Button>
+          <button
+            onClick={dismiss}
+            className="mt-2 w-full py-2 text-center text-xs font-bold text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Plus tard
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
