@@ -1,0 +1,26 @@
+src/lib/db/schema.ts
+  s_6dc77352c5bc09::t_0f0c8e63cb7dd9 30-31
+scripts/add-skin-gift.ts
+  s_6dc77352c5bc09::t_ba8b5492f3a007 1-13
+src/app/api/cards/skin-gift/route.ts
+  s_6dc77352c5bc09::t_47205a4f09af5b 1-46
+src/components/skins-announcement.tsx
+  s_6dc77352c5bc09::t_7dcfe019339c04 4,10-16,18-19,22,25,27,30,32-40
+  s_6dc77352c5bc09::t_10e4d51ed7df6c 74-97
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "275b609fa6bb7addf5935263981f704d3345fe8e",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
