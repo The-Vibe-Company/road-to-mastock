@@ -1,0 +1,28 @@
+scripts/generate-bases.ts
+  s_6dc77352c5bc09::t_cf0174cb72f6d0 183-185,188-189
+  s_6dc77352c5bc09::t_2327d0606d8708 20
+  s_6dc77352c5bc09::t_a9b4a2d181b487 160-161,163,166-171
+  s_6dc77352c5bc09::t_e05ea82dd83d2a 186-187,190-191
+scripts/generate-skins-v2.ts
+  s_6dc77352c5bc09::t_ff19d8f9d85772 157-158,161-162
+  s_6dc77352c5bc09::t_ac5efbbb1c0771 154-156,159-160
+  s_6dc77352c5bc09::t_ea19129433dcc3 192-201
+  s_6dc77352c5bc09::t_69b764f8628efa 131-132
+  s_6dc77352c5bc09::t_07faca6d368d75 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "0f6b42de3b953650ffc15c5ed243d4f4d8ba1dfa",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
