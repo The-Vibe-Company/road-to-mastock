@@ -5,7 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Cards, Shield, Sparkles, X } from "@/components/icons";
 
-const SEEN_KEY = "rtm-announce-skins-v1";
+// v2 : la v1 (sans le cadeau) a été vue par les premiers connectés — on
+// remontre l'annonce une fois pour que le 🎁 arrive à tout le monde.
+const SEEN_KEY = "rtm-announce-skins-v2";
 
 interface GiftSkin {
   level: number;
