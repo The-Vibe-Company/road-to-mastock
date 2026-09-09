@@ -1,0 +1,44 @@
+src/lib/guardians.ts
+  s_6dc77352c5bc09::t_acfdb02fae1ad5 197-203,206-211,214-263,265-266,268-280,282-289
+src/app/api/cards/open/route.ts
+  s_6dc77352c5bc09::t_4ed76cfe6c93bf 272-273,282-283
+  s_6dc77352c5bc09::t_a3ed6b61b60a46 115-118
+  s_6dc77352c5bc09::t_56c8b232d6c5c9 193-194,203-204
+  s_6dc77352c5bc09::t_6e5214fd0b2645 14
+src/components/pack-open-modal.tsx
+  s_6dc77352c5bc09::t_e1166e352309b9 29,32-47
+  s_6dc77352c5bc09::t_d0ae20e406d818 371-379,381,383-384,388
+  s_6dc77352c5bc09::t_b690e34a5b1822 427,432
+  s_6dc77352c5bc09::t_e382f6ce53a027 469-576
+  s_6dc77352c5bc09::t_382cce94cda0f8 809-837
+  s_6dc77352c5bc09::t_99a70ccdb33957 88-90
+  s_6dc77352c5bc09::t_a63f00c8f0c8df 404-413,416-418
+  s_6dc77352c5bc09::t_fbe4d113d1a8b6 48
+src/app/api/sessions/[id]/terminate/route.ts
+  s_6dc77352c5bc09::t_28fb62cf5f44d6 128
+  s_6dc77352c5bc09::t_1156e9707b7d57 10
+src/app/collection/page.tsx
+  s_6dc77352c5bc09::t_8fdb03df59925f 145-147,150-157
+  s_6dc77352c5bc09::t_da53239c1b3580 521-545
+  s_6dc77352c5bc09::t_8de5081fed2990 158
+src/components/terminate-session-button.tsx
+  s_6dc77352c5bc09::t_9a27efa56f465e 293,297
+src/app/api/cards/route.ts
+  s_6dc77352c5bc09::t_ec1de9f0982e28 201-218,222
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "1ad509c6b44444120c8b9a6b668f65324d59cc8e",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
