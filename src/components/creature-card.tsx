@@ -107,15 +107,17 @@ export function CreatureCard({
         </span>
       </div>
 
-      {/* Image */}
-      <div className={`absolute inset-x-0 ${size === "lg" ? "top-7 bottom-12" : "top-5 bottom-8"} flex items-center justify-center px-2`}>
+      {/* Image — carré plein cadre : dans une carte 3/4, un carré pleine
+          largeur ancré en haut fait EXACTEMENT 75 % de la hauteur. Rien
+          n'est rogné, rien ne flotte ; la bannière occupe le quart restant. */}
+      <div className="absolute inset-x-0 top-0 flex aspect-square items-center justify-center overflow-hidden">
         {imageUrl ? (
           <Image
             src={imageUrl}
             alt={name}
             width={size === "lg" ? 320 : 110}
             height={size === "lg" ? 320 : 110}
-            className="size-full object-cover drop-shadow-lg"
+            className="size-full object-cover"
             unoptimized
           />
         ) : (
@@ -127,8 +129,8 @@ export function CreatureCard({
         )}
       </div>
 
-      {/* Bottom: name banner */}
-      <div className={`absolute inset-x-0 bottom-0 ${size === "lg" ? "py-2 px-3" : "py-1.5 px-2"} bg-gradient-to-t from-black/95 via-black/85 to-transparent`}>
+      {/* Bottom: name banner — remplit le quart restant sous l'image */}
+      <div className={`absolute inset-x-0 bottom-0 top-[75%] flex flex-col justify-center ${size === "lg" ? "px-3" : "px-2"} bg-gradient-to-t from-black/95 via-black/85 to-black/40`}>
         <p className={`line-clamp-2 text-center font-black uppercase tracking-tight text-white ${size === "lg" ? "text-sm" : "text-[10px] leading-tight"}`}>
           {name}
         </p>

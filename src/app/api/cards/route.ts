@@ -141,7 +141,14 @@ export async function GET() {
   for (const r of skinList) {
     const key = `${r.category}:${r.card_id}`;
     if (!skinsByCard.has(key)) skinsByCard.set(key, []);
-    skinsByCard.get(key)!.push({ level: Number(r.level), name: r.name, imageUrl: r.image_url, owned: !!r.owned });
+    // Un skin non possédé reste TOTALEMENT secret : ni nom ni image ne
+    // quittent le serveur — même les DevTools ne spoilent rien.
+    const owned = !!r.owned;
+    skinsByCard.get(key)!.push(
+      owned
+        ? { level: Number(r.level), name: r.name, imageUrl: r.image_url, owned }
+        : { level: Number(r.level), name: "", imageUrl: null, owned },
+    );
   }
 
   // Énergie des Gardiens + aperçu du chapeau qu'elle produit.
