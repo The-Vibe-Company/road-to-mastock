@@ -36,13 +36,14 @@ type Category = "animal" | "pokemon";
 type CatView = "all" | Category;
 type Filter = "all" | Rarity;
 // Les critères du tiroir : cumulables, chaque carte doit tous les cocher.
-type Crit = "magnesie" | "talent" | "forge" | "guardian";
+type Crit = "magnesie" | "talent" | "forge" | "guardian" | "skin";
 
 const CRIT_DEFS: { key: Crit; label: string; hint: string; Icon: typeof Flame; tint: string; ring: string }[] = [
   { key: "magnesie", label: "Magnésie", hint: "la carte rapporte de la magnésie à l'éveil", Icon: Sparkles, tint: "text-sky-300", ring: "ring-sky-400/40 bg-sky-500/10" },
   { key: "talent", label: "Grimoire", hint: "la carte porte un talent caché", Icon: BookOpen, tint: "text-violet-300", ring: "ring-violet-400/40 bg-violet-500/10" },
   { key: "forge", label: "Forge", hint: "son pouvoir nourrit la jauge de Forge", Icon: Flame, tint: "text-primary", ring: "ring-primary/40 bg-primary/10" },
   { key: "guardian", label: "Gardiens", hint: "actuellement postée sur une machine", Icon: Shield, tint: "text-amber-300", ring: "ring-amber-400/40 bg-amber-500/10" },
+  { key: "skin", label: "Skins", hint: "possède au moins un skin dans sa garde-robe", Icon: Star, tint: "text-emerald-300", ring: "ring-emerald-400/40 bg-emerald-500/10" },
 ];
 
 const TIER_DOT: Record<Rarity, string> = {
@@ -358,9 +359,12 @@ export default function CollectionPage() {
         ? animalsTagged
         : pokemonTagged;
   // Les critères cochés : la carte doit tous les cocher.
-  const passCrits = (c: Tagged) => crits.every((k) => c.traits?.[k]);
+  // Le critère « skin » se lit sur la garde-robe, les autres sur les traits.
+  const hasCrit = (c: Tagged, k: Crit) =>
+    k === "skin" ? (c.skins?.some((s) => s.owned) ?? false) : Boolean(c.traits?.[k]);
+  const passCrits = (c: Tagged) => crits.every((k) => hasCrit(c, k));
   const shownCards = crits.length > 0 ? viewCards.filter(passCrits) : viewCards;
-  const critCount = (k: Crit) => viewCards.filter((c) => c.traits?.[k]).length;
+  const critCount = (k: Crit) => viewCards.filter((c) => hasCrit(c, k)).length;
 
   const cardsByRarity: Record<Rarity, Tagged[]> = {
     common: [], uncommon: [], rare: [], epic: [], legendary: [], mythic: [],
