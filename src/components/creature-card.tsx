@@ -129,8 +129,9 @@ export function CreatureCard({
         )}
       </div>
 
-      {/* Bottom: name banner — remplit le quart restant sous l'image */}
-      <div className={`absolute inset-x-0 bottom-0 top-[75%] flex flex-col justify-center ${size === "lg" ? "px-3" : "px-2"} bg-gradient-to-t from-black/95 via-black/85 to-black/40`}>
+      {/* Bottom: name banner — compact, collé en bas ; l'espace au-dessus
+          laisse voir le dégradé de rareté entre l'art et le nom */}
+      <div className={`absolute inset-x-0 bottom-0 ${size === "lg" ? "py-1.5 px-3" : "py-1 px-2"} bg-gradient-to-t from-black/90 via-black/75 to-transparent`}>
         <p className={`line-clamp-2 text-center font-black uppercase tracking-tight text-white ${size === "lg" ? "text-sm" : "text-[10px] leading-tight"}`}>
           {name}
         </p>
