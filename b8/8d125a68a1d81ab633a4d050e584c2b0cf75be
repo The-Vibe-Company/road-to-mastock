@@ -1,0 +1,35 @@
+src/components/pack-open-modal.tsx
+  s_6dc77352c5bc09::t_57d8daa6d795a8 325,332-336,348
+  s_6dc77352c5bc09::t_010d8ffff1ac13 237-239
+  s_6dc77352c5bc09::t_5c624df5731594 688
+src/app/collection/page.tsx
+  s_6dc77352c5bc09::t_5ef992b2c940d6 687-778
+  s_6dc77352c5bc09::t_79e474facfe318 1059-1060
+  s_6dc77352c5bc09::t_a9b8a6d8a1cdaa 196-197
+  s_6dc77352c5bc09::t_7357cd53beb719 149,152-168
+  s_6dc77352c5bc09::t_304cdd4a23d942 531-545
+  s_6dc77352c5bc09::t_64aa41abe38bca 4
+  s_6dc77352c5bc09::t_4d7c4bf2a99b0f 169
+  s_6dc77352c5bc09::t_036225b281b627 530
+src/app/api/cards/route.ts
+  s_6dc77352c5bc09::t_52ce89be56d7a9 219-235
+  s_6dc77352c5bc09::t_bca157d03b3b15 240
+  s_6dc77352c5bc09::t_68f6ce9caa53e4 251-253
+  s_6dc77352c5bc09::t_e880d374ef6952 18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "b88d125a68a1d81ab633a4d050e584c2b0cf75be",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
