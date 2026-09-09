@@ -39,6 +39,9 @@ export function SpinWheelModal({
     .sort((a, b) => a.r - b.r);
   const minR = segments[0]?.r ?? 1;
   const maxR = segments[segments.length - 1]?.r ?? 4;
+  // Le rouleau ne fait défiler que les pièces réellement en jeu — le ×10
+  // n'apparaît que si un sort (Qilin) l'a mis sur la roue.
+  const reelItems = COIN_ITEMS.filter((c) => segments.some((s) => String(s.r) === c.key));
   const [reward, setReward] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -98,7 +101,7 @@ export function SpinWheelModal({
           )}
           {phase !== "ready" && reward !== null && (
             <SlotReel
-              items={COIN_ITEMS}
+              items={reelItems.length > 0 ? reelItems : COIN_ITEMS}
               targetKey={String(reward)}
               itemWidth={144}
               duration={3400}
