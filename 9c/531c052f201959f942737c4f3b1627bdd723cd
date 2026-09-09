@@ -1,0 +1,25 @@
+src/app/page.tsx
+  s_6dc77352c5bc09::t_1a2bdbf8a7f607 11
+  s_6dc77352c5bc09::t_a142075198b25c 142-143
+src/components/skins-announcement.tsx
+  s_6dc77352c5bc09::t_3a9b81988bb8e8 1-116
+src/lib/guardians.ts
+  s_6dc77352c5bc09::t_0e588bbc597ea7 217-218,222-223
+  s_6dc77352c5bc09::t_17776cc0f1203e 247-248
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "9c531c052f201959f942737c4f3b1627bdd723cd",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
