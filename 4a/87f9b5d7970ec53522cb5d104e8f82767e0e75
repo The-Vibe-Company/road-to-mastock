@@ -1,0 +1,20 @@
+src/components/spin-wheel-modal.tsx
+  s_6dc77352c5bc09::t_0d5aa0969f74f1 104
+  s_6dc77352c5bc09::t_0d30d4bfea6a0d 42-44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "4a87f9b5d7970ec53522cb5d104e8f82767e0e75",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
