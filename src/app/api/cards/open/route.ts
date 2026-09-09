@@ -10,8 +10,8 @@ import {
 import { and, eq, sql } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 import { rollRarityForPack, PACK_TYPES, PACK_CATEGORY_PROB_POKEMON, type PackType } from "@/lib/pack-types";
-import { buildPackHat, innerPokemonProb, type Charges } from "@/lib/powers";
-import { loadCharges } from "@/lib/guardians";
+import { buildPackHat, innerPokemonProb, skinRarityShiftTenths, type Charges } from "@/lib/powers";
+import { drawPackSkins, loadCharges, skinsAwaitingFor } from "@/lib/guardians";
 import { talentOf } from "@/lib/talents";
 
 // Hiérarchie de désirabilité des packs, pour le Passe-Mondes de Hoopa.
@@ -100,13 +100,22 @@ export async function POST() {
   // Les odds de CE tirage, photographiées : la modale d'ouverture les
   // affiche — l'impact des cartes, noir sur blanc.
   const hatUsed = buildPackHat(charges);
+  // Les Skins des gardiens éveillés : le dé de rareté est déformé jusqu'à
+  // la prochaine clôture — visible dans oddsUsed comme le reste.
+  const rarityShift = skinRarityShiftTenths(charges);
   const hatTotal = Object.values(hatUsed).reduce((a, b) => a + b, 0);
   const oddsUsed = {
     hat: Object.fromEntries(
       Object.entries(hatUsed).map(([k, w]) => [k, hatTotal > 0 ? Math.round((w / hatTotal) * 100) : 0]),
     ),
     innerShift: (charges.inner_pokemon ?? 0) - (charges.inner_animal ?? 0),
+    // En dixièmes de point de % par rareté (ex. { common: -60, rare: 50 }).
+    rarityShift,
   };
+  // Les 3 skins du pack, tirés AVANT la carte — révélés si la carte visée
+  // est possédée, mystères (catégorie + rareté + niveau) sinon.
+  const packSkins = await drawPackSkins(auth.userId, 3);
+
   const packType: PackType = DEBUG_FORCE_PACK ?? rollPackTypeFromHat(charges);
   const category = DEBUG_FORCE_ANIMAL
     ? "animal"
@@ -135,7 +144,7 @@ export async function POST() {
         );
       }
     } else {
-      const rarity = rollRarityForPack(packType);
+      const rarity = rollRarityForPack(packType, rarityShift);
       const candidates = await db
         .select()
         .from(animals)
@@ -181,6 +190,8 @@ export async function POST() {
 
     // Talent caché : révélé à la première obtention de la carte.
     const talent = !isDuplicate ? talentOf("animal", picked.slug) : null;
+    // Les skins mystère qui visaient cette carte se révèlent avec elle.
+    const awaitingSkins = !isDuplicate ? await skinsAwaitingFor(auth.userId, "animal", picked.id) : [];
 
     return Response.json({
       packType,
@@ -189,6 +200,8 @@ export async function POST() {
       creature: { ...picked, kind: "animal" },
       isDuplicate,
       shardsGranted,
+      skins: packSkins,
+      awaitingSkins,
       talent: talent
         ? { id: talent.id, family: talent.family, name: talent.name, description: talent.description }
         : null,
@@ -212,7 +225,7 @@ export async function POST() {
       );
     }
   } else {
-    const rarity = rollRarityForPack(packType);
+    const rarity = rollRarityForPack(packType, rarityShift);
     const candidates = await db
       .select()
       .from(pokemon)
@@ -256,6 +269,8 @@ export async function POST() {
   }
 
   const talent = !isDuplicate ? talentOf("pokemon", picked.slug) : null;
+  // Les skins mystère qui visaient cette carte se révèlent avec elle.
+  const awaitingSkins = !isDuplicate ? await skinsAwaitingFor(auth.userId, "pokemon", picked.id) : [];
 
   return Response.json({
     packType,
@@ -264,6 +279,8 @@ export async function POST() {
     creature: { ...picked, kind: "pokemon" },
     isDuplicate,
     shardsGranted,
+    skins: packSkins,
+    awaitingSkins,
     talent: talent
       ? { id: talent.id, family: talent.family, name: talent.name, description: talent.description }
       : null,

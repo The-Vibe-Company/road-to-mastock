@@ -68,12 +68,21 @@ export function rollPackType(): PackType {
   return "basic";
 }
 
-export function rollRarityForPack(packType: PackType): Rarity {
+// Le dé de rareté, éventuellement déformé par les Skins des gardiens
+// éveillés (shift en dixièmes de point de %, jamais sous zéro par rareté).
+export function rollRarityForPack(
+  packType: PackType,
+  shiftTenths?: Partial<Record<Rarity, number>>,
+): Rarity {
   const weights = PACK_RARITY_WEIGHTS[packType];
-  const total = Object.values(weights).reduce((a, b) => a + b, 0);
-  let r = Math.random() * total;
+  const tenths: Record<Rarity, number> = {} as Record<Rarity, number>;
   for (const rarity of Object.keys(weights) as Rarity[]) {
-    r -= weights[rarity];
+    tenths[rarity] = Math.max(0, weights[rarity] * 10 + (shiftTenths?.[rarity] ?? 0));
+  }
+  const total = Object.values(tenths).reduce((a, b) => a + b, 0);
+  let r = Math.random() * total;
+  for (const rarity of Object.keys(tenths) as Rarity[]) {
+    r -= tenths[rarity];
     if (r <= 0) return rarity;
   }
   return "common";

@@ -33,6 +33,10 @@ export interface DetailedCreature {
   pokedexNumber?: number | null;
   primaryType?: string | null;
   secondaryType?: string | null;
+  // Le vestiaire : les 5 skins de la carte (possédés ou non) + l'équipé.
+  skins?: { level: number; name: string; imageUrl: string | null; owned: boolean }[];
+  equippedSkinLevel?: number | null;
+  baseImageUrl?: string | null;
 }
 
 function formatHeight(cm: number | null): string | null {
@@ -51,15 +55,37 @@ export function CardDetailModal({
   creature,
   onClose,
   onNicknameChange,
+  onSkinChange,
 }: {
   creature: DetailedCreature;
   onClose: () => void;
   onNicknameChange?: () => void;
+  onSkinChange?: () => void;
 }) {
   const colors = RARITY_COLORS[creature.rarity];
   // Le Vœu (Jirachi) : renommer une carte possédée.
   const { has } = useTalents();
   const canRename = has("voeu") && onNicknameChange !== undefined;
+  const [equipping, setEquipping] = useState<number | null>(null);
+  const [equippedLevel, setEquippedLevel] = useState<number | null>(creature.equippedSkinLevel ?? null);
+
+  const equipSkin = async (level: number | null) => {
+    if (equipping !== null) return;
+    setEquipping(level ?? 0);
+    try {
+      const r = await fetch("/api/cards/skin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category: creature.kind, cardId: creature.id, level }),
+      });
+      if (r.ok) {
+        setEquippedLevel(level);
+        onSkinChange?.();
+      }
+    } finally {
+      setEquipping(null);
+    }
+  };
   const [renaming, setRenaming] = useState(false);
   const [nick, setNick] = useState(creature.nickname ?? "");
   const [savingNick, setSavingNick] = useState(false);
@@ -176,6 +202,67 @@ export function CardDetailModal({
             </p>
           )}
         </div>
+
+        {/* Le vestiaire : le classique + les 5 skins. Un skin possédé se
+            porte d'un tap ; les autres restent des silhouettes à gagner
+            (un skin par séance clôturée). */}
+        {creature.skins && creature.skins.length > 0 && (
+          <div className="w-full">
+            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground">
+              Vestiaire · {creature.skins.filter((sk) => sk.owned).length}/{creature.skins.length} skins
+            </p>
+            <div className="grid grid-cols-6 gap-1.5">
+              <button
+                onClick={() => equipSkin(null)}
+                disabled={equipping !== null}
+                title="Le classique"
+                className={`relative aspect-square overflow-hidden rounded-[3px] ring-1 transition-all active:scale-95 ${
+                  equippedLevel == null ? "ring-2 ring-primary" : "ring-border"
+                }`}
+              >
+                {(creature.baseImageUrl ?? creature.imageUrl) && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={creature.baseImageUrl ?? creature.imageUrl ?? ""} alt="" className="size-full object-cover" />
+                )}
+              </button>
+              {creature.skins.map((sk) => {
+                const isEquipped = equippedLevel === sk.level;
+                return (
+                  <button
+                    key={sk.level}
+                    onClick={() => (sk.owned && sk.imageUrl ? equipSkin(sk.level) : undefined)}
+                    disabled={equipping !== null || !sk.owned || !sk.imageUrl}
+                    title={sk.owned ? `${sk.name} (niv. ${sk.level})` : `Niveau ${sk.level} — à gagner en séance`}
+                    className={`relative aspect-square overflow-hidden rounded-[3px] ring-1 transition-all active:scale-95 ${
+                      isEquipped ? "ring-2 ring-primary" : "ring-border"
+                    } ${!sk.owned ? "opacity-60" : ""}`}
+                  >
+                    {sk.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={sk.imageUrl}
+                        alt=""
+                        className={`size-full object-cover ${!sk.owned ? "brightness-[0.25] saturate-0" : ""}`}
+                      />
+                    ) : (
+                      <span className="flex size-full items-center justify-center bg-secondary/40 font-mono text-[10px] text-muted-foreground">
+                        ?
+                      </span>
+                    )}
+                    <span className={`absolute bottom-0 right-0 rounded-tl px-1 font-mono text-[8px] font-black ${sk.owned ? "bg-primary text-black" : "bg-black/70 text-muted-foreground"}`}>
+                      {sk.level}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            {equippedLevel != null && (
+              <p className="mt-1.5 text-center text-[11px] font-bold text-primary">
+                {creature.skins.find((sk) => sk.level === equippedLevel)?.name}
+              </p>
+            )}
+          </div>
+        )}
 
         {power && (
           <div className={`w-full rounded-xl ${colors.bg} ring-1 ${colors.ring} px-4 py-3`}>

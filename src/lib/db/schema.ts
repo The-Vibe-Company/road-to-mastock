@@ -256,6 +256,8 @@ export const userCards = pgTable(
       .notNull()
       .references(() => animals.id),
     count: integer("count").notNull().default(1),
+    // Le skin équipé pour cette carte (niveau 1..5) — null : le classique.
+    equippedSkinLevel: integer("equipped_skin_level"),
     firstObtainedAt: timestamp("first_obtained_at", { withTimezone: true }).defaultNow(),
   },
   (t) => [unique().on(t.userId, t.animalId)],
@@ -301,6 +303,8 @@ export const userPokemonCards = pgTable(
       .notNull()
       .references(() => pokemon.id),
     count: integer("count").notNull().default(1),
+    // Le skin équipé pour cette carte (niveau 1..5) — null : le classique.
+    equippedSkinLevel: integer("equipped_skin_level"),
     firstObtainedAt: timestamp("first_obtained_at", { withTimezone: true }).defaultNow(),
   },
   (t) => [unique().on(t.userId, t.pokemonId)],
@@ -310,6 +314,43 @@ export const userPokemonCards = pgTable(
 // wheel_x4, forge...). Créditée à la clôture de séance, consommée à
 // l'ouverture d'un pack / roue / fusion / conversion. Les plafonds par
 // direction sont appliqués côté code (src/lib/powers.ts).
+
+// ─── Les Skins ──────────────────────────────────────────────────────────────
+// Le catalogue : 5 skins par carte (niveau 1..5), concept unique nommé,
+// image générée par vagues. `status` : pending → done | blocked.
+export const cardSkins = pgTable(
+  "card_skins",
+  {
+    id: serial("id").primaryKey(),
+    category: text("category").notNull(), // animal | pokemon
+    cardId: integer("card_id").notNull(),
+    level: integer("level").notNull(), // 1 (petite vie) → 5 (apothéose)
+    name: text("name").notNull(), // « Cuisine de Minuit »
+    concept: text("concept").notNull(), // la scène, côté prompt
+    imageUrl: text("image_url"),
+    status: text("status").notNull().default("pending"),
+    attempts: integer("attempts").notNull().default(0),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (t) => [unique().on(t.category, t.cardId, t.level)],
+);
+
+// La possession : un skin gagné à la clôture (un par séance, sans doublon).
+export const userSkins = pgTable(
+  "user_skins",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    skinId: integer("skin_id")
+      .notNull()
+      .references(() => cardSkins.id, { onDelete: "cascade" }),
+    obtainedAt: timestamp("obtained_at", { withTimezone: true }).defaultNow(),
+  },
+  (t) => [unique().on(t.userId, t.skinId)],
+);
+
 export const userCharges = pgTable(
   "user_charges",
   {

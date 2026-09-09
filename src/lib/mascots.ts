@@ -6,11 +6,40 @@ import {
   userCards,
   userPokemonCards,
 } from "@/lib/db/schema";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Rarity } from "@/lib/rarities";
 import type { Mascot, MascotCategory } from "@/lib/mascot-types";
 
 export type { Mascot, MascotCategory };
+
+
+// ─── Les Skins ──────────────────────────────────────────────────────────────
+// Le skin équipé (et possédé) habille la carte partout où elle s'affiche :
+// filigrane de séance, sélecteur, classement, amis, Étendard. Map
+// "userId:category:cardId" → image du skin.
+async function loadEquippedSkinImages(
+  pairs: { userId: number; category: MascotCategory; cardId: number }[],
+): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  if (pairs.length === 0) return out;
+  const userIds = [...new Set(pairs.map((p) => p.userId))];
+  const rows = (await db.execute(sql`
+    SELECT uc.user_id, 'animal' AS category, uc.animal_id AS card_id, cs.image_url
+    FROM user_cards uc
+    JOIN card_skins cs ON cs.category = 'animal' AND cs.card_id = uc.animal_id AND cs.level = uc.equipped_skin_level
+    JOIN user_skins us ON us.skin_id = cs.id AND us.user_id = uc.user_id
+    WHERE uc.user_id IN (${sql.join(userIds.map((u) => sql`${u}`), sql`, `)}) AND uc.equipped_skin_level IS NOT NULL AND cs.image_url IS NOT NULL
+    UNION ALL
+    SELECT up.user_id, 'pokemon', up.pokemon_id, cs.image_url
+    FROM user_pokemon_cards up
+    JOIN card_skins cs ON cs.category = 'pokemon' AND cs.card_id = up.pokemon_id AND cs.level = up.equipped_skin_level
+    JOIN user_skins us ON us.skin_id = cs.id AND us.user_id = up.user_id
+    WHERE up.user_id IN (${sql.join(userIds.map((u) => sql`${u}`), sql`, `)}) AND up.equipped_skin_level IS NOT NULL AND cs.image_url IS NOT NULL
+  `)) as unknown as { rows?: Record<string, unknown>[] };
+  const list = ((rows.rows ?? rows) as unknown as { user_id: number; category: string; card_id: number; image_url: string }[]);
+  for (const r of list) out.set(`${r.user_id}:${r.category}:${r.card_id}`, r.image_url);
+  return out;
+}
 
 // Les deux colonnes sont exclusives, mais rien en base ne l'impose : si les
 // deux sont remplies (bug ou écriture concurrente), l'animal l'emporte.
@@ -125,6 +154,25 @@ export async function loadMascotsByExercise(
     result.set(row.id, mascot);
   }
 
+  // Les Skins équipés habillent les gardiens — par propriétaire d'exercice
+  // (chez un ami, c'est SON skin qui s'affiche). Les métamorphoses
+  // (Léviator rouge, Métamorph) gardent la priorité.
+  const skinPairs = rows
+    .map((row) => {
+      const side = pickMascotSide(row.mascotAnimalId, row.mascotPokemonId);
+      return side ? { userId: row.userId, category: side.category, cardId: side.id } : null;
+    })
+    .filter((x): x is { userId: number; category: MascotCategory; cardId: number } => x !== null);
+  const skinImages = await loadEquippedSkinImages(skinPairs);
+  for (const row of rows) {
+    const side = pickMascotSide(row.mascotAnimalId, row.mascotPokemonId);
+    const mascot = result.get(row.id);
+    if (!side || !mascot || mascot.evolved) continue;
+    if (mascot.slug === "ditto") continue;
+    const skin = skinImages.get(`${row.userId}:${side.category}:${side.id}`);
+    if (skin) mascot.imageUrl = skin;
+  }
+
   return result;
 }
 
@@ -174,6 +222,8 @@ export async function ownsCard(
 // l'époque, pas celui d'aujourd'hui.
 export async function loadMascotsFromSnapshots(
   snapshots: { exerciseId: number; category: "animal" | "pokemon"; cardId: number }[],
+  // Le propriétaire de la séance : son skin équipé habille aussi la mémoire.
+  ownerUserId?: number,
 ): Promise<Map<number, Mascot>> {
   const result = new Map<number, Mascot>();
   if (snapshots.length === 0) return result;
@@ -209,6 +259,17 @@ export async function loadMascotsFromSnapshots(
       subtype: source.subtype,
       evolved: false,
     });
+  }
+
+  if (ownerUserId != null) {
+    const skinImages = await loadEquippedSkinImages(
+      snapshots.map((snap) => ({ userId: ownerUserId, category: snap.category, cardId: snap.cardId })),
+    );
+    for (const snap of snapshots) {
+      const mascot = result.get(snap.exerciseId);
+      const skin = skinImages.get(`${ownerUserId}:${snap.category}:${snap.cardId}`);
+      if (mascot && skin) mascot.imageUrl = skin;
+    }
   }
   return result;
 }

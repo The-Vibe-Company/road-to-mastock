@@ -8,6 +8,7 @@ import { Users, Settings, Cards, Trophy, Sparkles, Flame } from "@/components/ic
 import { getAuthUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { HomeTabs } from "@/components/home-tabs";
+import { SkinsAnnouncement } from "@/components/skins-announcement";
 import { NewSessionButton } from "@/components/new-session-button";
 import { RefreshOnReturn } from "@/components/refresh-on-return";
 import { HomeExtras, HomeTrinkets } from "@/components/home-extras";
@@ -44,7 +45,8 @@ export default async function Home() {
     forge: forgeRow?.points ?? 0,
   };
 
-  // L'Étendard : la carte en bannière derrière le titre.
+  // L'Étendard : la carte en bannière derrière le titre — habillée de son
+  // skin équipé s'il y en a un.
   let bannerUrl: string | null = null;
   if (user?.bannerCategory && user.bannerCardId) {
     const table = user.bannerCategory === "animal" ? animals : pokemon;
@@ -53,6 +55,17 @@ export default async function Home() {
       .from(table)
       .where(eq(table.id, user.bannerCardId));
     bannerUrl = card?.imageUrl ?? null;
+    const skinRows = (await db.execute(sql`
+      SELECT cs.image_url FROM card_skins cs
+      JOIN user_skins us ON us.skin_id = cs.id AND us.user_id = ${auth.userId}
+      JOIN ${user.bannerCategory === "animal" ? sql`user_cards oc` : sql`user_pokemon_cards oc`}
+        ON ${user.bannerCategory === "animal" ? sql`oc.animal_id` : sql`oc.pokemon_id`} = cs.card_id
+        AND oc.user_id = ${auth.userId} AND oc.equipped_skin_level = cs.level
+      WHERE cs.category = ${user.bannerCategory} AND cs.card_id = ${user.bannerCardId} AND cs.image_url IS NOT NULL
+      LIMIT 1
+    `)) as unknown as { rows?: { image_url: string }[] };
+    const skin = ((skinRows.rows ?? skinRows) as unknown as { image_url: string }[])[0];
+    if (skin?.image_url) bannerUrl = skin.image_url;
   }
 
   // Le bilan hebdo (trophée Le Mois Parfait) : cette semaine vs la dernière.
@@ -126,6 +139,8 @@ export default async function Home() {
   return (
     <div className="flex min-h-dvh flex-col px-4 pb-28 pt-10">
       <RefreshOnReturn />
+      {/* L'annonce des Skins : une fois par appareil, à la reconnexion */}
+      <SkinsAnnouncement />
       {/* Hero — l'affiche : le titre tout en haut, l'identité à sa droite,
           puis la rangée d'outils pleine largeur */}
       <div className="hero-gradient relative -mx-4 -mt-10 mb-8 overflow-hidden px-4 pb-6 pt-4">

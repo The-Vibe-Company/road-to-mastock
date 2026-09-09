@@ -45,7 +45,10 @@ export type Direction =
   | "qilin_wheel"     // tes roues : ×2 / ×3 / ×4 / ×10
   | "hoopa_double"    // tes ouvertures piochent deux packs, gardent le meilleur
   | "leviathan_guard" // à la clôture : si ton dernier pack était Basique, l'énergie survit
-  | "time_hold";      // Dialga : la prochaine remise à zéro épargne le chapeau
+  | "time_hold"       // Dialga : la prochaine remise à zéro épargne le chapeau
+  // Les Skins : compte de gardiens skinnés éveillés, par niveau de skin.
+  // Chaque niveau déforme le dé de rareté des packs jusqu'à la clôture.
+  | "skin_l1" | "skin_l2" | "skin_l3" | "skin_l4" | "skin_l5";
 
 export const DIRECTION_CAPS: Record<Direction, number> = {
   pack_animal: 30,
@@ -72,6 +75,7 @@ export const DIRECTION_CAPS: Record<Direction, number> = {
   hoopa_double: 1,
   leviathan_guard: 1,
   time_hold: 1,
+  skin_l1: 3, skin_l2: 3, skin_l3: 3, skin_l4: 3, skin_l5: 3,
 };
 
 export const DIRECTION_LABELS: Record<Direction, string> = {
@@ -99,6 +103,8 @@ export const DIRECTION_LABELS: Record<Direction, string> = {
   hoopa_double: "Passe-Mondes",
   leviathan_guard: "Pardon des Abysses",
   time_hold: "Seconde Éternelle",
+  skin_l1: "Skin niv. 1", skin_l2: "Skin niv. 2", skin_l3: "Skin niv. 3",
+  skin_l4: "Skin niv. 4", skin_l5: "Skin niv. 5",
 };
 
 // ─── Étage 1 : la Polarité ──────────────────────────────────────────────────
@@ -1355,6 +1361,51 @@ export function innerPokemonProb(base: number, charges: Charges): number {
   if (base <= 0 || base >= 1) return base; // packs forcés : pas de curseur
   const shift = ((charges.inner_pokemon ?? 0) - (charges.inner_animal ?? 0)) / 100;
   return Math.min(0.95, Math.max(0.05, base + shift));
+}
+
+
+// ─── Les Skins : le dé de rareté déformé ────────────────────────────────────
+// Un gardien qui s'éveille avec son skin équipé déforme le tirage de rareté
+// des packs jusqu'à la prochaine clôture. Barème PAR NIVEAU, en dixièmes de
+// point de % (le niveau 5 touche au mythique par demi-point). Sommes nulles.
+export const SKIN_DIRECTIONS = ["skin_l1", "skin_l2", "skin_l3", "skin_l4", "skin_l5"] as const;
+
+export const SKIN_SHIFT_TENTHS: Record<number, Partial<Record<Rarity, number>>> = {
+  1: { common: -20, uncommon: 20 },
+  2: { common: -40, uncommon: 20, rare: 20 },
+  3: { common: -60, uncommon: -10, rare: 50, epic: 20 },
+  4: { common: -90, uncommon: -20, rare: 60, epic: 40, legendary: 10 },
+  5: { common: -120, uncommon: -45, rare: 80, epic: 60, legendary: 20, mythic: 5 },
+};
+
+
+// Le tirage du skin de séance : le niveau se mérite. Poids de drop —
+// un niveau 5 tombe environ une séance sur vingt.
+export const SKIN_DROP_WEIGHTS: Record<number, number> = {
+  1: 40, 2: 26, 3: 18, 4: 11, 5: 5,
+};
+
+// Le cumul est plafonné : jamais plus de −20 points de % sur le commun —
+// au-delà, tout le shift est réduit proportionnellement.
+const SKIN_COMMON_FLOOR_TENTHS = -200;
+
+export function skinRarityShiftTenths(charges: Charges): Partial<Record<Rarity, number>> {
+  const total: Partial<Record<Rarity, number>> = {};
+  for (let level = 1; level <= 5; level++) {
+    const count = charges[`skin_l${level}` as Direction] ?? 0;
+    if (count <= 0) continue;
+    for (const [r, t] of Object.entries(SKIN_SHIFT_TENTHS[level]) as [Rarity, number][]) {
+      total[r] = (total[r] ?? 0) + t * count;
+    }
+  }
+  const commonDrop = total.common ?? 0;
+  if (commonDrop < SKIN_COMMON_FLOOR_TENTHS) {
+    const scale = SKIN_COMMON_FLOOR_TENTHS / commonDrop;
+    for (const r of Object.keys(total) as Rarity[]) {
+      total[r] = Math.round((total[r] ?? 0) * scale);
+    }
+  }
+  return total;
 }
 
 // La roue de base : 1 jeton spécial → 1 à 4 jetons normaux. Les sorts des

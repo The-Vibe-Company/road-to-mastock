@@ -26,8 +26,25 @@ import { TalentDescription } from "@/components/talent-description";
 import { magnesieOf, powerLabel, powerShorts } from "@/lib/powers";
 
 type Category = "animal" | "pokemon";
-type Stage = "pack" | "category" | "rarity" | "creature" | "duplicate";
+type Stage = "skins" | "pack" | "category" | "rarity" | "creature" | "duplicate";
 type Phase = "ready" | "spinning" | "result";
+
+// Un des 3 skins du pack : révélé si la carte est possédée, mystère sinon.
+export interface PackSkin {
+  level: number;
+  category: Category;
+  cardRarity: Rarity;
+  owned: boolean;
+  skinName?: string;
+  cardName?: string;
+  imageUrl?: string | null;
+}
+// Skin mystère qui visait la carte tirée — révélé avec elle.
+export interface AwaitingSkin {
+  level: number;
+  name: string;
+  imageUrl: string | null;
+}
 
 interface CreatureBase {
   id: number;
@@ -68,6 +85,9 @@ export interface OpenResult {
     name: string;
     description: string;
   } | null;
+  // Les 3 skins tirés avant la carte, et ceux qui attendaient la carte.
+  skins?: PackSkin[];
+  awaitingSkins?: AwaitingSkin[];
 }
 
 const CATEGORY_LABELS: Record<Category, string> = {
@@ -348,17 +368,24 @@ export function PackOpenModal({
   const hasZiz = has("vol-de-ziz");
   const skipCategory = result.packType === "animal_only" || result.packType === "pokemon_only";
 
-  const stageOrder = useMemo<Stage[]>(
-    () => (skipCategory ? ["pack", "rarity", "creature"] : ["pack", "category", "rarity", "creature"]),
-    [skipCategory],
-  );
+  const skins = result.skins ?? [];
+  const hasSkins = skins.length > 0;
 
-  const [stage, setStage] = useState<Stage>("pack");
+  const stageOrder = useMemo<Stage[]>(() => {
+    const base: Stage[] = skipCategory
+      ? ["pack", "rarity", "creature"]
+      : ["pack", "category", "rarity", "creature"];
+    return hasSkins ? ["skins", ...base] : base;
+  }, [skipCategory, hasSkins]);
+
+  const [stage, setStage] = useState<Stage>(hasSkins ? "skins" : "pack");
   const [phase, setPhase] = useState<Phase>("ready");
+  // Sous-étape des skins : lequel des 3 est en cours.
+  const [skinIdx, setSkinIdx] = useState(0);
 
   // Reset phase when stage changes (so creature also starts in 'ready' = card-back)
   useEffect(() => {
-    if (stage === "pack" || stage === "category" || stage === "rarity" || stage === "creature") {
+    if (stage === "skins" || stage === "pack" || stage === "category" || stage === "rarity" || stage === "creature") {
       setPhase("ready");
     }
   }, [stage]);
@@ -374,9 +401,21 @@ export function PackOpenModal({
     if (next) setStage(next);
   };
 
+  // Passer au skin suivant, ou quitter l'étape après le 3e.
+  const advanceSkin = () => {
+    if (skinIdx + 1 < skins.length) {
+      setSkinIdx((i) => i + 1);
+      setPhase("ready");
+    } else {
+      advanceStage();
+    }
+  };
+
   const handleBackdropClick = () => {
     if (stage === "creature" || stage === "duplicate") return;
-    if (phase === "result") advanceStage();
+    if (phase !== "result") return;
+    if (stage === "skins") advanceSkin();
+    else advanceStage();
   };
 
   const triggerSpin = () => {
@@ -385,10 +424,12 @@ export function PackOpenModal({
 
   // Action button label per stage
   const stageActionLabel: Record<Exclude<Stage, "creature" | "duplicate">, string> = {
+    skins: "Tirer le skin",
     pack: "Ouvrir le pack",
     category: "Révéler la catégorie",
     rarity: "Tirer la rareté",
   };
+  const currentSkin = skins[skinIdx];
 
   return (
     <div
@@ -425,6 +466,114 @@ export function PackOpenModal({
       </button>
 
       <div className="flex w-full max-w-xl flex-col items-center gap-6 px-6 py-12">
+        {/* STAGE SKINS — 3 skins avant la carte */}
+        {stage === "skins" && currentSkin && (
+          <>
+            <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-muted-foreground">
+              Skin {skinIdx + 1} / {skins.length}
+            </p>
+
+            {phase === "ready" && (
+              <>
+                {skinIdx === 0 && (
+                  <p className="text-center text-xs leading-relaxed text-muted-foreground">
+                    3 skins tombent avant ta carte.
+                    <br />
+                    Carte possédée : le skin se révèle. Sinon, il reste <span className="font-black text-primary">mystère</span>.
+                  </p>
+                )}
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    triggerSpin();
+                  }}
+                  className="h-11 w-full max-w-xs rounded-2xl bg-gradient-orange-intense text-sm font-black uppercase tracking-wider text-black"
+                >
+                  <Eye className="size-4" />
+                  {stageActionLabel.skins}
+                </Button>
+              </>
+            )}
+
+            {phase === "spinning" && (
+              <SlotReel
+                items={RARITY_ITEMS}
+                targetKey={currentSkin.cardRarity}
+                itemWidth={232}
+                duration={2800}
+                loops={5}
+                onSettle={() => setPhase("result")}
+              />
+            )}
+
+            {phase === "result" && (
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="flex w-full flex-col items-center gap-4 animate-card-reveal"
+              >
+                {currentSkin.owned ? (
+                  <>
+                    <div className="w-64 overflow-hidden rounded-xl border-2 border-white/5 bg-card ring-2 ring-emerald-500/60 shadow-[0_0_36px_-6px_rgba(16,185,129,0.5)]">
+                      <div className="relative aspect-square w-full bg-black/40">
+                        {currentSkin.imageUrl ? (
+                          <Image src={currentSkin.imageUrl} alt="" fill unoptimized className="object-contain" />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
+                            L&apos;image se révèle bientôt…
+                          </div>
+                        )}
+                      </div>
+                      <div className="px-3 py-2.5 text-center">
+                        <p className="text-sm font-black tracking-tight">« {currentSkin.skinName} »</p>
+                        <p className="mt-0.5 text-[10px] font-bold text-muted-foreground">
+                          {currentSkin.cardName} · {RARITY_LABELS[currentSkin.cardRarity]} · Niveau {currentSkin.level}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500/10 px-2 py-1 text-[10px] font-black text-emerald-300 ring-1 ring-emerald-500/30">
+                      Nouveau skin — équipable dans sa garde-robe
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <CardBack rarity={currentSkin.cardRarity} />
+                    <div className="text-center">
+                      <p className={`text-xl font-black tracking-tight ${RARITY_COLORS[currentSkin.cardRarity].text}`}>
+                        {CATEGORY_LABELS[currentSkin.category]} {RARITY_LABELS[currentSkin.cardRarity].toLowerCase()}
+                      </p>
+                      <span className="mt-1.5 inline-block rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] ring-1 ring-white/15">
+                        Niveau {currentSkin.level}
+                      </span>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        Skin mystère — il se révélera le jour où tu tireras sa carte.
+                      </p>
+                    </div>
+                  </>
+                )}
+
+                <div className="flex items-center gap-1.5">
+                  {skins.map((_, i) => (
+                    <span
+                      key={i}
+                      className={`size-1.5 rounded-full ${i <= skinIdx ? "bg-primary" : "bg-white/15"}`}
+                    />
+                  ))}
+                </div>
+
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    advanceSkin();
+                  }}
+                  className="h-11 w-full max-w-xs rounded-2xl bg-gradient-orange-intense text-sm font-black uppercase tracking-wider text-black"
+                >
+                  {skinIdx + 1 < skins.length ? "Skin suivant" : "Et maintenant… ta carte"}
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+
         {/* STAGE 0 — Pack */}
         {stage === "pack" && (
           <>
@@ -656,6 +805,35 @@ export function PackOpenModal({
                     </div>
                   );
                 })()}
+
+                {/* Les skins mystère qui visaient cette carte, révélés avec elle */}
+                {!result.isDuplicate && (result.awaitingSkins?.length ?? 0) > 0 && (
+                  <div className="w-full max-w-sm rounded-2xl bg-amber-400/5 px-4 py-3 ring-1 ring-amber-400/40 animate-card-reveal">
+                    <p className="text-center text-xs font-black">
+                      ✨ <span className="text-amber-300">{result.awaitingSkins!.length === 1 ? "1 skin t'attendait" : `${result.awaitingSkins!.length} skins t'attendaient`}</span> pour cette carte
+                    </p>
+                    <div className="mt-2.5 flex flex-wrap justify-center gap-2.5">
+                      {result.awaitingSkins!.map((s, i) => (
+                        <div key={i} className="w-28 overflow-hidden rounded-xl bg-card ring-1 ring-amber-400/50">
+                          <div className="relative aspect-square w-full bg-black/40">
+                            {s.imageUrl ? (
+                              <Image src={s.imageUrl} alt="" fill unoptimized className="object-contain" />
+                            ) : (
+                              <div className="flex h-full items-center justify-center text-[9px] text-muted-foreground">Bientôt…</div>
+                            )}
+                            <span className="absolute right-1 top-1 rounded-full bg-gradient-to-br from-amber-200 to-amber-500 px-1.5 py-0.5 text-[8px] font-black text-black">
+                              N{s.level}
+                            </span>
+                          </div>
+                          <p className="px-1.5 py-1.5 text-center text-[9px] font-bold leading-tight">« {s.name} »</p>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="mt-2 text-center text-[10px] text-muted-foreground">
+                      Révélés — ils rejoignent sa garde-robe
+                    </p>
+                  </div>
+                )}
 
                 {/* Le jackpot dans le jackpot : un Talent caché découvert */}
                 {result.talent && (

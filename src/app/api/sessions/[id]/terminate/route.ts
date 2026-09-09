@@ -125,6 +125,7 @@ export async function POST(
       newTrophies = await claimNewTrophies(auth.userId);
       trophyProgress = await sessionTrophyProgress(auth.userId, sessionId);
       cardioDraws = await drawCardioReserves(auth.userId, sessionId);
+      // Les skins se gagnent désormais à l'ouverture des packs (3 par pack).
 
       const isSpecialPosition = weekPosition === 1 || weekPosition === 4;
       if (isSpecialPosition) {
