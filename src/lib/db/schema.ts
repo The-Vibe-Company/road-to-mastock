@@ -27,6 +27,8 @@ export const users = pgTable("users", {
   // Le type du dernier pack ouvert — le Pardon des Abysses (Léviathan) le lit
   // à la clôture : un dernier pack Basique épargne l'énergie de la remise à zéro.
   lastPackType: text("last_pack_type"),
+  // Le skin de bienvenue (annonce de la feature) : offert une seule fois.
+  skinGiftGranted: boolean("skin_gift_granted").notNull().default(false),
   // ── Privilèges des Talents cachés ──
   // Totem (aura de Typhon) : carte affichée à côté du nom chez les amis.
   totemCategory: text("totem_category"),
