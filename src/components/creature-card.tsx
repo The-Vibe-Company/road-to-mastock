@@ -91,14 +91,14 @@ export function CreatureCard({
     >
       {/* Holo shimmer for legendary+ */}
       {isHolo && (
-        <div className="pointer-events-none absolute inset-0 holo-shimmer" />
+        <div className="pointer-events-none absolute inset-0 z-20 holo-shimmer" />
       )}
 
       {/* Background pattern */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0.06)_0%,transparent_60%)]" />
 
       {/* Top bar: number + tier letter */}
-      <div className={`absolute inset-x-0 top-0 flex items-center justify-between px-2 ${size === "lg" ? "py-1.5" : "py-1"} bg-black/40 backdrop-blur-[2px]`}>
+      <div className={`absolute inset-x-0 top-0 z-10 flex items-center justify-between px-2 ${size === "lg" ? "py-1.5" : "py-1"} bg-black/40 backdrop-blur-[2px]`}>
         <span className={`font-mono font-black tracking-tight text-white/90 ${size === "lg" ? "text-xs" : "text-[9px]"}`}>
           N°{formattedNumber}
         </span>
