@@ -1,0 +1,35 @@
+scripts/generate-bases.ts
+  s_6dc77352c5bc09::t_2da535fd43c9a5 1-232
+scripts/seed-skins-v2.ts
+  s_6dc77352c5bc09::t_fdc891050ac882 1-27,32-95
+  s_6dc77352c5bc09::t_480e9e24f2bc8e 28-31
+scripts/add-base-regen.ts
+  s_6dc77352c5bc09::t_e1e8a98d00120f 1-36
+scripts/gen-image.py
+  s_6dc77352c5bc09::t_4d39c143fa3569 1-250,252-394
+  s_6dc77352c5bc09::t_5902bb6257b408 251
+scripts/generate-skins-v2.ts
+  s_6dc77352c5bc09::t_06faf2aff51b62 6-15,17-26,28-40,42-104,106-110,112-125,128-129,132,134-209
+  s_6dc77352c5bc09::t_41f3eb82c8e8ba 27
+  s_6dc77352c5bc09::t_906ddcaae1ce70 105,111
+  s_6dc77352c5bc09::t_3a7136b7c51624 41
+  s_6dc77352c5bc09::t_48590e758cb295 126-127,130-131,133
+  s_6dc77352c5bc09::t_a9258bb49903b0 1-5
+  s_6dc77352c5bc09::t_90c178aa20f150 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "0b8a6ec1229e0d1f17917c3c8f2988592fc9aff0",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
