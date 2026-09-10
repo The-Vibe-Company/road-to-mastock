@@ -1,0 +1,22 @@
+scripts/generate-bases.ts
+  s_6dc77352c5bc09::t_7b547273df1826 12,14-15
+  s_6dc77352c5bc09::t_93a858bd0ef86c 39
+  s_6dc77352c5bc09::t_5b58f44eb9440b 63-65
+  s_6dc77352c5bc09::t_6e619287524548 197
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "6b64a29c75a3f23bff0feffbd7e3d70cc4b0596c",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
