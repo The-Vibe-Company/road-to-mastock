@@ -119,9 +119,11 @@ async function main() {
       LEFT JOIN pokemon p ON br.category='pokemon' AND p.id = br.card_id
       WHERE br.status IN ('pending','retry')
       ORDER BY owned DESC,
+               -- Les faciles d'abord (doctrine 80 %) : les communes défilent,
+               -- les stars IP vont brûler leurs essais en fin de file/cycles.
                CASE COALESCE(a.rarity, p.rarity)
-                 WHEN 'mythic' THEN 0 WHEN 'legendary' THEN 1 WHEN 'epic' THEN 2
-                 WHEN 'rare' THEN 3 WHEN 'uncommon' THEN 4 ELSE 5 END,
+                 WHEN 'common' THEN 0 WHEN 'uncommon' THEN 1 WHEN 'rare' THEN 2
+                 WHEN 'epic' THEN 3 WHEN 'legendary' THEN 4 ELSE 5 END,
                br.id
       LIMIT ${limit}
     `)) as unknown as Row[];
