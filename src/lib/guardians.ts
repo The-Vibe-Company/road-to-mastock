@@ -222,8 +222,7 @@ export async function skinDrawOdds(userId: number): Promise<Record<string, numbe
     FROM card_skins cs
     LEFT JOIN animals a ON cs.category = 'animal' AND a.id = cs.card_id
     LEFT JOIN pokemon p ON cs.category = 'pokemon' AND p.id = cs.card_id
-    WHERE cs.status = 'done' AND cs.image_url IS NOT NULL
-    AND cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
+    WHERE cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
     GROUP BY cs.level, COALESCE(a.rarity, p.rarity)
   `)) as unknown as { rows?: { level: number; card_rarity: string; n: number }[] };
   const list = ((rows.rows ?? rows) as unknown as { level: number; card_rarity: string; n: number }[])
@@ -248,13 +247,13 @@ export async function skinDrawOdds(userId: number): Promise<Record<string, numbe
 export async function drawPackSkins(userId: number, count = 3): Promise<PackSkinDraw[]> {
   const draws: PackSkinDraw[] = [];
   for (let i = 0; i < count; i++) {
-    // Seuls les skins dont l'image est générée entrent dans le chapeau —
-    // jamais de placeholder ; le pool grossit au fil de l'usine.
+    // Tout le catalogue est dans le chapeau — on fait comme si les 10 000
+    // images étaient prêtes : un skin révélé sans image affiche « L'image
+    // se révèle bientôt… » et apparaît dès que l'usine passe dessus.
     const levelRows = (await db.execute(sql`
       SELECT cs.level, COUNT(*)::int AS n
       FROM card_skins cs
-      WHERE cs.status = 'done' AND cs.image_url IS NOT NULL
-      AND cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
+      WHERE cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
       GROUP BY cs.level
     `)) as unknown as { rows?: { level: number }[] };
     const available = ((levelRows.rows ?? levelRows) as unknown as { level: number }[])
@@ -278,8 +277,7 @@ export async function drawPackSkins(userId: number, count = 3): Promise<PackSkin
       FROM card_skins cs
       LEFT JOIN animals a ON cs.category = 'animal' AND a.id = cs.card_id
       LEFT JOIN pokemon p ON cs.category = 'pokemon' AND p.id = cs.card_id
-      WHERE cs.status = 'done' AND cs.image_url IS NOT NULL
-      AND cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
+      WHERE cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
       AND cs.level = ${chosenLevel}
       ORDER BY random()
       LIMIT 1
