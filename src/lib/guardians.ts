@@ -211,16 +211,49 @@ export interface PackSkinDraw {
   imageUrl?: string | null;
 }
 
+// Les vrais % d'attribution de la roue des skins, calculés sur le POOL
+// réel (skins générés, image prête, pas encore possédés). Le niveau est
+// tiré au poids (40/26/18/11/5), la carte au hasard dans le niveau —
+// donc P(rareté) = Σ niveaux P(niveau) × part de la rareté dans ce niveau.
+// Les légendaires/mythiques grossissent au fil de l'usine.
+export async function skinDrawOdds(userId: number): Promise<Record<string, number>> {
+  const rows = (await db.execute(sql`
+    SELECT cs.level, COALESCE(a.rarity, p.rarity) AS card_rarity, COUNT(*)::int AS n
+    FROM card_skins cs
+    LEFT JOIN animals a ON cs.category = 'animal' AND a.id = cs.card_id
+    LEFT JOIN pokemon p ON cs.category = 'pokemon' AND p.id = cs.card_id
+    WHERE cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
+    GROUP BY cs.level, COALESCE(a.rarity, p.rarity)
+  `)) as unknown as { rows?: { level: number; card_rarity: string; n: number }[] };
+  const list = ((rows.rows ?? rows) as unknown as { level: number; card_rarity: string; n: number }[])
+    .map((r) => ({ level: Number(r.level), rarity: r.card_rarity, n: Number(r.n) }));
+  const levels = [...new Set(list.map((r) => r.level))];
+  const totalW = levels.reduce((a, l) => a + (SKIN_DROP_WEIGHTS[l] ?? 1), 0);
+  const odds: Record<string, number> = {};
+  if (totalW === 0) return odds;
+  for (const l of levels) {
+    const inLevel = list.filter((r) => r.level === l);
+    const nLevel = inLevel.reduce((a, r) => a + r.n, 0);
+    if (nLevel === 0) continue;
+    const pLevel = (SKIN_DROP_WEIGHTS[l] ?? 1) / totalW;
+    for (const r of inLevel) {
+      odds[r.rarity] = (odds[r.rarity] ?? 0) + pLevel * (r.n / nLevel);
+    }
+  }
+  for (const k of Object.keys(odds)) odds[k] = Math.round(odds[k] * 1000) / 10;
+  return odds;
+}
+
 export async function drawPackSkins(userId: number, count = 3): Promise<PackSkinDraw[]> {
   const draws: PackSkinDraw[] = [];
   for (let i = 0; i < count; i++) {
-    // Seuls les skins dont l'image est générée entrent dans le chapeau —
-    // jamais de placeholder ; le pool grossit au fil de l'usine.
+    // Tout le catalogue est dans le chapeau — on fait comme si les 10 000
+    // images étaient prêtes : un skin révélé sans image affiche « L'image
+    // se révèle bientôt… » et apparaît dès que l'usine passe dessus.
     const levelRows = (await db.execute(sql`
       SELECT cs.level, COUNT(*)::int AS n
       FROM card_skins cs
-      WHERE cs.status = 'done' AND cs.image_url IS NOT NULL
-      AND cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
+      WHERE cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
       GROUP BY cs.level
     `)) as unknown as { rows?: { level: number }[] };
     const available = ((levelRows.rows ?? levelRows) as unknown as { level: number }[])
@@ -244,8 +277,7 @@ export async function drawPackSkins(userId: number, count = 3): Promise<PackSkin
       FROM card_skins cs
       LEFT JOIN animals a ON cs.category = 'animal' AND a.id = cs.card_id
       LEFT JOIN pokemon p ON cs.category = 'pokemon' AND p.id = cs.card_id
-      WHERE cs.status = 'done' AND cs.image_url IS NOT NULL
-      AND cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
+      WHERE cs.id NOT IN (SELECT skin_id FROM user_skins WHERE user_id = ${userId})
       AND cs.level = ${chosenLevel}
       ORDER BY random()
       LIMIT 1

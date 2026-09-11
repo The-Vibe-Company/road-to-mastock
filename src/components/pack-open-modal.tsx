@@ -87,6 +87,7 @@ export interface OpenResult {
   } | null;
   // Les 3 skins tirés avant la carte, et ceux qui attendaient la carte.
   skins?: PackSkin[];
+  skinOdds?: Partial<Record<Rarity, number>>;
   awaitingSkins?: AwaitingSkin[];
 }
 
@@ -353,6 +354,38 @@ function RarityPreviewRow({ packType, shift }: { packType: PackType; shift?: Par
   );
 }
 
+// La roue des skins annonce ses VRAIS pourcentages : calculés serveur sur
+// le pool réel des skins générés non possédés. Une rareté encore absente
+// du pool (l'usine fait les faciles d'abord) s'affiche estompée à 0 % —
+// les légendaires et mythiques grossissent au fil de la génération.
+function SkinOddsRow({ odds }: { odds?: Partial<Record<Rarity, number>> }) {
+  if (!odds) return null;
+  return (
+    <div className="flex w-full items-end justify-between gap-1.5">
+      {RARITIES.map((r) => {
+        const pct = odds[r] ?? 0;
+        const dim = pct === 0;
+        return (
+          <div
+            key={r}
+            className={`flex flex-1 flex-col items-center gap-1.5 ${dim ? "opacity-25" : ""}`}
+          >
+            <div className="aspect-square w-full max-w-[58px]">
+              <RarityEmblem rarity={r} size={58} />
+            </div>
+            <p className="text-[9px] font-black uppercase tracking-wider text-foreground/80 text-center leading-tight">
+              {RARITY_LABELS[r]}
+            </p>
+            <span className="font-mono text-[10px] font-bold tabular-nums text-muted-foreground">
+              {pct}%
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── Modal ────────────────────────────────────────────────────────────────
 export function PackOpenModal({
   result,
@@ -487,6 +520,7 @@ export function PackOpenModal({
                     Carte possédée : le skin se révèle. Sinon, il reste <span className="font-black text-primary">mystère</span>.
                   </p>
                 )}
+                <SkinOddsRow odds={result.skinOdds} />
                 <Button
                   onClick={(e) => {
                     e.stopPropagation();
