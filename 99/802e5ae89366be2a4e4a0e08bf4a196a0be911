@@ -1,0 +1,25 @@
+src/app/api/cards/open/route.ts
+  s_6dc77352c5bc09::t_6e1fdba3f7f6b9 14,117-118,206,286
+src/components/pack-open-modal.tsx
+  s_6dc77352c5bc09::t_e76bed11a058c6 90
+  s_6dc77352c5bc09::t_c43df0af8f0e65 357-388
+  s_6dc77352c5bc09::t_367cc885ef2eb6 523
+src/lib/guardians.ts
+  s_6dc77352c5bc09::t_a37a16e5ccaf6c 214-247
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "99802e5ae89366be2a4e4a0e08bf4a196a0be911",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
