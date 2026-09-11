@@ -11,7 +11,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 import { rollRarityForPack, PACK_TYPES, PACK_CATEGORY_PROB_POKEMON, type PackType } from "@/lib/pack-types";
 import { buildPackHat, innerPokemonProb, skinRarityShiftTenths, type Charges } from "@/lib/powers";
-import { drawPackSkins, loadCharges, skinsAwaitingFor } from "@/lib/guardians";
+import { drawPackSkins, loadCharges, skinDrawOdds, skinsAwaitingFor } from "@/lib/guardians";
 import { talentOf } from "@/lib/talents";
 
 // Hiérarchie de désirabilité des packs, pour le Passe-Mondes de Hoopa.
@@ -114,6 +114,8 @@ export async function POST() {
   };
   // Les 3 skins du pack, tirés AVANT la carte — révélés si la carte visée
   // est possédée, mystères (catégorie + rareté + niveau) sinon.
+  // Les % de la roue se calculent AVANT le tirage — le pool que le joueur affronte.
+  const skinOdds = await skinDrawOdds(auth.userId);
   const packSkins = await drawPackSkins(auth.userId, 3);
 
   const packType: PackType = DEBUG_FORCE_PACK ?? rollPackTypeFromHat(charges);
@@ -201,6 +203,7 @@ export async function POST() {
       isDuplicate,
       shardsGranted,
       skins: packSkins,
+      skinOdds,
       awaitingSkins,
       talent: talent
         ? { id: talent.id, family: talent.family, name: talent.name, description: talent.description }
@@ -280,6 +283,7 @@ export async function POST() {
     isDuplicate,
     shardsGranted,
     skins: packSkins,
+    skinOdds,
     awaitingSkins,
     talent: talent
       ? { id: talent.id, family: talent.family, name: talent.name, description: talent.description }
