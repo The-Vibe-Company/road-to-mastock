@@ -1,0 +1,21 @@
+src/components/creature-card.tsx
+  s_6dc77352c5bc09::t_e49dc0eaeafb8a 90
+  s_6dc77352c5bc09::t_46320093fe2448 110-112
+  s_6dc77352c5bc09::t_300772628086b6 132-134
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c3f4bb205020600f663fdf7a2c9174a1608b27f7",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
