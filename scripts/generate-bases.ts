@@ -9,8 +9,10 @@
 // jusqu'à MAX_CYCLES — les stars IP finissent par passer à l'usure.
 //
 // Échelle de retries (leçon Salamèche/Kyogre) :
-//   animal   : low → low → high → high+angle
+//   animal   : low → low → high → high+angle (4 essais)
 //   pokémon  : nommé+high → anonyme+high → anonyme+high+angle → anonyme+low
+//              → anonyme+low+angle → figurine+low (6 essais — la modération
+//              est probabiliste : chaque lancer anonymisé est une chance)
 import { config } from "dotenv";
 import { execFile } from "node:child_process";
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
@@ -34,7 +36,7 @@ const PEDESTALS: Record<string, string> = {
     "on a celestial crimson-and-gold pedestal with floating rock fragments and tiny embers orbiting — MYTHIC tier: a faint deep-RED constellation aura, dark crimson cosmic studio gradient background",
 };
 const ANGLE = " seen from a slightly different three-quarter angle,";
-const MAX_ATTEMPTS = 4;
+const maxAttemptsFor = (r: Row) => (r.category === "pokemon" ? 6 : 4);
 const MAX_CYCLES = 10;
 const CACHE = "/tmp/rtm-base-refs";
 const OUTDIR = "/tmp/rtm-base-out";
@@ -58,7 +60,9 @@ function subjectFor(r: Row, attempt: number): { subject: string; fidelity: strin
     if (attempt === 0) return { subject: `${proper} the Pokémon character from the reference image,`, fidelity: "high" };
     if (attempt === 1) return { subject: `The creature character from the reference image (keep its exact design),`, fidelity: "high" };
     if (attempt === 2) return { subject: `The creature character from the reference image (keep its exact design),${ANGLE}`, fidelity: "high" };
-    return { subject: `The creature character from the reference image (keep its exact design),`, fidelity: "low" };
+    if (attempt === 3) return { subject: `The creature character from the reference image (keep its exact design),`, fidelity: "low" };
+    if (attempt === 4) return { subject: `The creature character from the reference image (keep its exact design),${ANGLE}`, fidelity: "low" };
+    return { subject: `A collectible videogame figurine of the friendly creature character from the reference image (keep its exact design),`, fidelity: "low" };
   }
   const desc = (r.description ?? "").split(/[.!]/)[0]?.trim();
   const base = `The creature "${r.name}" from the reference image${desc ? ` (${desc})` : ""},`;
@@ -119,9 +123,11 @@ async function main() {
       LEFT JOIN pokemon p ON br.category='pokemon' AND p.id = br.card_id
       WHERE br.status IN ('pending','retry')
       ORDER BY owned DESC,
+               -- Les faciles d'abord (doctrine 80 %) : les communes défilent,
+               -- les stars IP vont brûler leurs essais en fin de file/cycles.
                CASE COALESCE(a.rarity, p.rarity)
-                 WHEN 'mythic' THEN 0 WHEN 'legendary' THEN 1 WHEN 'epic' THEN 2
-                 WHEN 'rare' THEN 3 WHEN 'uncommon' THEN 4 ELSE 5 END,
+                 WHEN 'common' THEN 0 WHEN 'uncommon' THEN 1 WHEN 'rare' THEN 2
+                 WHEN 'epic' THEN 3 WHEN 'legendary' THEN 4 ELSE 5 END,
                br.id
       LIMIT ${limit}
     `)) as unknown as Row[];
@@ -188,7 +194,7 @@ async function main() {
         if (!isModeration) consecFails++;
         okStreak = 0;
         const next = isRateLimit ? attempt : attempt + 1;
-        if (next >= MAX_ATTEMPTS && !isRateLimit) {
+        if (next >= maxAttemptsFor(row) && !isRateLimit) {
           await sqlc`UPDATE base_regen SET status = 'blocked', attempts = ${next}, updated_at = NOW() WHERE id = ${row.id}`;
           blocked++;
           console.log(`BLOQUÉ ${row.category}/${row.slug} après ${next} essais — ${msg.slice(0, 90)}`);
