@@ -70,7 +70,9 @@ interface PokemonCreature extends CreatureBase {
 type Creature = AnimalCreature | PokemonCreature;
 
 export interface OpenResult {
-  packType: PackType;
+  // Absent pour un résultat DIRECT (fusion de fragments) : pas de roues,
+  // la carte se révèle immédiatement à la rareté promise.
+  packType?: PackType;
   category: Category;
   rarity: Rarity;
   creature: Creature;
@@ -405,18 +407,22 @@ export function PackOpenModal({
   const hasAnneaux = has("anneaux");
   const hasZiz = has("vol-de-ziz");
   const skipCategory = result.packType === "animal_only" || result.packType === "pokemon_only";
+  // Fusion de fragments : résultat direct, aucune roue — la carte, point.
+  const isDirect = !result.packType;
+  const packType = result.packType ?? "basic";
 
   const skins = result.skins ?? [];
   const hasSkins = skins.length > 0;
 
   const stageOrder = useMemo<Stage[]>(() => {
+    if (isDirect) return ["creature"];
     const base: Stage[] = skipCategory
       ? ["pack", "rarity", "creature"]
       : ["pack", "category", "rarity", "creature"];
     return hasSkins ? ["skins", ...base] : base;
-  }, [skipCategory, hasSkins]);
+  }, [isDirect, skipCategory, hasSkins]);
 
-  const [stage, setStage] = useState<Stage>(hasSkins ? "skins" : "pack");
+  const [stage, setStage] = useState<Stage>(isDirect ? "creature" : hasSkins ? "skins" : "pack");
   const [phase, setPhase] = useState<Phase>("ready");
   // Sous-étape des skins : lequel des 3 est en cours.
   const [skinIdx, setSkinIdx] = useState(0);
@@ -639,7 +645,7 @@ export function PackOpenModal({
             {phase === "spinning" && (
               <SlotReel
                 items={PACK_ITEMS}
-                targetKey={result.packType}
+                targetKey={packType}
                 itemWidth={232}
                 duration={3400}
                 loops={4}
@@ -649,13 +655,13 @@ export function PackOpenModal({
 
             {phase === "result" && (
               <div className="flex flex-col items-center gap-4 animate-card-reveal">
-                <PackTile packType={result.packType} />
+                <PackTile packType={packType} />
                 <div className="text-center">
                   <p className="text-3xl font-black tracking-tighter">
-                    {PACK_LABELS[result.packType]}
+                    {PACK_LABELS[packType]}
                   </p>
                   <p className="mt-2 max-w-xs text-xs leading-relaxed text-muted-foreground">
-                    {PACK_DESCRIPTIONS[result.packType]}
+                    {PACK_DESCRIPTIONS[packType]}
                   </p>
                 </div>
                 <TapHint />
@@ -673,7 +679,7 @@ export function PackOpenModal({
 
             {phase === "ready" && (
               <>
-                <CategoryPreviewRow packType={result.packType} odds={liveOdds} />
+                <CategoryPreviewRow packType={packType} odds={liveOdds} />
                 <Button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -719,7 +725,7 @@ export function PackOpenModal({
 
             {phase === "ready" && (
               <>
-                <RarityPreviewRow packType={result.packType} shift={liveOdds?.rarityShift} />
+                <RarityPreviewRow packType={packType} shift={liveOdds?.rarityShift} />
                 <Button
                   onClick={(e) => {
                     e.stopPropagation();
