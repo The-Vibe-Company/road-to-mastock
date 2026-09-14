@@ -87,7 +87,7 @@ export function CreatureCard({
 
   return (
     <div
-      className={`relative aspect-[3/4] overflow-hidden rounded-[10px] border-2 ${TIER_BORDER[rarity]} ${TIER_GLOW[rarity]} bg-gradient-to-b ${TIER_GRADIENT[rarity]} ${serti ? "card-serti" : ""} ${className}`}
+      className={`relative aspect-[5/6] overflow-hidden rounded-[10px] border-2 ${TIER_BORDER[rarity]} ${TIER_GLOW[rarity]} bg-gradient-to-b ${TIER_GRADIENT[rarity]} ${serti ? "card-serti" : ""} ${className}`}
     >
       {/* Holo shimmer for legendary+ */}
       {isHolo && (
@@ -107,9 +107,9 @@ export function CreatureCard({
         </span>
       </div>
 
-      {/* Image — carré plein cadre : dans une carte 3/4, un carré pleine
-          largeur ancré en haut fait EXACTEMENT 75 % de la hauteur. Rien
-          n'est rogné, rien ne flotte ; la bannière occupe le quart restant. */}
+      {/* Image — carré plein cadre : dans une carte 5/6, un carré pleine
+          largeur ancré en haut fait EXACTEMENT 83 % de la hauteur. Rien
+          n'est rogné, rien ne flotte ; le nom tient dans le sixième restant. */}
       <div className="absolute inset-x-0 top-0 flex aspect-square items-center justify-center overflow-hidden">
         {imageUrl ? (
           <Image
@@ -129,9 +129,9 @@ export function CreatureCard({
         )}
       </div>
 
-      {/* Bottom: name banner — compact, collé en bas ; l'espace au-dessus
-          laisse voir le dégradé de rareté entre l'art et le nom */}
-      <div className={`absolute inset-x-0 bottom-0 ${size === "lg" ? "py-1.5 px-3" : "py-1 px-2"} bg-gradient-to-t from-black/90 via-black/75 to-transparent`}>
+      {/* Bottom: le nom occupe pile la bande sous l'art — plus de grand vide
+          noir entre les deux : il commence là où l'image s'arrête. */}
+      <div className={`absolute inset-x-0 bottom-0 top-[83.333%] flex flex-col items-center justify-center ${size === "lg" ? "px-3" : "px-1.5"} bg-gradient-to-t from-black/90 to-black/40`}>
         <p className={`line-clamp-2 text-center font-black uppercase tracking-tight text-white ${size === "lg" ? "text-sm" : "text-[10px] leading-tight"}`}>
           {name}
         </p>

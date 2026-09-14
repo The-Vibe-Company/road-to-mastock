@@ -494,48 +494,43 @@
   }
 }
 
-/* L'aura du Gardien : le bloc d'exercice s'encercle à la rareté de sa
-   carte — plus elle est haute, plus le cadre rayonne. Le commun reste
-   card-gradient-border, très banal : c'est voulu. Hors @layer : ces
+/* L'aura du Gardien : le bloc d'exercice ne s'ENCADRE plus à la rareté —
+   il RAYONNE. Le trait coloré cerclait la carte et enfermait l'art de la
+   mascotte ; il redevient le filet neutre commun à toutes les caisses, et
+   c'est la lueur portée, elle seule, qui dit la rareté. Hors @layer : ces
    cadres doivent battre bg-card et ring-1 du composant Card, et Tailwind
    ne doit jamais les purger. */
-.card-ring-mythic {
-  position: relative;
-  border: 3px solid transparent;
-  background:
-    linear-gradient(var(--card), var(--card)) padding-box,
-    conic-gradient(from 210deg, #fb7185, #f9a8d4 25%, #fcd34d 50%, #c084fc 75%, #fb7185) border-box;
-  box-shadow:
-    4px 4px 0 oklch(0 0 0 / 0.5),
-    0 0 30px -6px rgba(251, 113, 133, 0.6);
-}
-.card-ring-legendary {
-  position: relative;
-  border: 2px solid transparent;
-  background:
-    linear-gradient(var(--card), var(--card)) padding-box,
-    linear-gradient(135deg, #fde68a, #b45309 45%, #fcd34d 75%, #fde68a) border-box;
-  box-shadow:
-    4px 4px 0 oklch(0 0 0 / 0.5),
-    0 0 18px -6px rgba(251, 191, 36, 0.4);
-}
-.card-ring-epic {
-  position: relative;
-  border: 1px solid rgba(167, 139, 250, 0.65);
-  background: var(--card);
-  box-shadow:
-    4px 4px 0 oklch(0 0 0 / 0.5),
-    0 0 12px -6px rgba(167, 139, 250, 0.35);
-}
-.card-ring-rare {
-  position: relative;
-  border: 1px solid rgba(125, 211, 252, 0.4);
-  background: var(--card);
-  box-shadow: 4px 4px 0 oklch(0 0 0 / 0.5);
-}
+.card-ring-mythic,
+.card-ring-legendary,
+.card-ring-epic,
+.card-ring-rare,
 .card-ring-uncommon {
   position: relative;
-  border: 1px solid rgba(110, 231, 183, 0.35);
+  border: 1px solid color-mix(in oklch, var(--foreground) 14%, transparent);
   background: var(--card);
-  box-shadow: 4px 4px 0 oklch(0 0 0 / 0.5);
+}
+.card-ring-mythic {
+  box-shadow:
+    4px 4px 0 oklch(0 0 0 / 0.5),
+    0 0 34px -8px rgba(251, 113, 133, 0.55);
+}
+.card-ring-legendary {
+  box-shadow:
+    4px 4px 0 oklch(0 0 0 / 0.5),
+    0 0 26px -8px rgba(251, 191, 36, 0.42);
+}
+.card-ring-epic {
+  box-shadow:
+    4px 4px 0 oklch(0 0 0 / 0.5),
+    0 0 20px -8px rgba(167, 139, 250, 0.34);
+}
+.card-ring-rare {
+  box-shadow:
+    4px 4px 0 oklch(0 0 0 / 0.5),
+    0 0 16px -8px rgba(125, 211, 252, 0.26);
+}
+.card-ring-uncommon {
+  box-shadow:
+    4px 4px 0 oklch(0 0 0 / 0.5),
+    0 0 14px -9px rgba(110, 231, 183, 0.22);
 }

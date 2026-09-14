@@ -31,6 +31,12 @@ const MASCOT_WASH: Record<Rarity, string | null> = {
 const FADE =
   "radial-gradient(ellipse 72% 78% at 50% 50%, #000 35%, rgba(0,0,0,0.55) 70%, transparent 100%)";
 
+// L'art remplit tout le bloc (object-cover) : en `contain`, l'image carrée
+// laissait deux bandes vides sur les côtés et ses bords francs se voyaient
+// à travers le fondu. Le cadrage remonte un peu (42 %) pour garder la tête
+// de la créature plutôt que son socle quand le bloc est large et bas.
+const FILL = "object-cover object-[center_42%]";
+
 export function MascotBackdrop({
   imageUrl,
   rarity,
@@ -61,7 +67,7 @@ export function MascotBackdrop({
           fill
           unoptimized
           sizes="480px"
-          className={`object-contain object-center ${MASCOT_OPACITY[rarity]} ${evolved ? "gyarados-red" : ""}`}
+          className={`${FILL} ${MASCOT_OPACITY[rarity]} ${evolved ? "gyarados-red" : ""}`}
         />
       </div>
     </div>
