@@ -36,7 +36,10 @@ const PEDESTALS: Record<string, string> = {
     "on a celestial crimson-and-gold pedestal with floating rock fragments and tiny embers orbiting — MYTHIC tier: a faint deep-RED constellation aura, dark crimson cosmic studio gradient background",
 };
 const ANGLE = " seen from a slightly different three-quarter angle,";
-const maxAttemptsFor = (r: Row) => (r.category === "pokemon" ? 6 : 4);
+// Le filtre est probabiliste : un barreau qui échoue une fois peut passer au
+// lancer suivant. Sur la fin de file (que des stars), on relance donc chaque
+// formulation deux fois avant d'abandonner la carte pour le cycle.
+const maxAttemptsFor = (r: Row) => (r.category === "pokemon" ? 12 : 6);
 const MAX_CYCLES = 10;
 const CACHE = "/tmp/rtm-base-refs";
 const OUTDIR = "/tmp/rtm-base-out";
@@ -54,20 +57,28 @@ interface Row {
   image_url: string;
 }
 
+// L'échelle pokémon, du plus fidèle au plus reformulé. Au-delà du dernier
+// barreau on recommence l'échelle : chaque passage est un nouveau tirage.
+const POKEMON_LADDER: { subject: string; fidelity: string }[] = [
+  { subject: `__NAME__ the Pokémon character from the reference image,`, fidelity: "high" },
+  { subject: `The creature character from the reference image (keep its exact design),`, fidelity: "high" },
+  { subject: `The creature character from the reference image (keep its exact design),${ANGLE}`, fidelity: "high" },
+  { subject: `The creature character from the reference image (keep its exact design),`, fidelity: "low" },
+  { subject: `The creature character from the reference image (keep its exact design),${ANGLE}`, fidelity: "low" },
+  { subject: `A collectible videogame figurine of the friendly creature character from the reference image (keep its exact design),`, fidelity: "low" },
+];
+
 function subjectFor(r: Row, attempt: number): { subject: string; fidelity: string } {
   if (r.category === "pokemon") {
     const proper = r.slug.charAt(0).toUpperCase() + r.slug.slice(1).replace(/-/g, " ");
-    if (attempt === 0) return { subject: `${proper} the Pokémon character from the reference image,`, fidelity: "high" };
-    if (attempt === 1) return { subject: `The creature character from the reference image (keep its exact design),`, fidelity: "high" };
-    if (attempt === 2) return { subject: `The creature character from the reference image (keep its exact design),${ANGLE}`, fidelity: "high" };
-    if (attempt === 3) return { subject: `The creature character from the reference image (keep its exact design),`, fidelity: "low" };
-    if (attempt === 4) return { subject: `The creature character from the reference image (keep its exact design),${ANGLE}`, fidelity: "low" };
-    return { subject: `A collectible videogame figurine of the friendly creature character from the reference image (keep its exact design),`, fidelity: "low" };
+    const rung = POKEMON_LADDER[attempt % POKEMON_LADDER.length];
+    return { subject: rung.subject.replace("__NAME__", proper), fidelity: rung.fidelity };
   }
   const desc = (r.description ?? "").split(/[.!]/)[0]?.trim();
   const base = `The creature "${r.name}" from the reference image${desc ? ` (${desc})` : ""},`;
-  if (attempt <= 1) return { subject: base, fidelity: "low" };
-  if (attempt === 2) return { subject: base, fidelity: "high" };
+  const a = attempt % 4;
+  if (a <= 1) return { subject: base, fidelity: "low" };
+  if (a === 2) return { subject: base, fidelity: "high" };
   return { subject: `${base}${ANGLE}`, fidelity: "high" };
 }
 
@@ -106,6 +117,8 @@ async function main() {
   let blocked = 0;
   let consecFails = 0;
   let okStreak = 0;
+  const FLOOR = Math.max(2, Math.floor(Number(opt("concurrency", "4")) / 2));
+  let lastDrop = 0;
   const t0 = Date.now();
 
   const load = async (): Promise<Row[]> =>
@@ -177,7 +190,7 @@ async function main() {
         }
         await sqlc`UPDATE base_regen SET status = 'done', attempts = ${attempt + 1}, updated_at = NOW() WHERE id = ${row.id}`;
         done++; okStreak++; consecFails = 0;
-        if (okStreak >= 10 && concurrency < maxC) {
+        if (okStreak >= 3 && concurrency < maxC) {
           concurrency++; okStreak = 0;
           console.log(`⇧ concurrence → ${concurrency}`);
         }
@@ -203,16 +216,28 @@ async function main() {
           queue.push({ ...row, attempts: next });
           console.log(`retry ${row.category}/${row.slug} (essai ${next}) — ${msg.slice(0, 90)}`);
         }
-        if (consecFails >= 3) {
-          concurrency = 1;
-          console.log(`⇩ saturation — concurrence → 1, pause 90s`);
-          await new Promise((r) => setTimeout(r, 90000));
+        if (consecFails >= 4) {
+          // Plancher : on divise par deux sans jamais descendre sous FLOOR,
+          // et on repart court. Une salve réseau ne doit plus geler l'usine
+          // pour la nuit (leçon des 10 h perdues).
+          concurrency = Math.max(FLOOR, Math.floor(concurrency / 2));
+          lastDrop = Date.now();
+          console.log(`⇩ saturation — concurrence → ${concurrency}, pause 25s`);
+          await new Promise((r) => setTimeout(r, 25000));
           consecFails = 0;
         } else {
-          await new Promise((r) => setTimeout(r, 15000));
+          // Un blocage de modération revient vite et ne coûte pas de quota :
+          // inutile de pénaliser. Seul un 429 mérite qu'on souffle.
+          await new Promise((r) => setTimeout(r, isRateLimit ? 8000 : 2000));
+        }
+        // Reprise automatique : après 4 min sans nouvelle chute, on remonte.
+        if (concurrency < maxC && Date.now() - lastDrop > 240000) {
+          concurrency = Math.min(maxC, concurrency + 2);
+          lastDrop = Date.now();
+          console.log(`⇧ reprise — concurrence → ${concurrency}`);
         }
       }
-      await new Promise((r) => setTimeout(r, 3000));
+      await new Promise((r) => setTimeout(r, 1000));
       if (workerCount > concurrency) { workerCount--; return; }
     }
   };
@@ -227,7 +252,7 @@ async function main() {
       const [b] = (await sqlc.query(`SELECT COUNT(*)::int n FROM base_regen WHERE status='blocked'`)) as unknown as { n: number }[];
       if (b.n === 0) break;
       console.log(`CYCLE ${cycle}: requeue de ${b.n} bloquées après pause 20 min`);
-      await new Promise((r) => setTimeout(r, 1200000));
+      await new Promise((r) => setTimeout(r, 300000));
       await sqlc.query(`UPDATE base_regen SET status='retry', attempts=0 WHERE status='blocked'`);
       blocked = 0;
       queue = await load();
@@ -235,7 +260,7 @@ async function main() {
     runners = [];
     workerCount = 0;
     const n = Math.min(concurrency, queue.length);
-    for (let i = 0; i < n; i++) { spawn(); await new Promise((r) => setTimeout(r, 5000)); }
+    for (let i = 0; i < n; i++) { spawn(); await new Promise((r) => setTimeout(r, 1500)); }
     const supervisor = setInterval(() => {
       if (queue.length > 0 && workerCount < concurrency) spawn();
     }, 5000);
