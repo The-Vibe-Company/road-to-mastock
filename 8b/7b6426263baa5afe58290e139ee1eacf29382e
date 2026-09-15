@@ -1,0 +1,21 @@
+scripts/generate-bases.ts
+  s_6dc77352c5bc09::t_f5f5da80973c19 60-70,74-75,79-81
+  s_6dc77352c5bc09::t_b5dd35dab12744 120-121,193,219-226,229-237,240,255,263
+  s_6dc77352c5bc09::t_4bc3c7ced733ff 39-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "8b7b6426263baa5afe58290e139ee1eacf29382e",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
