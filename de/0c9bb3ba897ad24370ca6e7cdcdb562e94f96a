@@ -1,0 +1,22 @@
+scripts/generate-skins-v2.ts
+  s_6dc77352c5bc09::t_34d130d4b228c3 177-184,187-197
+  s_6dc77352c5bc09::t_42da7e600d1f1e 25-29
+  s_6dc77352c5bc09::t_fa8b9d1638598b 95-96
+  s_6dc77352c5bc09::t_98f518549e0c64 168
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "de0c9bb3ba897ad24370ca6e7cdcdb562e94f96a",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
