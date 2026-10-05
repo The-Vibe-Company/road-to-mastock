@@ -1,0 +1,28 @@
+src/app/collection/page.tsx
+  s_bbd2403383d74d::t_f8449230e9aeaa 930,933-935,939,941,943,946
+  s_bbd2403383d74d::t_bbc1561e8d3b3c 386-388,390-395
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "96a1c44d87f6fb7426b3da4fc7f323fb175334fa",
+  "prompts": {},
+  "sessions": {
+    "s_6dc77352c5bc09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c821057a-6589-4ccc-9a68-ecc9f4e69e12",
+        "model": "unknown"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    },
+    "s_bbd2403383d74d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a1087c97-9b82-416c-8534-96fcd5931135",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
