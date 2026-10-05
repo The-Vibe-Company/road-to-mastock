@@ -1,0 +1,24 @@
+src/lib/powers.ts
+  s_bbd2403383d74d::t_deef88311a2126 1485,1487-1488
+src/lib/guardians.ts
+  s_bbd2403383d74d::t_e9bb20e2d4d148 544-547
+  s_bbd2403383d74d::t_54bb514cd72482 708
+  s_bbd2403383d74d::t_8fe32aa97f1285 633
+  s_bbd2403383d74d::t_dec9646307d478 955-959
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0cedc6f5b91fbecafdb4b3dca591b5ce8fadb535",
+  "prompts": {},
+  "sessions": {
+    "s_bbd2403383d74d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a1087c97-9b82-416c-8534-96fcd5931135",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
