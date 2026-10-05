@@ -541,6 +541,10 @@ export async function resolveGuardians(params: {
   // 4. Résolution. Les effets s'appliquent via un petit interprète : chaque
   // éveil produit des deltas de charges et/ou des gains immédiats.
   const guardians: AwakenedGuardian[] = [];
+  // Les éveils stériles : une carte livrée avant son prodige/miracle s'éveille
+  // sans rien produire. Elle ne doit alors ni compter comme éveil, ni sceller
+  // le lien de 30 jours à la machine — sinon on immobilise une carte pour rien.
+  const inertExercises = new Set<number>();
   let recordCount = 0;
   let bonusTokens = 0;
   let bonusSpecialTokens = 0;
@@ -626,6 +630,7 @@ export async function resolveGuardians(params: {
       if (!prodige) {
         g.powerName = "Prodige endormi";
         g.detail = "cette carte n'a pas encore reçu son prodige";
+        inertExercises.add(e.exerciseId);
       } else {
         g.powerName = prodige.name;
         const weeklyOk = prodige.weekly
@@ -700,6 +705,7 @@ export async function resolveGuardians(params: {
       if (!miracle) {
         g.powerName = "Miracle endormi";
         g.detail = "cette carte n'a pas encore reçu son miracle";
+        inertExercises.add(e.exerciseId);
       } else {
         g.powerName = miracle.name;
         // Les hebdomadaires CONDITIONNELS (Qilin, Victini, Keldeo) ne
@@ -946,7 +952,11 @@ export async function resolveGuardians(params: {
   }
 
   // 9. Compteur d'éveils (talents évolutifs : la Légende de la Carpe...).
-  const awakenedIds = guardians.map((g) => g.exerciseId);
+  // Les éveils stériles en sont exclus : ils ne comptent pas, et surtout ils
+  // ne nouent pas le lien de 30 jours (voir guardianBondStatus).
+  const awakenedIds = guardians
+    .map((g) => g.exerciseId)
+    .filter((id) => !inertExercises.has(id));
   if (awakenedIds.length > 0) {
     await db
       .update(exercises)

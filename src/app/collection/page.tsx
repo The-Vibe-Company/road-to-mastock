@@ -383,8 +383,16 @@ export default function CollectionPage() {
   }
   const totalUnique = viewCards.length;
   const totalAll = Object.values(totalsView).reduce((a, b) => a + b, 0);
-  // Fragments et fusion : par classeur — masqués dans la vue « Tous ».
+  // Fragments et fusion : par classeur. Dans la vue « Tous », on ne peut pas
+  // fusionner (la fusion vise un classeur précis) mais on AFFICHE le cumul des
+  // deux — sinon le joueur croit avoir perdu ses fragments.
   const section = activeCategory === "pokemon" ? data.pokemon : data.animals;
+  const shardsView: Record<Rarity, number> =
+    activeCategory === "all"
+      ? (Object.fromEntries(
+          RARITIES.map((r) => [r, (data.pokemon.shards[r] || 0) + (data.animals.shards[r] || 0)]),
+        ) as Record<Rarity, number>)
+      : section.shards;
   const fusionRarity = activeCategory !== "all" && activeFilter !== "all" ? activeFilter : null;
   const fusionShards = fusionRarity ? (section.shards[fusionRarity] || 0) : 0;
   const canFuse = fusionRarity ? FUSION_NEXT[fusionRarity] !== null && fusionShards >= FUSION_COST : false;
@@ -919,20 +927,23 @@ export default function CollectionPage() {
             {fusing === fusionRarity ? "Fusion..." : `Fusionner ${FUSION_COST}→1`}
           </Button>
         </div>
-      ) : activeCategory !== "all" && activeFilter === "all" && Object.values(section.shards).some((n) => n > 0) ? (
+      ) : activeFilter === "all" && Object.values(shardsView).some((n) => n > 0) ? (
         // Fragments : une seule ligne de pastilles. Les actions (fusion,
         // conversion) n'apparaissent que quand elles sont possibles —
-        // sinon la pastille reste un simple compteur.
+        // sinon la pastille reste un simple compteur. Dans la vue « Tous »,
+        // le cumul s'affiche mais sans action : fusionner et convertir visent
+        // un classeur précis, il faut d'abord en choisir un.
         <div className="mb-5 flex flex-wrap items-center gap-1.5">
           <Flame className="size-3.5 text-muted-foreground" />
           {[...RARITIES].reverse().map((r) => {
-            const n = section.shards[r] || 0;
+            const n = shardsView[r] || 0;
             if (n === 0) return null;
+            const actionable = activeCategory !== "all";
             const next = FUSION_NEXT[r];
-            const fuseable = next && n >= FUSION_COST;
+            const fuseable = actionable && next && n >= FUSION_COST;
             const convBatch = CONVERSION_BATCH[r];
             const convReward = CONVERSION_RATE[r];
-            const convertible = n >= convBatch;
+            const convertible = actionable && n >= convBatch;
             return (
               <span
                 key={r}

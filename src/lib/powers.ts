@@ -1482,8 +1482,10 @@ export const FORGE_THRESHOLD = 20;
 
 // ─── La Roue de la Forge ────────────────────────────────────────────────────
 // La fusion coûte TOUJOURS 3 fragments. La jauge de Forge sert à autre
-// chose : pleine (10 points), elle paie un tour de la Roue de la Forge —
+// chose : pleine (20 points), elle paie un tour de la Roue de la Forge —
 // un fragment garanti, dont la rareté se joue aux pourcentages.
+// Elle se remplit à l'éveil des gardiens forgerons : Golem (+8),
+// Registeel (+7), Heatran (+5), Magearna (+4) et Genesect (remplissage).
 export const FORGE_WHEEL_COST = 20;
 
 // Pas de fragment légendaire ni mythique : la Roue s'arrête à l'épique.
