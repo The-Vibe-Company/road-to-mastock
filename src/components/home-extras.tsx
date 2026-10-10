@@ -242,7 +242,7 @@ function NewsModal() {
               <p className="mt-5 text-center text-sm leading-relaxed text-muted-foreground">
                 Chacune de tes {cards.length > 0 ? `${cards.length} ` : ""}cartes porte un pouvoir.
                 Posées sur tes machines, elles deviennent des{" "}
-                <strong className="text-foreground">Gardiens</strong> : elles
+                <strong className="text-foreground">Gardiens</strong>&nbsp;: elles
                 s&apos;éveillent à chaque séance et améliorent tes prochains tirages.
               </p>
               <p className="mt-3 text-center text-xs text-muted-foreground">
