@@ -1,0 +1,61 @@
+src/app/globals.css
+  s_9f13ff8a0fe04c::t_e813f6f6ec0d66 11-15,27-29,61-62,72-84,93-106,108-118,120-126,128-138,142-145,147-168,170-183,192-194,201-202,204-205,207-216,220-225,248-249,258-259,261-265,268-269,272-374,378,382,386-389,392,395-396,399,401,404-418,420-423,426,429-430,435-436,441-442,446,452,454-457,467-468,661-666,673,677,680,683,686,689
+src/app/layout.tsx
+  s_9f13ff8a0fe04c::t_005cc53dfc359d 2,10-15,18,36,45
+src/app/page.tsx
+  s_9f13ff8a0fe04c::t_ccc7a60b881d76 139-140,142,146-149,165,169-170,172-185,187,189-191,193,195-197,199,204-212,217,227,230,234-237,243-246,248,251,254,258,261-262,265,282-287
+src/components/back-button.tsx
+  s_9f13ff8a0fe04c::t_db777166cc3704 38
+src/components/dashboard.tsx
+  s_9f13ff8a0fe04c::t_56aeaeaccdaf2a 35-36,47-56,63-96,103-104,111,113,139,145-146,155-156,159-160,179,205,207,219,236-237,248,250,252,298-299,318-320
+src/components/exercise-ranking.tsx
+  s_ba319417a314c7::t_1f156b2768ef8b 70,77-79,82-83,106,112,121,123,131,133,148,150-151,162,165,180,182,189,193,199,206,223,226,232
+src/components/home-extras.tsx
+  s_9f13ff8a0fe04c::t_69fd3e611a543c 187-189,193,203,324,381,390,397,406,420,629,704-706,709,764,775,865-867,869,916,979-981,983,1043,1118,1124,1137,1140,1144,1149,1153,1158,1162,1167,1175,1180,1182-1183,1205,1212,1282-1284,1288,1326,1341
+src/components/home-tabs.tsx
+  s_9f13ff8a0fe04c::t_914f0f5f96bb0d 8,24,42-44,48-49,51,53-54,68-70,73-75,80
+src/components/new-session-button.tsx
+  s_9f13ff8a0fe04c::t_df5fb87c962db6 8-9,23
+src/components/session-card.tsx
+  s_9f13ff8a0fe04c::t_1fe70c3bfa6661 2,14-15,18-19,22-28,31,39,41,46,51,59
+src/components/skins-announcement.tsx
+  s_9f13ff8a0fe04c::t_e4209bd5b5e093 6,9,55-58,62,67-68,71,74,79-82,86,104-105,109-110,117-118,122-123,131-132,136-137,147,151,157
+src/components/spinner.tsx
+  s_9f13ff8a0fe04c::t_708290033e4876 24,26
+src/components/ui/badge.tsx
+  s_9f13ff8a0fe04c::t_e71814c20fe107 8,14
+src/components/ui/button.tsx
+  s_9f13ff8a0fe04c::t_e061e3871c2c3f 9,13-14,16,18,20
+src/components/ui/card.tsx
+  s_9f13ff8a0fe04c::t_5994788597e98d 15,41
+src/components/ui/dialog.tsx
+  s_9f13ff8a0fe04c::t_a0fc097a845eae 34,56,125
+src/components/ui/input.tsx
+  s_9f13ff8a0fe04c::t_c862bdd9794c0d 12
+src/components/ui/sheet.tsx
+  s_9f13ff8a0fe04c::t_60e7325ae2356a 31,56,61-64,112
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "aab2be6438ca4e28cf81f22ac3d45e178cf35589",
+  "prompts": {},
+  "sessions": {
+    "s_9f13ff8a0fe04c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f6f8144-2e0f-4365-a2df-7a153cae490d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    },
+    "s_ba319417a314c7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07b6ff39-7c06-4952-aee4-c4391a051d5d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
