@@ -1,0 +1,21 @@
+.aeom/standard.base.md
+  s_9f13ff8a0fe04c::t_efbff74bb33aec 1-224
+.aeom/standard.md
+  s_9f13ff8a0fe04c::t_63cbe096f35aeb 1-224
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4983e5f28074f041d23514895773a095fd5c2558",
+  "prompts": {},
+  "sessions": {
+    "s_9f13ff8a0fe04c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f6f8144-2e0f-4365-a2df-7a153cae490d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
