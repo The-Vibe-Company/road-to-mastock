@@ -106,7 +106,9 @@
   --secondary: oklch(0.325 0.013 255);
   --secondary-foreground: oklch(0.92 0.005 250);
   --muted: oklch(0.325 0.012 255);
-  --muted-foreground: oklch(0.75 0.012 255);
+  --muted-foreground: oklch(0.80 0.011 255);
+  /* Le cran sous le gris : plein, jamais translucide, lisible partout. */
+  --muted-dim: oklch(0.71 0.012 255);
   --accent: oklch(0.34 0.03 var(--accent-h));
   --accent-foreground: oklch(0.965 0.004 250);
   --destructive: oklch(0.64 0.21 25);
@@ -157,6 +159,7 @@
   --secondary-foreground: oklch(0.26 0.014 255);
   --muted: oklch(0.885 0.007 250);
   --muted-foreground: oklch(0.45 0.014 255);
+  --muted-dim: oklch(0.50 0.014 255);
   --accent: oklch(0.90 0.035 var(--accent-h));
   --accent-foreground: oklch(0.22 0.014 255);
   --destructive: oklch(0.55 0.22 25);
@@ -325,7 +328,7 @@
     isolation: isolate;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 4px;
   }
   .plate-stack > * {
     position: relative;
@@ -336,7 +339,7 @@
     position: absolute;
     top: 6px;
     bottom: 6px;
-    width: 4px;
+    width: 5px;
     z-index: -1;
     border-radius: 2px;
     background: linear-gradient(90deg, var(--steel-dark), var(--steel) 45%, var(--steel-dark));
@@ -751,4 +754,24 @@
     inset 0 1px 0 var(--plate-edge),
     0 1px 0 var(--plate-shade),
     0 0 14px -9px rgba(110, 231, 183, 0.22);
+}
+
+/* Dans la pile, l'accent ne se dilue pas : il est plein (la goupille) ou
+   absent. Les labels d'accent translucides des autres pages deviennent des
+   gravures d'acier, et le gris atténué garde un seul cran, plein — lisibles
+   sur toutes les plaques. Dans la couche utilities, après les utilitaires
+   générés : même poids, donc ils gagnent, mais un hover: les bat encore. */
+@layer utilities {
+  .text-primary\/60,
+  .text-primary\/70 {
+    color: var(--steel);
+  }
+  .text-primary\/80 {
+    color: var(--primary);
+  }
+  .text-muted-foreground\/60,
+  .text-muted-foreground\/70,
+  .text-muted-foreground\/80 {
+    color: var(--muted-dim);
+  }
 }

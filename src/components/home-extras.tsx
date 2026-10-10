@@ -199,12 +199,12 @@ function NewsModal() {
           {step === 0 && (
             <div>
               <div className="text-center">
-                <p className="text-[10px] font-black uppercase tracking-[0.35em] text-primary">
+                <p className="flex items-center justify-center gap-2 font-heading text-[13px] font-bold uppercase tracking-[0.28em] text-muted-foreground">
+                  <span aria-hidden className="pin size-2" />
                   Nouveauté
                 </p>
-                <h2 className="mt-1 text-[1.7rem] font-black leading-tight tracking-tighter">
-                  Tes cartes ont des{" "}
-                  <span className="text-gradient-orange">pouvoirs</span>
+                <h2 className="mt-2 text-[2rem] font-extrabold uppercase leading-[0.95]">
+                  Tes cartes ont des pouvoirs
                 </h2>
               </div>
               {fan.length > 0 && (
@@ -622,7 +622,7 @@ function GuideScreen({ index, total }: { index: number; total: number }) {
 
   return (
     <div className="flex min-h-[24rem] flex-col items-center justify-center px-2 text-center">
-      <div className="flex size-16 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/20">
+      <div className="stamp size-16">
         {screen.icon}
       </div>
       <p className="mt-4 font-mono text-[10px] font-black uppercase tracking-[0.3em] text-primary/60">
