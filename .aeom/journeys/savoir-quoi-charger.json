@@ -1,0 +1,11 @@
+{
+  "name": "Savoir quoi charger sur une machine",
+  "steps": [
+    { "do": "open", "path": "/sessions/new" },
+    { "do": "see", "text": "Aucun exercice" },
+    { "do": "click", "target": { "role": "button", "name": "Exercice" } },
+    { "do": "click", "target": { "role": "button", "name": "Chest Press" } },
+    { "do": "click", "target": { "role": "link", "name": "Chest Press" } },
+    { "do": "see", "text": "Chest Press" }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "Noter ma séance du jour",
+  "steps": [
+    { "do": "open", "path": "/sessions/new" },
+    { "do": "see", "text": "Aucun exercice" },
+    { "do": "click", "target": { "role": "button", "name": "Exercice" } },
+    { "do": "click", "target": { "role": "button", "name": "Chest Press" } },
+    { "do": "press", "key": "Shift+Tab" },
+    { "do": "press", "key": "Shift+Tab" },
+    { "do": "press", "key": "Shift+Tab" },
+    { "do": "press", "key": "7" },
+    { "do": "press", "key": "0" },
+    { "do": "press", "key": "Tab" },
+    { "do": "press", "key": "1" },
+    { "do": "press", "key": "0" },
+    { "do": "press", "key": "Enter" },
+    { "do": "see", "text": "1 série" },
+    { "do": "click", "target": { "role": "button", "name": "Terminer la séance" } },
+    { "do": "click", "target": { "role": "button", "name": "Oui, clôture" } }
+  ]
+}

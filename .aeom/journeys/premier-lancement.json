@@ -1,0 +1,10 @@
+{
+  "name": "Découvrir l'app au premier lancement",
+  "steps": [
+    { "do": "open", "path": "/" },
+    { "do": "see", "text": "Les Skins" },
+    { "do": "click", "target": { "role": "button", "name": "Plus tard" } },
+    { "do": "click", "target": { "role": "button", "name": "Plus tard" } },
+    { "do": "see", "text": "Nouvelle séance" }
+  ]
+}

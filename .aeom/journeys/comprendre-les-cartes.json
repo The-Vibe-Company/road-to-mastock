@@ -1,0 +1,9 @@
+{
+  "name": "Comprendre comment gagner des cartes",
+  "steps": [
+    { "do": "open", "path": "/collection" },
+    { "do": "click", "target": { "role": "link", "name": "?" }, "lands": "/manuel" },
+    { "do": "click", "target": { "role": "button", "name": "Les jetons et les packs" } },
+    { "do": "see", "text": "jeton" }
+  ]
+}

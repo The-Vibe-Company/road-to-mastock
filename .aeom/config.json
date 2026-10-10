@@ -1,0 +1,6 @@
+{
+  "url": "http://localhost:4317",
+  "start": "PORT=4317 node .aeom/serve.mjs",
+  "reset": "node .aeom/reset.mjs",
+  "protected": ["src/lib/**", "src/app/api/**", "src/proxy.ts", "scripts/**", "drizzle.config.ts"]
+}
