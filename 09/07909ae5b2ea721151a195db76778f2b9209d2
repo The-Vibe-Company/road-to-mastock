@@ -1,0 +1,19 @@
+src/app/trophees/page.tsx
+  s_9f13ff8a0fe04c::t_04fba695c68cc4 170-175
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0907909ae5b2ea721151a195db76778f2b9209d2",
+  "prompts": {},
+  "sessions": {
+    "s_9f13ff8a0fe04c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f6f8144-2e0f-4365-a2df-7a153cae490d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
