@@ -59,25 +59,27 @@ export function SlotReel({
 
   return (
     <div className={`relative w-full max-w-md mx-auto ${className}`}>
+      {/* La fenêtre du rouleau : un jour sombre dans la fonte, deux rails
+          d'acier, et la goupille (haut et bas) qui marque la pièce tirée. */}
       {!bare && (
         <>
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-[2px] bg-gradient-to-r from-amber-900 via-amber-300 to-amber-900" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[2px] bg-gradient-to-r from-amber-900 via-amber-300 to-amber-900" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-[3px] rounded-t-[var(--radius)] bg-gradient-to-b from-steel to-steel-dark" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[3px] rounded-b-[var(--radius)] bg-gradient-to-b from-steel to-steel-dark" />
           <div className="pointer-events-none absolute left-1/2 top-0 z-20 -translate-x-1/2">
-            <div className="h-0 w-0 border-x-[10px] border-t-[14px] border-x-transparent border-t-amber-300 drop-shadow-[0_2px_3px_rgba(0,0,0,0.7)]" />
+            <div className="h-0 w-0 border-x-[10px] border-t-[14px] border-x-transparent border-t-primary drop-shadow-[0_2px_3px_rgba(0,0,0,0.7)]" />
           </div>
           <div className="pointer-events-none absolute bottom-0 left-1/2 z-20 -translate-x-1/2">
-            <div className="h-0 w-0 border-x-[10px] border-b-[14px] border-x-transparent border-b-amber-300 drop-shadow-[0_-2px_3px_rgba(0,0,0,0.7)]" />
+            <div className="h-0 w-0 border-x-[10px] border-b-[14px] border-x-transparent border-b-primary drop-shadow-[0_-2px_3px_rgba(0,0,0,0.7)]" />
           </div>
         </>
       )}
 
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-black to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-black to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-gap to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-gap to-transparent" />
 
       <div
         ref={containerRef}
-        className={`relative overflow-hidden rounded-2xl ${bare ? "" : "bg-black/60 ring-1 ring-amber-700/30"}`}
+        className={`relative overflow-hidden rounded-[var(--radius)] ${bare ? "" : "bg-gap shadow-[inset_0_2px_6px_oklch(0_0_0/0.5)]"}`}
         style={{ height: itemWidth + 24 }}
       >
         <div

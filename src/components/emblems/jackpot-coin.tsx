@@ -78,8 +78,8 @@ export function JackpotCoin({ reward, size = 144 }: { reward: CoinReward; size?:
 
       {isJackpot && (
         <div
-          className="absolute -bottom-1 left-1/2 z-10 -translate-x-1/2 rounded-md bg-amber-400 px-2 py-0.5 font-black uppercase tracking-[0.25em] text-black shadow-lg"
-          style={{ fontSize: 9 }}
+          className="absolute -bottom-1 left-1/2 z-10 -translate-x-1/2 rounded-[2px] bg-amber-400 px-2 py-0.5 font-heading font-bold uppercase leading-none tracking-[0.14em] text-black shadow-lg"
+          style={{ fontSize: 12 }}
         >
           Jackpot
         </div>
