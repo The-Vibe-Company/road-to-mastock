@@ -48,7 +48,7 @@ export function ColorPicker() {
         type="button"
         onClick={() => setColor(key)}
         aria-pressed={isActive}
-        className="group flex flex-col items-center gap-1.5 rounded-md pb-1 pt-1.5"
+        className="group flex flex-col items-center gap-1.5 rounded-md pb-1 pt-1.5 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       >
         <span
           className={`relative flex size-12 items-center justify-center rounded-full shadow-[inset_0_1px_0_oklch(1_0_0/0.35),inset_0_-2px_0_oklch(0_0_0/0.22)] transition-transform ${
@@ -133,7 +133,7 @@ export function ColorPicker() {
               onChange={(e) => setHue(parseInt(e.target.value, 10))}
               onMouseUp={() => setColor(`custom:${hue}`)}
               onTouchEnd={() => setColor(`custom:${hue}`)}
-              className="h-3 flex-1 cursor-pointer appearance-none rounded-full"
+              className="h-3 flex-1 cursor-pointer appearance-none rounded-full outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               style={{
                 background:
                   "linear-gradient(to right, oklch(0.7 0.19 0), oklch(0.7 0.19 60), oklch(0.7 0.19 120), oklch(0.7 0.19 180), oklch(0.7 0.19 240), oklch(0.7 0.19 300), oklch(0.7 0.19 360))",
@@ -144,7 +144,7 @@ export function ColorPicker() {
               onClick={() => setColor(`custom:${hue}`)}
               aria-pressed={isCustomAccent(color)}
               aria-label="Porter cette teinte"
-              className={`flex size-10 shrink-0 items-center justify-center rounded-full transition-transform hover:scale-105 ${
+              className={`flex size-10 shrink-0 items-center justify-center rounded-full outline-none transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring ${
                 isCustomAccent(color) ? "ring-2 ring-foreground ring-offset-2 ring-offset-card" : ""
               }`}
               style={{ background: `oklch(0.7 0.19 ${hue})` }}

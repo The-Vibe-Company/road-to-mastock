@@ -45,6 +45,11 @@ const BLOCK_TITLE =
 // plaques est clair, le gris atténué n'y suffit plus.
 const ON_GAP = "text-muted-foreground [.light_&]:text-secondary-foreground";
 
+// Le contour de focus du kit (le même que sur ses boutons), pour ce que la
+// page dessine elle-même.
+const FOCUS_RING =
+  "outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+
 // La glissière : les choix rangés dans le jour sombre de la pile, chacun
 // enfoncé dans son logement. Celui qu'on a pris en sort, devient une
 // plaque, et porte la goupille.
@@ -68,9 +73,9 @@ function SlotOption({
       type="button"
       aria-pressed={selected}
       onClick={onClick}
-      className={`flex min-h-10 items-center justify-center gap-2 rounded-[3px] px-3 text-[13px] font-semibold transition-colors active:translate-y-px ${
+      className={`flex min-h-10 items-center justify-center gap-2 rounded-[3px] px-3 text-[13px] font-semibold transition-colors active:translate-y-px ${FOCUS_RING} ${
         selected
-          ? "plate text-foreground"
+          ? "plate text-foreground hover:bg-plate-hover"
           : "bg-background text-muted-foreground hover:bg-secondary hover:text-foreground"
       } ${className}`}
     >
@@ -207,7 +212,7 @@ export function SettingsPage() {
               </CardAction>
             </CardHeader>
             <CardContent>
-              <Slot className="flex flex-wrap">
+              <Slot className="flex flex-wrap [&>*]:grow">
                 {titles.map((t) => (
                   <SlotOption
                     key={t}
@@ -348,7 +353,7 @@ export function SettingsPage() {
                 return (
                   <div key={page}>
                     <p className="etched mb-1.5">{PAGE_LABELS[page]}</p>
-                    <Slot className="flex flex-wrap">
+                    <Slot className="flex flex-wrap [&>*]:grow">
                       <SlotOption
                         selected={active === null}
                         onClick={() => patch({ wallpapers: { [page]: null } })}
@@ -379,7 +384,7 @@ export function SettingsPage() {
       <div className="plate-stack">
         <Link
           href="/manuel"
-          className="plate card-hover group flex items-center gap-3 py-2 pl-2 pr-3"
+          className={`plate card-hover group flex items-center gap-3 py-2 pl-2 pr-3 ${FOCUS_RING}`}
         >
           <span className="stamp size-10 shrink-0">
             <BookOpen className="size-5" />

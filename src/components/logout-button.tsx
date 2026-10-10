@@ -26,7 +26,7 @@ export function LogoutButton({ labeled = false }: { labeled?: boolean }) {
         type="button"
         onClick={handleLogout}
         disabled={pending}
-        className="plate card-hover group flex w-full items-center gap-3 py-2 pl-2 pr-3 text-left disabled:opacity-70"
+        className="plate card-hover group flex w-full items-center gap-3 py-2 pl-2 pr-3 text-left outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-wait"
       >
         <span className="stamp size-10 shrink-0 transition-colors group-hover:text-destructive">
           {pending ? <Loader2 className="size-5 animate-spin" /> : <LogOut className="size-5" />}
