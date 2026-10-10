@@ -1,0 +1,224 @@
+# The standard of Road to Mastock
+What the front holds to from now on: its direction, its tokens and its kit, each where it lives in the code, and its own rules.
+
+## Direction
+pile-de-fonte: Sert la boucle principale : noter les kilos de la machine sur laquelle on s'installe, comme on lit le chiffre frappé sur la plaque de la pile de fonte où l'on plante la goupille.
+Tirée de la pile de plaques d'une machine guidée de la salle : des plaques de fonte graphite empilées, un jour sombre entre elles où passent les tiges chromées, sur chaque plaque un chiffre frappé blanc sur étiquette noire, et la goupille, seule pièce de couleur. Elle sert ce que dit la fiche produit : un pratiquant de BasicFit, sur son téléphone, note ses séries en kilos et répétitions machine par machine, puis clôture sa séance pour gagner le jeton du jour.
+
+## Tokens
+- `--font-sans: var(--font-sans)` in `src/app/globals.css`, under `@theme inline`
+- `--font-heading: var(--font-display)` in `src/app/globals.css`, under `@theme inline`
+- `--font-mono: var(--font-display), ui-monospace, monospace` in `src/app/globals.css`, under `@theme inline`
+- `--color-sidebar-ring: var(--sidebar-ring)` in `src/app/globals.css`, under `@theme inline`
+- `--color-sidebar-border: var(--sidebar-border)` in `src/app/globals.css`, under `@theme inline`
+- `--color-sidebar-accent-foreground: var(--sidebar-accent-foreground)` in `src/app/globals.css`, under `@theme inline`
+- `--color-sidebar-accent: var(--sidebar-accent)` in `src/app/globals.css`, under `@theme inline`
+- `--color-sidebar-primary-foreground: var(--sidebar-primary-foreground)` in `src/app/globals.css`, under `@theme inline`
+- `--color-sidebar-primary: var(--sidebar-primary)` in `src/app/globals.css`, under `@theme inline`
+- `--color-sidebar-foreground: var(--sidebar-foreground)` in `src/app/globals.css`, under `@theme inline`
+- `--color-sidebar: var(--sidebar)` in `src/app/globals.css`, under `@theme inline`
+- `--color-chart-5: var(--chart-5)` in `src/app/globals.css`, under `@theme inline`
+- `--color-chart-4: var(--chart-4)` in `src/app/globals.css`, under `@theme inline`
+- `--color-chart-3: var(--chart-3)` in `src/app/globals.css`, under `@theme inline`
+- `--color-chart-2: var(--chart-2)` in `src/app/globals.css`, under `@theme inline`
+- `--color-chart-1: var(--chart-1)` in `src/app/globals.css`, under `@theme inline`
+- `--color-ring: var(--ring)` in `src/app/globals.css`, under `@theme inline`
+- `--color-input: var(--input)` in `src/app/globals.css`, under `@theme inline`
+- `--color-border: var(--border)` in `src/app/globals.css`, under `@theme inline`
+- `--color-destructive: var(--destructive)` in `src/app/globals.css`, under `@theme inline`
+- `--color-accent-foreground: var(--accent-foreground)` in `src/app/globals.css`, under `@theme inline`
+- `--color-accent: var(--accent)` in `src/app/globals.css`, under `@theme inline`
+- `--color-muted-foreground: var(--muted-foreground)` in `src/app/globals.css`, under `@theme inline`
+- `--color-muted: var(--muted)` in `src/app/globals.css`, under `@theme inline`
+- `--color-secondary-foreground: var(--secondary-foreground)` in `src/app/globals.css`, under `@theme inline`
+- `--color-secondary: var(--secondary)` in `src/app/globals.css`, under `@theme inline`
+- `--color-primary: var(--primary)` in `src/app/globals.css`, under `@theme inline`
+- `--color-primary-foreground: var(--primary-foreground)` in `src/app/globals.css`, under `@theme inline`
+- `--color-popover-foreground: var(--popover-foreground)` in `src/app/globals.css`, under `@theme inline`
+- `--color-popover: var(--popover)` in `src/app/globals.css`, under `@theme inline`
+- `--color-card-foreground: var(--card-foreground)` in `src/app/globals.css`, under `@theme inline`
+- `--color-card: var(--card)` in `src/app/globals.css`, under `@theme inline`
+- `--color-foreground: var(--foreground)` in `src/app/globals.css`, under `@theme inline`
+- `--color-background: var(--background)` in `src/app/globals.css`, under `@theme inline`
+- `--color-steel: var(--steel)` in `src/app/globals.css`, under `@theme inline`
+- `--color-steel-dark: var(--steel-dark)` in `src/app/globals.css`, under `@theme inline`
+- `--color-gap: var(--gap)` in `src/app/globals.css`, under `@theme inline`
+- `--color-plate-hover: var(--plate-hover)` in `src/app/globals.css`, under `@theme inline`
+- `--color-stamp: var(--stamp)` in `src/app/globals.css`, under `@theme inline`
+- `--color-stamp-foreground: var(--stamp-foreground)` in `src/app/globals.css`, under `@theme inline`
+- `--radius-sm: calc(var(--radius) * 0.6)` in `src/app/globals.css`, under `@theme inline`
+- `--radius-md: calc(var(--radius) * 0.8)` in `src/app/globals.css`, under `@theme inline`
+- `--radius-lg: var(--radius)` in `src/app/globals.css`, under `@theme inline`
+- `--radius-xl: calc(var(--radius) * 1.4)` in `src/app/globals.css`, under `@theme inline`
+- `--radius-2xl: calc(var(--radius) * 1.8)` in `src/app/globals.css`, under `@theme inline`
+- `--radius-3xl: calc(var(--radius) * 2.2)` in `src/app/globals.css`, under `@theme inline`
+- `--radius-4xl: calc(var(--radius) * 2.6)` in `src/app/globals.css`, under `@theme inline`
+- `--accent-l: 0.72` in `src/app/globals.css`
+- `--accent-c: 0.21` in `src/app/globals.css`
+- `--accent-h: 48` in `src/app/globals.css`
+- `--accent-gradient-start: #ff8a3d` in `src/app/globals.css`
+- `--accent-gradient-mid: #ff5f0f` in `src/app/globals.css`
+- `--accent-gradient-end: #e84a00` in `src/app/globals.css`
+- `--background: oklch(0.235 0.012 255)` in `src/app/globals.css`
+- `--foreground: oklch(0.965 0.004 250)` in `src/app/globals.css`
+- `--card: oklch(0.285 0.013 255)` in `src/app/globals.css`
+- `--card-foreground: oklch(0.965 0.004 250)` in `src/app/globals.css`
+- `--popover: oklch(0.265 0.013 255)` in `src/app/globals.css`
+- `--popover-foreground: oklch(0.965 0.004 250)` in `src/app/globals.css`
+- `--primary: oklch(var(--accent-l) var(--accent-c) var(--accent-h))` in `src/app/globals.css`
+- `--primary-foreground: oklch(0.17 0.012 255)` in `src/app/globals.css`
+- `--secondary: oklch(0.325 0.013 255)` in `src/app/globals.css`
+- `--secondary-foreground: oklch(0.92 0.005 250)` in `src/app/globals.css`
+- `--muted: oklch(0.325 0.012 255)` in `src/app/globals.css`
+- `--muted-foreground: oklch(0.80 0.011 255)` in `src/app/globals.css`
+- `--muted-dim: oklch(0.71 0.012 255)` in `src/app/globals.css`
+- `--accent: oklch(0.34 0.03 var(--accent-h))` in `src/app/globals.css`
+- `--accent-foreground: oklch(0.965 0.004 250)` in `src/app/globals.css`
+- `--destructive: oklch(0.64 0.21 25)` in `src/app/globals.css`
+- `--border: oklch(0.38 0.012 255)` in `src/app/globals.css`
+- `--input: oklch(0.37 0.012 255)` in `src/app/globals.css`
+- `--ring: oklch(var(--accent-l) var(--accent-c) var(--accent-h))` in `src/app/globals.css`
+- `--chart-1: oklch(var(--accent-l) var(--accent-c) var(--accent-h))` in `src/app/globals.css`
+- `--chart-2: oklch(0.60 0.17 var(--accent-h))` in `src/app/globals.css`
+- `--chart-3: oklch(0.50 0.13 var(--accent-h))` in `src/app/globals.css`
+- `--chart-4: oklch(0.40 0.09 var(--accent-h))` in `src/app/globals.css`
+- `--chart-5: oklch(0.30 0.05 var(--accent-h))` in `src/app/globals.css`
+- `--radius: 4px` in `src/app/globals.css`
+- `--sidebar: oklch(0.255 0.012 255)` in `src/app/globals.css`
+- `--sidebar-foreground: oklch(0.965 0.004 250)` in `src/app/globals.css`
+- `--sidebar-primary: oklch(var(--accent-l) var(--accent-c) var(--accent-h))` in `src/app/globals.css`
+- `--sidebar-primary-foreground: oklch(0.17 0.012 255)` in `src/app/globals.css`
+- `--sidebar-accent: oklch(0.34 0.03 var(--accent-h))` in `src/app/globals.css`
+- `--sidebar-accent-foreground: oklch(0.965 0.004 250)` in `src/app/globals.css`
+- `--sidebar-border: oklch(0.38 0.012 255)` in `src/app/globals.css`
+- `--sidebar-ring: oklch(var(--accent-l) var(--accent-c) var(--accent-h))` in `src/app/globals.css`
+- `--gap: oklch(0.17 0.011 255)` in `src/app/globals.css`
+- `--steel: oklch(0.80 0.01 250)` in `src/app/globals.css`
+- `--steel-dark: oklch(0.46 0.01 250)` in `src/app/globals.css`
+- `--stamp: oklch(0.17 0.011 255)` in `src/app/globals.css`
+- `--stamp-foreground: oklch(0.975 0.003 250)` in `src/app/globals.css`
+- `--plate-edge: oklch(1 0 0 / 0.08)` in `src/app/globals.css`
+- `--plate-shade: oklch(0 0 0 / 0.42)` in `src/app/globals.css`
+- `--plate-hover: oklch(0.315 0.014 255)` in `src/app/globals.css`
+- `--background: oklch(0.915 0.006 250)` in `src/app/globals.css`, under `.light`
+- `--foreground: oklch(0.22 0.014 255)` in `src/app/globals.css`, under `.light`
+- `--card: oklch(0.975 0.003 250)` in `src/app/globals.css`, under `.light`
+- `--card-foreground: oklch(0.22 0.014 255)` in `src/app/globals.css`, under `.light`
+- `--popover: oklch(0.975 0.003 250)` in `src/app/globals.css`, under `.light`
+- `--popover-foreground: oklch(0.22 0.014 255)` in `src/app/globals.css`, under `.light`
+- `--primary: oklch(calc(var(--accent-l) - 0.14) var(--accent-c) var(--accent-h))` in `src/app/globals.css`, under `.light`
+- `--primary-foreground: oklch(0.99 0 0)` in `src/app/globals.css`, under `.light`
+- `--secondary: oklch(0.885 0.007 250)` in `src/app/globals.css`, under `.light`
+- `--secondary-foreground: oklch(0.26 0.014 255)` in `src/app/globals.css`, under `.light`
+- `--muted: oklch(0.885 0.007 250)` in `src/app/globals.css`, under `.light`
+- `--muted-foreground: oklch(0.45 0.014 255)` in `src/app/globals.css`, under `.light`
+- `--muted-dim: oklch(0.50 0.014 255)` in `src/app/globals.css`, under `.light`
+- `--accent: oklch(0.90 0.035 var(--accent-h))` in `src/app/globals.css`, under `.light`
+- `--accent-foreground: oklch(0.22 0.014 255)` in `src/app/globals.css`, under `.light`
+- `--destructive: oklch(0.55 0.22 25)` in `src/app/globals.css`, under `.light`
+- `--border: oklch(0.80 0.01 250)` in `src/app/globals.css`, under `.light`
+- `--input: oklch(0.82 0.01 250)` in `src/app/globals.css`, under `.light`
+- `--ring: oklch(calc(var(--accent-l) - 0.14) var(--accent-c) var(--accent-h))` in `src/app/globals.css`, under `.light`
+- `--chart-1: oklch(var(--accent-l) var(--accent-c) var(--accent-h))` in `src/app/globals.css`, under `.light`
+- `--chart-2: oklch(0.60 0.17 var(--accent-h))` in `src/app/globals.css`, under `.light`
+- `--chart-3: oklch(0.50 0.13 var(--accent-h))` in `src/app/globals.css`, under `.light`
+- `--chart-4: oklch(0.40 0.09 var(--accent-h))` in `src/app/globals.css`, under `.light`
+- `--chart-5: oklch(0.30 0.05 var(--accent-h))` in `src/app/globals.css`, under `.light`
+- `--sidebar: oklch(0.94 0.005 250)` in `src/app/globals.css`, under `.light`
+- `--sidebar-foreground: oklch(0.22 0.014 255)` in `src/app/globals.css`, under `.light`
+- `--sidebar-primary: oklch(calc(var(--accent-l) - 0.14) var(--accent-c) var(--accent-h))` in `src/app/globals.css`, under `.light`
+- `--sidebar-primary-foreground: oklch(0.99 0 0)` in `src/app/globals.css`, under `.light`
+- `--sidebar-accent: oklch(0.90 0.02 var(--accent-h))` in `src/app/globals.css`, under `.light`
+- `--sidebar-accent-foreground: oklch(0.22 0.014 255)` in `src/app/globals.css`, under `.light`
+- `--sidebar-border: oklch(0.80 0.01 250)` in `src/app/globals.css`, under `.light`
+- `--sidebar-ring: oklch(calc(var(--accent-l) - 0.14) var(--accent-c) var(--accent-h))` in `src/app/globals.css`, under `.light`
+- `--gap: oklch(0.80 0.008 250)` in `src/app/globals.css`, under `.light`
+- `--steel: oklch(0.70 0.01 250)` in `src/app/globals.css`, under `.light`
+- `--steel-dark: oklch(0.52 0.01 250)` in `src/app/globals.css`, under `.light`
+- `--stamp: oklch(0.24 0.014 255)` in `src/app/globals.css`, under `.light`
+- `--stamp-foreground: oklch(0.975 0.003 250)` in `src/app/globals.css`, under `.light`
+- `--plate-edge: oklch(1 0 0 / 0.9)` in `src/app/globals.css`, under `.light`
+- `--plate-shade: oklch(0.3 0.02 255 / 0.16)` in `src/app/globals.css`, under `.light`
+- `--plate-hover: oklch(0.995 0.002 250)` in `src/app/globals.css`, under `.light`
+
+## Components
+- `.light` in `src/app/globals.css`: le thème clair, gagné à 100 séances
+- `.text-2xl` in `src/app/globals.css`
+- `.text-3xl` in `src/app/globals.css`
+- `.text-4xl` in `src/app/globals.css`
+- `.text-gradient-orange` in `src/app/globals.css`
+- `.bg-gradient-orange` in `src/app/globals.css`
+- `.bg-gradient-orange-intense` in `src/app/globals.css`
+- `.glow-orange` in `src/app/globals.css`
+- `.glow-orange-sm` in `src/app/globals.css`
+- `.card-hover` in `src/app/globals.css`
+- `.plate` in `src/app/globals.css`: la plaque, le contenu : graphite plein, arête claire en haut, jamais de contour coloré
+- `.card-gradient-border` in `src/app/globals.css`
+- `.plate-stack` in `src/app/globals.css`: des plaques empilées, un jour sombre de 4px entre elles et les tiges derrière
+- `.stamp` in `src/app/globals.css`: le chiffre frappé, blanc sur étiquette noire, en Barlow Condensed tabulaire
+- `.pin` in `src/app/globals.css`: la goupille, ronde, la seule pièce à la couleur du joueur
+- `.pin-rod` in `src/app/globals.css`: la tige d'acier de la goupille
+- `.segments` in `src/app/globals.css`: une barre découpée en plaques régulières
+- `.etched` in `src/app/globals.css`: le petit label gravé au-dessus d'un bloc
+- `.card-gradient-gold` in `src/app/globals.css`
+- `.card-gradient-silver` in `src/app/globals.css`
+- `.card-gradient-bronze` in `src/app/globals.css`
+- `.hero-gradient` in `src/app/globals.css`
+- `.hazard` in `src/app/globals.css`
+- `.noise-overlay` in `src/app/globals.css`
+- `.plate-loader` in `src/app/globals.css`
+- `.scrim` in `src/app/globals.css`
+- `.animate-spin-slow` in `src/app/globals.css`
+- `.animate-card-reveal` in `src/app/globals.css`
+- `.animate-creature-reveal` in `src/app/globals.css`
+- `.holo-shimmer` in `src/app/globals.css`
+- `.column-rods` in `src/app/globals.css`: les deux tiges qui encadrent la colonne sur grand écran
+- `.cat-track` in `src/app/globals.css`
+- `.cat-body` in `src/app/globals.css`
+- `.cat-legs-a` in `src/app/globals.css`
+- `.cat-legs-b` in `src/app/globals.css`
+- `.cat-tail` in `src/app/globals.css`
+- `.snorlax-sleep` in `src/app/globals.css`
+- `.zzz` in `src/app/globals.css`
+- `.zzz-2` in `src/app/globals.css`
+- `.zzz-3` in `src/app/globals.css`
+- `.note` in `src/app/globals.css`
+- `.note-2` in `src/app/globals.css`
+- `.note-3` in `src/app/globals.css`
+- `.psyduck-pop` in `src/app/globals.css`
+- `.hoopa-ring` in `src/app/globals.css`
+- `.hoopa-ring-2` in `src/app/globals.css`
+- `.hoopa-ring-3` in `src/app/globals.css`
+- `.ziz-feather` in `src/app/globals.css`
+- `.confetti` in `src/app/globals.css`
+- `.axolotl-spin` in `src/app/globals.css`
+- `.gyarados-red` in `src/app/globals.css`
+- `.card-serti` in `src/app/globals.css`
+- `.card-ring-mythic` in `src/app/globals.css`
+- `.card-ring-legendary` in `src/app/globals.css`
+- `.card-ring-epic` in `src/app/globals.css`
+- `.card-ring-rare` in `src/app/globals.css`
+- `.card-ring-uncommon` in `src/app/globals.css`
+- `.text-primary` in `src/app/globals.css`
+- `.text-muted-foreground` in `src/app/globals.css`
+- `.tracking-tighter` in `src/app/globals.css`
+- `.tracking-tight` in `src/app/globals.css`
+- `src/app/layout.tsx`
+- `src/components/ui/button.tsx`
+- `src/components/ui/card.tsx`
+- `src/components/ui/badge.tsx`
+- `src/components/ui/input.tsx`
+- `src/components/ui/dialog.tsx`
+- `src/components/ui/sheet.tsx`
+- `src/components/back-button.tsx`
+- `src/components/spinner.tsx`
+- `src/components/new-session-button.tsx`
+
+## Rules
+- Rectangle = plaque = contenu ; rond = goupille = action ou sélection.
+- La couleur d'accent est celle du joueur (orange par défaut, les autres se gagnent) : elle vient toujours de `--accent-l`, `--accent-c`, `--accent-h`, jamais codée en dur, et ne marque que la goupille : l'action principale, l'élément choisi, la charge en cours.
+- Les chiffres sont frappés (Barlow Condensed, `--font-display`) ; le texte courant reste en Geist (`--font-sans`).
+- Sombre par défaut ; le thème clair se gagne au trophée des 100 séances.
+- Chaque page ouvre sur le même en-tête : le bouton Retour, un label gravé, le titre en capitales, une ligne d'intro.
+- Pas de texte atténué par opacité : chaque texte tient le contraste AA.
+- Pas d'emoji dans l'interface.
