@@ -241,8 +241,10 @@ export default function GrimoirePage() {
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 {found === 0 ? "Aucun talent éveillé pour l'instant. " : ""}
-                Chacun dort dans une carte que tu n&apos;as pas encore. Aucun
-                indice : il s&apos;éveille le jour où elle rejoint ta collection.
+                Couleurs scellées, fonds d&apos;écran, pages de stats interdites,
+                easter eggs : chacun dort dans une carte que tu n&apos;as pas
+                encore, sans le moindre indice. Il s&apos;éveille le jour où elle
+                rejoint ta collection, pour toujours.
               </p>
             </div>
           </div>
