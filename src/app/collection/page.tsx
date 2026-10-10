@@ -18,6 +18,8 @@ import {
   Funnel,
   Eye,
   Layers,
+  HelpCircle,
+  ChevronRight,
 } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
@@ -469,7 +471,7 @@ export default function CollectionPage() {
       <BackButton fallback="/" />
 
       <header className="mb-6 mt-3">
-        <p className="etched">Vault</p>
+        <p className="etched">Séance → jeton → pack</p>
         <h1 className="mt-1 text-4xl uppercase leading-none">Collection</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Tes cartes, gagnées séance après séance.
@@ -477,37 +479,51 @@ export default function CollectionPage() {
       </header>
 
       {/* Les portes de la Collection : l'Oracle, le Grimoire, le Génome
-          (talent) et le Manuel. */}
-      <nav aria-label="Autour de la collection" className="relative mb-6 flex gap-2">
-        <Link
-          href="/oracle"
-          className="plate card-hover flex h-11 flex-1 items-center justify-center gap-2 font-heading text-[15px] font-bold uppercase tracking-[0.06em] text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <Eye className="size-4" />
-          Oracle
-        </Link>
-        <Link
-          href="/grimoire"
-          className="plate card-hover flex h-11 flex-1 items-center justify-center gap-2 font-heading text-[15px] font-bold uppercase tracking-[0.06em] text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <BookOpen className="size-4" />
-          Grimoire
-        </Link>
-        {has("genome") && (
+          (talent), et dessous le Manuel, nommé, qui dit comment on gagne
+          jetons et cartes. */}
+      <nav aria-label="Autour de la collection" className="relative mb-6 space-y-2">
+        <div className="flex gap-2">
           <Link
-            href="/genome"
+            href="/oracle"
             className="plate card-hover flex h-11 flex-1 items-center justify-center gap-2 font-heading text-[15px] font-bold uppercase tracking-[0.06em] text-muted-foreground transition-colors hover:text-foreground"
           >
-            <Layers className="size-4" />
-            Génome
+            <Eye className="size-4" />
+            Oracle
           </Link>
-        )}
+          <Link
+            href="/grimoire"
+            className="plate card-hover flex h-11 flex-1 items-center justify-center gap-2 font-heading text-[15px] font-bold uppercase tracking-[0.06em] text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <BookOpen className="size-4" />
+            Grimoire
+          </Link>
+          {has("genome") && (
+            <Link
+              href="/genome"
+              className="plate card-hover flex h-11 flex-1 items-center justify-center gap-2 font-heading text-[15px] font-bold uppercase tracking-[0.06em] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Layers className="size-4" />
+              Génome
+            </Link>
+          )}
+        </div>
         <Link
           href="/manuel"
-          title="Le Manuel : comment gagner jetons et cartes"
-          className="plate card-hover flex size-11 shrink-0 items-center justify-center font-heading text-[20px] font-bold text-muted-foreground transition-colors hover:text-foreground"
+          aria-labelledby="porte-manuel"
+          aria-describedby="porte-manuel-resume"
+          className="plate card-hover flex h-11 items-center gap-2.5 px-3.5 text-muted-foreground transition-colors hover:text-foreground"
         >
-          ?
+          <HelpCircle className="size-4 shrink-0" />
+          <span
+            id="porte-manuel"
+            className="shrink-0 font-heading text-[15px] font-bold uppercase tracking-[0.06em]"
+          >
+            Le Manuel
+          </span>
+          <span id="porte-manuel-resume" className="min-w-0 flex-1 truncate text-[13px]">
+            Comment gagner jetons et cartes
+          </span>
+          <ChevronRight className="size-4 shrink-0" />
         </Link>
       </nav>
 
@@ -1068,7 +1084,7 @@ export default function CollectionPage() {
             shownCards.length === 0 ? (
               <EmptyState
                 big
-                title={crits.length > 0 ? "Aucune carte à ces critères" : "Vault vide"}
+                title={crits.length > 0 ? "Aucune carte à ces critères" : "Collection vide"}
                 subtitle={
                   crits.length > 0
                     ? "Aucune de tes cartes ne coche tous les critères choisis — retire-en un dans l'entonnoir."
