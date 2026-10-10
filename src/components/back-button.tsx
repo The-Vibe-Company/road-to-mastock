@@ -35,7 +35,7 @@ export function BackButton({
     <button
       type="button"
       onClick={handleClick}
-      className={`-ml-2 mb-4 inline-flex items-center gap-2 rounded-xl px-3 py-2.5 text-base font-bold text-muted-foreground transition-all hover:bg-accent hover:text-primary active:scale-95 ${className}`}
+      className={`-ml-2 mb-4 inline-flex items-center gap-2 rounded-md px-3 py-2.5 text-base font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground active:translate-y-px ${className}`}
     >
       <ArrowLeft className="size-5" strokeWidth={2.5} />
       {label}

@@ -21,9 +21,15 @@ export function Spinner({ label }: { label?: string }) {
           className="axolotl-spin size-14 object-contain"
         />
       ) : (
-        <div className="size-8 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
+        // Quatre plaques qui montent l'une après l'autre, la goupille en tête.
+        <div className="plate-loader flex flex-col gap-[3px]" role="status" aria-label={label ?? "Chargement"}>
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
       )}
-      {label && <p className="text-sm font-medium text-primary/60">{label}</p>}
+      {label && <p className="etched">{label}</p>}
     </div>
   );
 }

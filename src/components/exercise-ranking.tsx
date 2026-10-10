@@ -3,7 +3,6 @@
 import { Spinner } from "@/components/spinner";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ChevronRight, Dumbbell, Sparkles, Funnel, X } from "@/components/icons";
 import {
@@ -67,23 +66,20 @@ export function ExerciseRanking() {
   if (exercises === null) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="flex flex-col items-center gap-3">
-          <Spinner />
-          <p className="text-sm font-medium text-primary/60">Chargement...</p>
-        </div>
+        <Spinner label="Chargement..." />
       </div>
     );
   }
 
   if (exercises.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-        <div className="flex size-16 items-center justify-center rounded-2xl bg-primary/10">
-          <Dumbbell className="size-8 text-primary/50" />
-        </div>
+      <div className="plate flex flex-col items-center gap-3 px-6 py-10 text-center">
+        <span className="stamp size-14">
+          <Dumbbell className="size-7" />
+        </span>
         <div>
-          <p className="font-semibold">Aucun exercice</p>
-          <p className="mt-0.5 text-sm text-muted-foreground">
+          <p className="font-heading text-xl font-bold uppercase tracking-[0.04em]">Aucun exercice</p>
+          <p className="mt-1 text-sm text-muted-foreground">
             Fais ta première séance pour voir ton classement
           </p>
         </div>
@@ -101,19 +97,21 @@ export function ExerciseRanking() {
   const maxCount = shown[0]?.useCount ?? 1;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {/* Le filtre par groupe : une ligne discrète — le tag actif se retire
           d'un tap, l'entonnoir ouvre le tiroir des groupes. */}
       {groups.length > 1 && (
-        <div className="flex items-center gap-2 pb-1">
-          <span className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <span className="font-heading text-[14px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
             Classement · {shown.length} machine{shown.length !== 1 ? "s" : ""}
           </span>
           {filter && (
             <button
               onClick={() => setFilter(null)}
-              className="ml-auto flex h-[30px] items-center gap-1.5 rounded-[3px] bg-primary/15 px-2.5 text-[10px] font-black uppercase tracking-wider text-primary ring-1 ring-primary/50 transition-all active:scale-95"
+              aria-label={`Retirer le filtre ${filter}`}
+              className="ml-auto flex h-8 items-center gap-1.5 rounded-full bg-secondary pl-2 pr-2.5 font-heading text-[13px] font-bold uppercase tracking-[0.06em] text-foreground transition-colors hover:bg-plate-hover"
             >
+              <span aria-hidden className="pin size-2" />
               {filter}
               <X className="size-3" />
             </button>
@@ -121,9 +119,9 @@ export function ExerciseRanking() {
           <button
             onClick={() => setShowFilter(true)}
             aria-label="Filtrer par groupe musculaire"
-            className={`flex h-[30px] w-[30px] items-center justify-center rounded-[3px] ring-1 transition-all active:scale-95 ${
+            className={`plate flex size-8 items-center justify-center text-muted-foreground transition-colors hover:bg-plate-hover hover:text-foreground ${
               filter ? "" : "ml-auto"
-            } bg-secondary/30 text-muted-foreground ring-border hover:text-primary`}
+            }`}
           >
             <Funnel className="size-3.5" />
           </button>
@@ -131,9 +129,9 @@ export function ExerciseRanking() {
       )}
 
       <Sheet open={showFilter} onOpenChange={setShowFilter}>
-        <SheetContent side="bottom" className="rounded-t-3xl border-t-2 border-t-primary/20">
+        <SheetContent side="bottom" className="rounded-t-lg">
           <SheetHeader>
-            <SheetTitle className="text-lg font-black tracking-tight">Filtrer par groupe</SheetTitle>
+            <SheetTitle className="uppercase tracking-[0.04em]">Filtrer par groupe</SheetTitle>
             <SheetDescription className="text-xs">
               Le classement se recalcule dans le groupe choisi.
             </SheetDescription>
@@ -148,12 +146,14 @@ export function ExerciseRanking() {
                     setFilter(g);
                     setShowFilter(false);
                   }}
-                  className={`flex h-11 items-center justify-center rounded-[3px] px-1 text-[11px] font-black uppercase tracking-wide transition-all active:scale-95 ${
+                  aria-pressed={active}
+                  className={`flex h-11 items-center justify-center gap-1.5 rounded-[var(--radius)] px-1 font-heading text-[14px] font-bold uppercase tracking-[0.04em] transition-colors ${
                     active
-                      ? "bg-gradient-orange-intense text-black shadow-[2px_2px_0_oklch(0_0_0/0.5)]"
-                      : "bg-secondary/30 text-muted-foreground ring-1 ring-border hover:text-primary"
+                      ? "plate text-foreground"
+                      : "bg-gap text-muted-foreground hover:bg-secondary hover:text-foreground"
                   }`}
                 >
+                  {active && <span aria-hidden className="pin size-2" />}
                   <span className="truncate">{g ?? "Tout"}</span>
                 </button>
               );
@@ -161,86 +161,89 @@ export function ExerciseRanking() {
           </div>
         </SheetContent>
       </Sheet>
-      {shown.map((ex, i) => (
-        <Link key={ex.id} href={`/exercises/${ex.id}`} className="block">
-          <Card className="card-gradient-border card-hover">
-            <CardContent className="flex items-center gap-3 py-3">
-              <span className="w-6 shrink-0 text-right text-base font-black text-primary/50">
-                {i + 1}
-              </span>
+
+      <div className="plate-stack">
+        {shown.map((ex, i) => (
+          <Link
+            key={ex.id}
+            href={`/exercises/${ex.id}`}
+            className="plate card-hover group block py-2.5 pl-2 pr-3"
+          >
+            <div className="flex items-center gap-3">
+              <span className="stamp size-10 shrink-0 text-[22px]">{i + 1}</span>
 
               <div className="min-w-0 flex-1">
-                <p className="truncate font-bold">{ex.name}</p>
+                <p className="truncate font-semibold">{ex.name}</p>
                 {ex.muscleGroups.length > 0 && (
-                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  <div className="mt-1 flex flex-wrap gap-1">
                     {ex.muscleGroups.map((mg) => (
-                      <Badge key={mg} variant="secondary" className="text-[10px] font-bold">
+                      <Badge key={mg} variant="secondary" className="text-[10px]">
                         {mg}
                       </Badge>
                     ))}
                   </div>
                 )}
-                <div className="mt-2 h-1 overflow-hidden rounded-full bg-secondary">
+                <div className="segments relative mt-2 h-1.5 bg-muted">
                   <div
-                    className="h-full rounded-full bg-gradient-orange"
+                    className="absolute inset-y-0 left-0 bg-primary"
                     style={{ width: `${(ex.useCount / maxCount) * 100}%` }}
                   />
                 </div>
               </div>
 
-              <div className="flex shrink-0 flex-col items-end gap-1">
-                <span className="rounded-lg bg-primary/10 px-2 py-1 text-xs font-bold text-primary">
+              <div className="flex shrink-0 flex-col items-end gap-0.5">
+                <span className="font-heading text-[20px] font-bold leading-none tabular-nums">
                   {ex.useCount}x
                 </span>
                 {ex.setCount > 0 && (
-                  <span className="text-[10px] font-medium text-muted-foreground">
+                  <span className="text-[11px] font-medium text-muted-foreground">
                     {ex.setCount} série{ex.setCount !== 1 ? "s" : ""}
                   </span>
                 )}
               </div>
 
-              <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-            </CardContent>
+              <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+            </div>
 
             {/* Le Gardien en un coup d'œil : qui garde la machine, jusqu'à
                 quand, et le prix de la magnésie pour le libérer avant. */}
             {ex.guardian && (
               <div
-                className={`mx-4 -mb-1 -mt-3 flex items-center gap-1.5 rounded-[3px] border ${GUARDIAN_TINT[ex.guardian.rarity].border} bg-black/40 px-1.5 py-0.5`}
+                className={`ml-[3.25rem] mt-2 flex items-center gap-1.5 rounded-[3px] border ${GUARDIAN_TINT[ex.guardian.rarity].border} bg-gap/70 px-1.5 py-1`}
               >
                 {ex.guardian.imageUrl && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={ex.guardian.imageUrl}
                     alt=""
-                    className={`size-[17px] shrink-0 rounded-[2px] border ${GUARDIAN_TINT[ex.guardian.rarity].border} object-cover object-top`}
+                    className={`size-[18px] shrink-0 rounded-[2px] border ${GUARDIAN_TINT[ex.guardian.rarity].border} object-cover object-top`}
                   />
                 )}
                 <span
-                  className={`truncate text-[10px] font-black ${GUARDIAN_TINT[ex.guardian.rarity].text}`}
+                  className={`truncate text-[11px] font-bold ${GUARDIAN_TINT[ex.guardian.rarity].text}`}
                 >
                   {ex.guardian.name}
                 </span>
                 {ex.guardian.unlockAt ? (
                   <>
-                    <span className="ml-auto shrink-0 font-mono text-[9px] text-muted-foreground">
+                    <span className="ml-auto shrink-0 font-heading text-[12px] font-semibold text-muted-foreground">
                       → {frDate(ex.guardian.unlockAt)}
                     </span>
-                    <span className="flex shrink-0 items-center gap-0.5 rounded-[3px] border border-sky-400/35 bg-sky-500/10 px-1 font-mono text-[9px] font-black text-sky-300">
+                    <span className="flex shrink-0 items-center gap-0.5 rounded-[3px] border border-sky-400/35 bg-sky-500/10 px-1 font-heading text-[12px] font-bold text-sky-300">
                       <Sparkles className="size-2.5" />
                       {ex.guardian.unbindPrice}
                     </span>
                   </>
                 ) : (
-                  <span className="ml-auto shrink-0 font-mono text-[9px] text-muted-foreground">
+                  <span className="ml-auto shrink-0 font-heading text-[12px] font-semibold text-muted-foreground">
                     libre
                   </span>
                 )}
               </div>
             )}
-          </Card>
-        </Link>
-      ))}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

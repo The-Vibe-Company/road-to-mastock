@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Anton, Geist } from "next/font/google";
+import { Barlow_Condensed, Geist } from "next/font/google";
 import { AccentProvider } from "@/components/accent-provider";
 import { TalentsProvider } from "@/components/talents-provider";
 import { TrophiesProvider } from "@/components/trophies-provider";
@@ -12,11 +12,12 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-// LA FONTE : Anton, la condensée des affiches de meeting de force —
-// titres et gros chiffres uniquement, le corps reste en Geist.
-const anton = Anton({
+// La pile de fonte : Barlow Condensed, la grotesque étroite des chiffres
+// frappés sur les plaques — titres et gros chiffres uniquement, le corps
+// reste en Geist.
+const barlowCondensed = Barlow_Condensed({
   variable: "--font-display",
-  weight: "400",
+  weight: ["600", "700", "800"],
   subsets: ["latin"],
 });
 
@@ -35,7 +36,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#FE6B00",
+  themeColor: "#1a1e24",
 };
 
 export default function RootLayout({
@@ -44,7 +45,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={`dark ${geistSans.variable} ${anton.variable}`}>
+    <html lang="fr" className={`dark ${geistSans.variable} ${barlowCondensed.variable}`}>
       <body>
         <script dangerouslySetInnerHTML={{ __html: WATCHDOG_SCRIPT }} />
         {/* L'accent mémorisé, appliqué avant la première peinture. */}
@@ -53,7 +54,7 @@ export default function RootLayout({
         <AccentProvider>
           <TalentsProvider>
             <TrophiesProvider>
-              <div className="mx-auto min-h-dvh max-w-lg">{children}</div>
+              <div className="column-rods mx-auto min-h-dvh max-w-lg">{children}</div>
             </TrophiesProvider>
           </TalentsProvider>
         </AccentProvider>

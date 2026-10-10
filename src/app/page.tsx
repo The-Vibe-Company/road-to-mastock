@@ -136,15 +136,16 @@ export default async function Home() {
   `);
   const allSessions = (result.rows ?? result) as unknown as { id: number; date: string; exercise_count: number; total_volume: number; gold: number; silver: number; bronze: number }[];
 
+  const fmtVolume = (v: number) => (v >= 1000 ? `${(v / 1000).toFixed(1)}t` : `${v}kg`);
+
   return (
-    <div className="flex min-h-dvh flex-col px-4 pb-28 pt-10">
+    <div className="flex min-h-dvh flex-col px-4 pb-32 pt-10">
       <RefreshOnReturn />
       {/* L'annonce des Skins : une fois par appareil, à la reconnexion */}
       <SkinsAnnouncement />
-      {/* Hero — l'affiche : le titre tout en haut, l'identité à sa droite,
-          puis la rangée d'outils pleine largeur */}
-      <div className="hero-gradient relative -mx-4 -mt-10 mb-8 overflow-hidden px-4 pb-6 pt-4">
-        {/* L'Étendard : la carte flotte derrière le titre */}
+      {/* L'entête — la plaque de tête de la pile : le nom de l'appli frappé
+          à gauche, l'identité à droite, puis la rangée d'outils. */}
+      <header className="hero-gradient relative -mx-4 -mt-10 mb-6 px-4 pb-6 pt-7">
         {/* L'Étendard : une couronne sur le HAUT de la home — l'image
             règne sur le premier écran puis s'efface avant les listes.
             Confinée à la colonne (max-w-lg), jamais pleine page desktop. */}
@@ -163,43 +164,53 @@ export default async function Home() {
             <img src={bannerUrl} alt="" className="size-full object-cover object-top opacity-25" />
           </div>
         )}
-        <h1 className="text-4xl leading-[0.95] tracking-tight">
-          ROAD TO <span className="text-gradient-orange">MASTOCK</span>
-        </h1>
 
-        {/* L'identité : le nom aligné sur le haut du titre, et dessous les
-            trois compteurs — magnésie, cartes en tout, Forge. Le compte de
-            séances vit déjà dans le Dashboard, pas besoin de le répéter. */}
-        <div className="absolute right-4 top-4 z-10 text-right">
-          <p className="text-[13px] font-black uppercase leading-none tracking-[0.08em]">
-            {user?.name ?? "Toi"}
-          </p>
-          <div className="mt-1.5 flex items-center justify-end gap-2.5 font-mono text-[10.5px] font-bold tabular-nums">
-            <span className="flex items-center gap-1 text-sky-300">
-              <Sparkles className="size-3" />
-              {wallet.magnesie}
-            </span>
-            <span className="flex items-center gap-1 text-muted-foreground">
-              <Cards className="size-3" />
-              {wallet.cards}
-            </span>
-            <span className="flex items-center gap-1 text-primary">
-              <Flame className="size-3" />
-              {wallet.forge}
-            </span>
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="uppercase">
+              <span className="block text-[15px] font-bold leading-none tracking-[0.34em] text-muted-foreground">
+                Road to
+              </span>
+              <span className="mt-1 flex items-end gap-2 text-[3.6rem] font-extrabold leading-[0.8] tracking-[-0.01em]">
+                Mastock
+                <span aria-hidden className="pin mb-[0.3rem] size-3" />
+              </span>
+            </h1>
+            {user?.title && (
+              <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-steel">
+                {user.title}
+              </p>
+            )}
+          </div>
+
+          {/* L'identité : le nom, et dessous les trois compteurs frappés —
+              magnésie, cartes en tout, Forge. Le compte de séances vit déjà
+              dans le Dashboard, pas besoin de le répéter. */}
+          <div className="relative z-10 flex shrink-0 flex-col items-end gap-2 pt-0.5">
+            <p className="max-w-[9rem] truncate font-heading text-[17px] font-bold uppercase leading-none tracking-[0.06em]">
+              {user?.name ?? "Toi"}
+            </p>
+            <div className="flex items-center gap-1">
+              <span className="stamp h-6 gap-1 px-1.5 text-[14px]" title="Magnésie">
+                <Sparkles className="size-3 text-sky-300" />
+                {wallet.magnesie}
+              </span>
+              <span className="stamp h-6 gap-1 px-1.5 text-[14px]" title="Cartes">
+                <Cards className="size-3 text-steel" />
+                {wallet.cards}
+              </span>
+              <span className="stamp h-6 gap-1 px-1.5 text-[14px]" title="Forge">
+                <Flame className="size-3 text-primary" />
+                {wallet.forge}
+              </span>
+            </div>
           </div>
         </div>
-
-        {user?.title && (
-          <p className="mt-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-primary/70">
-            {user.title}
-          </p>
-        )}
 
         {/* La rangée d'outils : quatre portes nommées, pleine largeur. Le
             catalogue vit dans l'onglet Exercices, la déconnexion dans les
             Réglages. */}
-        <nav className="mt-4 grid grid-cols-4 gap-1.5">
+        <nav aria-label="Outils" className="mt-6 grid grid-cols-4 gap-2">
           {[
             { href: "/friends", Icon: Users, label: "Amis" },
             { href: "/trophees", Icon: Trophy, label: "Trophées" },
@@ -209,36 +220,32 @@ export default async function Home() {
             <Link
               key={href}
               href={href}
-              className="flex flex-col items-center gap-1 rounded-[3px] bg-secondary/30 py-2 text-muted-foreground ring-1 ring-border transition-all hover:bg-primary/10 hover:text-primary active:scale-95"
+              className="plate card-hover flex flex-col items-center gap-1.5 pb-2 pt-2.5 text-muted-foreground transition-colors hover:text-foreground"
             >
               <Icon className="size-5" />
-              <span className="text-[8px] font-black uppercase tracking-[0.18em]">{label}</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.06em]">{label}</span>
             </Link>
           ))}
         </nav>
-      </div>
+      </header>
 
       <HomeExtras />
 
       {/* Le bilan hebdo — gagné avec « Le Mois Parfait » */}
       {weekly && (
-        <div className="mb-4 flex items-center gap-4 rounded-2xl bg-secondary/30 px-4 py-3 ring-1 ring-border">
+        <div className="plate mb-5 flex items-center gap-4 px-4 py-3">
           <div>
-            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-              Cette semaine
-            </p>
-            <p className="text-lg font-black leading-tight text-primary">
+            <p className="etched">Cette semaine</p>
+            <p className="mt-1 font-heading text-2xl font-bold leading-none tabular-nums">
               {weekly.sessions} séance{weekly.sessions > 1 ? "s" : ""}
               <span className="text-muted-foreground"> · </span>
-              {weekly.volume >= 1000 ? `${(weekly.volume / 1000).toFixed(1)}t` : `${weekly.volume}kg`}
+              {fmtVolume(weekly.volume)}
             </p>
           </div>
           <div className="ml-auto text-right">
-            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-              Sem. dernière
-            </p>
-            <p className="text-sm font-bold leading-tight text-muted-foreground">
-              {weekly.prevSessions} · {weekly.prevVolume >= 1000 ? `${(weekly.prevVolume / 1000).toFixed(1)}t` : `${weekly.prevVolume}kg`}
+            <p className="etched">Sem. dernière</p>
+            <p className="mt-1 font-heading text-lg font-semibold leading-none tabular-nums text-muted-foreground">
+              {weekly.prevSessions} · {fmtVolume(weekly.prevVolume)}
             </p>
           </div>
         </div>
@@ -258,9 +265,11 @@ export default async function Home() {
 
       <HomeTrinkets />
 
-      {/* FAB */}
-      <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
-        <NewSessionButton />
+      {/* La goupille : l'action principale, posée en bas de la pile. */}
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center bg-gradient-to-t from-background via-background/85 to-transparent pb-6 pt-12">
+        <div className="pointer-events-auto">
+          <NewSessionButton />
+        </div>
       </div>
     </div>
   );
