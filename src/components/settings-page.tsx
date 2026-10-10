@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Palette, Sun, Moon, Crown, Flag, Target, Image as ImageIcon, Lock } from "@/components/icons";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Sun, Moon, Flag, Lock, BookOpen, ChevronRight } from "@/components/icons";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ACCENT_KEYS } from "@/lib/colors";
+import { unlockedTrophyColors } from "@/lib/trophies";
 import { ColorPicker } from "./color-picker";
 import { useAccent } from "./accent-provider";
 import { useTalents } from "./talents-provider";
@@ -33,10 +36,59 @@ const PAGE_LABELS: Record<"home" | "session" | "collection", string> = {
   collection: "Collection",
 };
 
+// Un titre de bloc : gravé sur la plaque, en capitales étroites (le même
+// que sur le Dashboard de l'accueil).
+const BLOCK_TITLE =
+  "font-heading text-[14px] font-bold uppercase tracking-[0.14em] text-muted-foreground";
+
+// Le texte posé dans la glissière : en mode papier, le jour entre deux
+// plaques est clair, le gris atténué n'y suffit plus.
+const ON_GAP = "text-muted-foreground [.light_&]:text-secondary-foreground";
+
+// Le contour de focus du kit (le même que sur ses boutons), pour ce que la
+// page dessine elle-même.
+const FOCUS_RING =
+  "outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+
+// La glissière : les choix rangés dans le jour sombre de la pile, chacun
+// enfoncé dans son logement. Celui qu'on a pris en sort, devient une
+// plaque, et porte la goupille.
+function Slot({ className = "", children }: { className?: string; children: React.ReactNode }) {
+  return <div className={`gap-[3px] rounded-lg bg-gap p-[3px] ${className}`}>{children}</div>;
+}
+
+function SlotOption({
+  selected,
+  onClick,
+  className = "",
+  children,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={selected}
+      onClick={onClick}
+      className={`flex min-h-10 items-center justify-center gap-2 rounded-[3px] px-3 text-[13px] font-semibold transition-colors active:translate-y-px ${FOCUS_RING} ${
+        selected
+          ? "plate text-foreground hover:bg-plate-hover"
+          : "bg-background text-muted-foreground hover:bg-secondary hover:text-foreground"
+      } ${className}`}
+    >
+      {selected && <span aria-hidden className="pin size-2" />}
+      {children}
+    </button>
+  );
+}
+
 export function SettingsPage() {
   const { theme, setTheme } = useAccent();
   const { has, profile, refresh } = useTalents();
-  const { hasFeature } = useTrophies();
+  const { hasFeature, earned, loaded: trophiesLoaded } = useTrophies();
   const [titles, setTitles] = useState<string[]>([]);
   const [showTotemPicker, setShowTotemPicker] = useState(false);
   const [showBannerPicker, setShowBannerPicker] = useState(false);
@@ -63,119 +115,193 @@ export function SettingsPage() {
     (page) => THRONE_OPTIONS[page].some((o) => has(o.id)),
   );
 
+  // Le compte des couleurs de base gagnées, frappé à côté du titre.
+  const trophyColors = unlockedTrophyColors(earned);
+  const earnedColors = ACCENT_KEYS.filter((k) => trophyColors.has(k)).length;
+  const lightUnlocked = hasFeature("light");
+
   return (
     <div className="flex min-h-dvh flex-col px-4 pb-12 pt-6">
-      <div className="mb-6">
-        <BackButton className="mb-3" />
-        <div className="flex items-end justify-between">
-          <h1 className="text-2xl font-black tracking-tight">Parametres</h1>
-          <Link
-            href="/manuel"
-            className="mb-0.5 rounded-xl bg-secondary/40 px-3 py-2 text-xs font-bold text-muted-foreground ring-1 ring-border transition-colors hover:text-primary"
-          >
-            Le Manuel
-          </Link>
-        </div>
-      </div>
+      <BackButton fallback="/" />
 
-      <div className="space-y-4">
-        {/* Theme toggle */}
-        <Card className="card-gradient-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary/60">
-              {theme === "dark" ? <Moon className="size-4" /> : <Sun className="size-4" />}
-              Theme
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setTheme("dark")}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition-all ${
-                  theme === "dark"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary/50 text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Moon className="size-4" />
-                Sombre
-              </button>
-              {hasFeature("light") ? (
-                <button
-                  onClick={() => setTheme("light")}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition-all ${
-                    theme === "light"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary/50 text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Sun className="size-4" />
-                  Clair
-                </button>
-              ) : (
-                <div className="flex flex-1 flex-col items-center justify-center gap-0.5 rounded-xl bg-secondary/30 px-4 py-2 opacity-60 ring-1 ring-border">
-                  <span className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
-                    <Lock className="size-3.5" />
-                    Clair
-                  </span>
-                  <span className="text-[10px] font-bold text-muted-foreground/70">
-                    100 séances
-                  </span>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+      <header className="mb-6 mt-3">
+        <p className="etched">Le vestiaire</p>
+        <h1 className="mt-1 text-4xl uppercase leading-none">Paramètres</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Ce que tu as gagné à la salle, tu le portes ici : couleur, thème, titre.
+        </p>
+      </header>
 
+      {/* Les réglages : une pile de plaques, la couleur en tête. */}
+      <div className="plate-stack">
         {/* Color picker */}
-        <Card className="card-gradient-border">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary/60">
-              <Palette className="size-4" />
+            <CardTitle role="heading" aria-level={2} className={BLOCK_TITLE}>
               Couleur principale
             </CardTitle>
+            {trophiesLoaded && (
+              <CardAction>
+                <span
+                  className="stamp h-6 px-1.5 text-[15px]"
+                  aria-label={`${earnedColors} couleurs gagnées sur ${ACCENT_KEYS.length}`}
+                  title="Couleurs gagnées"
+                >
+                  {earnedColors}/{ACCENT_KEYS.length}
+                </span>
+              </CardAction>
+            )}
           </CardHeader>
           <CardContent>
             <ColorPicker />
           </CardContent>
         </Card>
 
+        {/* Theme toggle */}
+        <Card>
+          <CardHeader>
+            <CardTitle role="heading" aria-level={2} className={BLOCK_TITLE}>
+              Thème
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Slot className="grid grid-cols-2">
+              <SlotOption selected={theme === "dark"} onClick={() => setTheme("dark")}>
+                <Moon className="size-4" />
+                Sombre
+              </SlotOption>
+              {lightUnlocked ? (
+                <SlotOption selected={theme === "light"} onClick={() => setTheme("light")}>
+                  <Sun className="size-4" />
+                  Clair
+                </SlotOption>
+              ) : (
+                <div
+                  aria-disabled="true"
+                  className={`flex min-h-10 items-center justify-center gap-2 px-3 text-[13px] font-semibold ${ON_GAP}`}
+                >
+                  <Lock className="size-3.5" />
+                  Clair
+                </div>
+              )}
+            </Slot>
+            {!lightUnlocked && (
+              <p className="mt-2.5 flex items-center gap-2 text-xs text-muted-foreground">
+                <span className="stamp h-5 px-1 text-[13px]">100</span>
+                séances pour gagner le thème clair.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Un titre sous ton nom — gagné au Règne (talent) ou au cabinet */}
+        {titles.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle role="heading" aria-level={2} className={BLOCK_TITLE}>
+                Titre
+              </CardTitle>
+              <CardAction>
+                <span
+                  className="stamp h-6 min-w-6 px-1.5 text-[15px]"
+                  aria-label={`${titles.length} titres gagnés`}
+                  title="Titres gagnés"
+                >
+                  {titles.length}
+                </span>
+              </CardAction>
+            </CardHeader>
+            <CardContent>
+              <Slot className="flex flex-wrap [&>*]:grow">
+                {titles.map((t) => (
+                  <SlotOption
+                    key={t}
+                    selected={profile?.title === t}
+                    onClick={() => patch({ title: profile?.title === t ? null : t })}
+                  >
+                    {t}
+                  </SlotOption>
+                ))}
+              </Slot>
+              {profile && (
+                <p className="mt-2.5 text-xs leading-snug text-muted-foreground">
+                  {profile.title ? (
+                    <>
+                      <span className="font-semibold text-foreground">« {profile.title} »</span>{" "}
+                      s&apos;affiche sous ton nom. Touche-le encore pour le retirer.
+                    </>
+                  ) : (
+                    "Aucun titre porté. Touches-en un pour l'afficher sous ton nom."
+                  )}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* La Résolution (Keldeo) : l'objectif hebdo */}
+        {has("resolution") && (
+          <Card>
+            <CardHeader>
+              <CardTitle role="heading" aria-level={2} className={BLOCK_TITLE}>
+                Objectif hebdo
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Slot className="grid grid-cols-5">
+                {[2, 3, 4, 5, 6].map((n) => (
+                  <SlotOption
+                    key={n}
+                    selected={profile?.weeklyGoal === n}
+                    onClick={() => patch({ weeklyGoal: profile?.weeklyGoal === n ? null : n })}
+                    className="gap-1.5 px-1 font-heading text-[18px] font-bold tabular-nums"
+                  >
+                    {n}
+                  </SlotOption>
+                ))}
+              </Slot>
+              <p className="mt-2.5 text-xs leading-snug text-muted-foreground">
+                Séances par semaine — le tableau de marche s&apos;affiche sur l&apos;accueil.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* L'Étendard (trophée Porte-Étendard) : une carte en bannière sur la home */}
         {hasFeature("banner") && (
-          <Card className="card-gradient-border">
+          <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary/60">
-                <Flag className="size-4" />
+              <CardTitle role="heading" aria-level={2} className={BLOCK_TITLE}>
                 L&apos;Étendard
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="mb-3 text-[11px] leading-snug text-muted-foreground">
+              <p className="text-xs leading-snug text-muted-foreground">
                 La carte choisie flotte en bannière sur ta page d&apos;accueil.
                 Gagné avec le trophée « Le Porte-Étendard ».
               </p>
-              <button
-                onClick={() => setShowBannerPicker(true)}
-                className="rounded-lg bg-primary/10 px-3 py-2 text-xs font-bold text-primary"
-              >
-                Choisir la carte
-              </button>
-              <button
-                onClick={() => patch({ banner: null })}
-                className="ml-2 rounded-lg bg-secondary/50 px-3 py-2 text-xs font-bold text-muted-foreground"
-              >
-                Retirer
-              </button>
+              <div className="mt-3 flex gap-2">
+                <Button variant="secondary" size="lg" onClick={() => setShowBannerPicker(true)}>
+                  Choisir la carte
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  onClick={() => patch({ banner: null })}
+                  className="text-muted-foreground"
+                >
+                  Retirer
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
 
         {/* Le Totem (aura de Typhon) : la carte affichée chez tes amis */}
         {has("totem") && (
-          <Card className="card-gradient-border">
+          <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary/60">
-                <Flag className="size-4" />
+              <CardTitle role="heading" aria-level={2} className={BLOCK_TITLE}>
                 Totem
               </CardTitle>
             </CardHeader>
@@ -191,96 +317,31 @@ export function SettingsPage() {
                     className="size-11 object-contain"
                   />
                 ) : (
-                  <div className="flex size-11 items-center justify-center rounded-lg bg-secondary/50">
-                    <Flag className="size-5 text-muted-foreground/50" />
-                  </div>
+                  <span className="stamp size-11 shrink-0">
+                    <Flag className="size-5" />
+                  </span>
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold">
+                  <p className="truncate text-sm font-semibold">
                     {profile?.totem?.name ?? "Aucun totem"}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Affiché à côté de ton nom chez tes amis
                   </p>
                 </div>
-                <button
-                  onClick={() => setShowTotemPicker(true)}
-                  className="rounded-lg bg-primary/10 px-3 py-2 text-xs font-bold text-primary"
-                >
+                <Button variant="secondary" size="lg" onClick={() => setShowTotemPicker(true)}>
                   Choisir
-                </button>
+                </Button>
               </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Un titre sous ton nom — gagné au Règne (talent) ou au cabinet */}
-        {titles.length > 0 && (
-          <Card className="card-gradient-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary/60">
-                <Crown className="size-4" />
-                Titre
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-1.5">
-                {titles.map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => patch({ title: profile?.title === t ? null : t })}
-                    className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all active:scale-95 ${
-                      profile?.title === t
-                        ? "bg-gradient-orange-intense text-black shadow-lg"
-                        : "bg-secondary/50 text-muted-foreground hover:bg-accent"
-                    }`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* La Résolution (Keldeo) : l'objectif hebdo */}
-        {has("resolution") && (
-          <Card className="card-gradient-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary/60">
-                <Target className="size-4" />
-                Objectif hebdo
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-1.5">
-                {[2, 3, 4, 5, 6].map((n) => (
-                  <button
-                    key={n}
-                    onClick={() => patch({ weeklyGoal: profile?.weeklyGoal === n ? null : n })}
-                    className={`flex-1 rounded-xl py-2.5 text-sm font-black transition-all active:scale-95 ${
-                      profile?.weeklyGoal === n
-                        ? "bg-gradient-orange-intense text-black shadow-lg"
-                        : "bg-secondary/50 text-muted-foreground hover:bg-accent"
-                    }`}
-                  >
-                    {n}
-                  </button>
-                ))}
-              </div>
-              <p className="mt-2 text-[10px] text-muted-foreground">
-                Séances par semaine — le tableau de marche s&apos;affiche sur l&apos;accueil
-              </p>
             </CardContent>
           </Card>
         )}
 
         {/* Les Trônes : fonds d'écran débloqués */}
         {anyThrone && (
-          <Card className="card-gradient-border">
+          <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary/60">
-                <ImageIcon className="size-4" />
+              <CardTitle role="heading" aria-level={2} className={BLOCK_TITLE}>
                 Trônes
               </CardTitle>
             </CardHeader>
@@ -291,42 +352,51 @@ export function SettingsPage() {
                 const active = profile?.wallpapers?.[page] ?? null;
                 return (
                   <div key={page}>
-                    <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                      {PAGE_LABELS[page]}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      <button
+                    <p className="etched mb-1.5">{PAGE_LABELS[page]}</p>
+                    <Slot className="flex flex-wrap [&>*]:grow">
+                      <SlotOption
+                        selected={active === null}
                         onClick={() => patch({ wallpapers: { [page]: null } })}
-                        className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all active:scale-95 ${
-                          active === null
-                            ? "bg-gradient-orange-intense text-black shadow-lg"
-                            : "bg-secondary/50 text-muted-foreground hover:bg-accent"
-                        }`}
                       >
                         Aucun
-                      </button>
+                      </SlotOption>
                       {options.map((o) => (
-                        <button
+                        <SlotOption
                           key={o.id}
+                          selected={active === o.id}
                           onClick={() => patch({ wallpapers: { [page]: o.id } })}
-                          className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all active:scale-95 ${
-                            active === o.id
-                              ? "bg-gradient-orange-intense text-black shadow-lg"
-                              : "bg-secondary/50 text-muted-foreground hover:bg-accent"
-                          }`}
                         >
                           {o.label}
-                        </button>
+                        </SlotOption>
                       ))}
-                    </div>
+                    </Slot>
                   </div>
                 );
               })}
             </CardContent>
           </Card>
         )}
+      </div>
 
-        {/* La sortie — retirée du header de la home, elle vit ici. */}
+      {/* Le reste : les règles du jeu, et la sortie — retirée du header de
+          la home, elle vit ici. */}
+      <p className="etched mb-2 mt-8">Le compte</p>
+      <div className="plate-stack">
+        <Link
+          href="/manuel"
+          className={`plate card-hover group flex items-center gap-3 py-2 pl-2 pr-3 ${FOCUS_RING}`}
+        >
+          <span className="stamp size-10 shrink-0">
+            <BookOpen className="size-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-heading text-[17px] font-bold uppercase leading-tight tracking-[0.04em]">
+              Le Manuel
+            </p>
+            <p className="text-xs text-muted-foreground">Toutes les règles du jeu</p>
+          </div>
+          <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+        </Link>
         <LogoutButton labeled />
       </div>
 
