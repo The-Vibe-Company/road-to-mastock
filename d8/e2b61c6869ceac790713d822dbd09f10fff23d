@@ -1,0 +1,43 @@
+src/components/assisted-set-form.tsx
+  s_9f13ff8a0fe04c::t_1c128d1687b2e7 3,24-26,55,65-68,70,75,84-87,89,95
+src/components/assisted-set-row.tsx
+  s_9f13ff8a0fe04c::t_2dcd7f1513581f 44
+src/components/bodyweight-picker.tsx
+  s_9f13ff8a0fe04c::t_d6938ec24b15ef 64
+src/components/cardio-set-row.tsx
+  s_9f13ff8a0fe04c::t_13e794c562a280 74
+src/components/exercise-block.tsx
+  s_4ce34ec42d9105::t_3ba6c68c5faf60 15,311-326,387,392,398-399,408,416,494,556
+src/components/session-editor.tsx
+  s_9f13ff8a0fe04c::t_b190808bed1f12 467,542
+src/components/set-form.tsx
+  s_9f13ff8a0fe04c::t_b4ecd1642aa920 3,49-51,109,122-125,127,132,141-144,146,152
+src/components/set-row.tsx
+  s_9f13ff8a0fe04c::t_8b41f2a3a90bad 29
+src/components/terminate-session-button.tsx
+  s_9f13ff8a0fe04c::t_85f14b43fe244f 93-102,600
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d8e2b61c6869ceac790713d822dbd09f10fff23d",
+  "prompts": {},
+  "sessions": {
+    "s_4ce34ec42d9105": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "986afa6c-8f0b-494f-9694-d93f52c5ef9e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    },
+    "s_9f13ff8a0fe04c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f6f8144-2e0f-4365-a2df-7a153cae490d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
