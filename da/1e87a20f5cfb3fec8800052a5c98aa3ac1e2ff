@@ -1,0 +1,29 @@
+src/app/globals.css
+  s_9f13ff8a0fe04c::t_c3ca4ea051e048 107,196-198,249-252,376-390
+src/app/page.tsx
+  s_9f13ff8a0fe04c::t_8ad6e2b9b917b6 148
+src/components/dashboard.tsx
+  s_9f13ff8a0fe04c::t_5d4375b604be11 160
+src/components/exercise-ranking.tsx
+  s_9f13ff8a0fe04c::t_1a3a89076a9a19 228
+src/components/mascot-picker.tsx
+  s_9f13ff8a0fe04c::t_2c98d652d167d1 208
+src/components/power-rules.tsx
+  s_9f13ff8a0fe04c::t_cba826ab21d4c0 20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "da1e87a20f5cfb3fec8800052a5c98aa3ac1e2ff",
+  "prompts": {},
+  "sessions": {
+    "s_9f13ff8a0fe04c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f6f8144-2e0f-4365-a2df-7a153cae490d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
