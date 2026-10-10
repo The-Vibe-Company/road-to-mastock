@@ -219,7 +219,7 @@ export default function TrophiesPage() {
                       <div className="mt-3.5 flex items-start gap-2">
                         {/* La goupille, plantée dans la plaque du prochain palier. */}
                         <span aria-hidden className="pin pin-rod mt-[15px] size-2.5" />
-                        <span className="stamp h-10 min-w-[3.75rem] shrink-0 px-2 text-[22px]">
+                        <span className="stamp h-10 min-w-[4.25rem] shrink-0 px-1.5 text-[22px]">
                           {fmt(next.target)}
                         </span>
                         <div className="min-w-0 flex-1 pl-1">
