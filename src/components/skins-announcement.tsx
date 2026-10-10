@@ -9,6 +9,35 @@ import { Cards, Gift, Shield, Sparkles, X } from "@/components/icons";
 // remontre l'annonce une fois pour que le cadeau arrive à tout le monde.
 const SEEN_KEY = "rtm-announce-skins-v2";
 
+// Les Skins passent en tête de la tournée des annonces : tant qu'elle est
+// ouverte, les autres annonces de l'accueil attendent leur tour au lieu de
+// s'empiler dessous. « rtm:skins-done » leur passe la main.
+const SKINS_DONE_EVENT = "rtm:skins-done";
+
+// L'annonce reste à voir sur cet appareil : même règle que celle qui l'ouvre.
+function skinsPending(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    return !localStorage.getItem(SEEN_KEY);
+  } catch {
+    // stockage indisponible : l'annonce ne s'ouvre pas, rien à attendre
+    return false;
+  }
+}
+
+// Vrai quand l'annonce des Skins ne bloque plus : déjà vue, ou fermée à
+// l'instant sur cet écran. Les autres annonces ne montent qu'à ce moment.
+export function useSkinsSettled(): boolean {
+  const [settled, setSettled] = useState(() => !skinsPending());
+  useEffect(() => {
+    if (settled) return;
+    const onDone = () => setSettled(true);
+    window.addEventListener(SKINS_DONE_EVENT, onDone);
+    return () => window.removeEventListener(SKINS_DONE_EVENT, onDone);
+  }, [settled]);
+  return settled;
+}
+
 interface GiftSkin {
   level: number;
   name: string;
@@ -42,11 +71,15 @@ export function SkinsAnnouncement() {
       .catch(() => {});
   }, []);
 
-  const dismiss = () => {
+  // `next` : passer la main à l'annonce suivante. Pas quand on part ouvrir
+  // un pack — elle attendra le retour sur l'accueil plutôt que de clignoter
+  // pendant la navigation.
+  const dismiss = (next = true) => {
     try {
       localStorage.setItem(SEEN_KEY, "1");
     } catch {}
     setOpen(false);
+    if (next) window.dispatchEvent(new Event(SKINS_DONE_EVENT));
   };
 
   if (!open) return null;
@@ -60,7 +93,7 @@ export function SkinsAnnouncement() {
         className="relative flex max-h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl bg-background shadow-[inset_0_1px_0_var(--plate-edge),0_-24px_60px_-20px_oklch(0_0_0/0.8)] sm:rounded-xl"
       >
         <button
-          onClick={dismiss}
+          onClick={() => dismiss()}
           aria-label="Fermer"
           className="plate absolute right-3 top-3 z-10 flex size-9 items-center justify-center text-muted-foreground transition-colors hover:bg-plate-hover hover:text-foreground"
         >
@@ -70,7 +103,7 @@ export function SkinsAnnouncement() {
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-4 pt-7">
           <p className="flex items-center gap-2 font-heading text-[13px] font-bold uppercase tracking-[0.28em] text-muted-foreground">
             <span aria-hidden className="pin size-2" />
-            Nouveauté
+            Collection
           </p>
           <h2
             id="skins-announce-title"
@@ -79,7 +112,7 @@ export function SkinsAnnouncement() {
             Les Skins
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Chaque carte a désormais 5 tenues à collectionner.
+            Chaque carte a 5 skins à collectionner.
           </p>
 
           {gift && (
@@ -100,7 +133,7 @@ export function SkinsAnnouncement() {
                     pour {gift.cardName} · niveau 1
                   </p>
                   <p className="mt-1 text-[11px] text-muted-foreground">
-                    Déjà dans sa garde-robe — équipe-le !
+                    Déjà sur la fiche de la carte — équipe-le&nbsp;!
                   </p>
                 </div>
               </div>
@@ -140,9 +173,9 @@ export function SkinsAnnouncement() {
                 title: "Équipe, et gagne",
                 body: (
                   <>
-                    Habille tes cartes dans leur garde-robe. Porté par un Gardien
-                    qui s&apos;éveille, un beau skin améliore la rareté de tes packs
-                    jusqu&apos;à ta prochaine séance.
+                    Équipe un skin depuis la fiche de sa carte, dans Collection.
+                    Porté par un Gardien qui s&apos;éveille, un beau skin améliore la
+                    rareté de tes packs jusqu&apos;à ta prochaine séance.
                   </>
                 ),
               },
@@ -164,14 +197,16 @@ export function SkinsAnnouncement() {
         <div className="border-t border-gap px-5 pb-5 pt-4">
           <Link
             href="/collection"
-            onClick={dismiss}
+            onClick={() => dismiss(false)}
             className="bg-gradient-orange-intense flex h-12 w-full items-center justify-center rounded-lg font-heading text-[18px] font-bold uppercase tracking-[0.08em]"
           >
             Ouvrir un pack
           </Link>
+          {/* La sortie, à voir du premier coup d'œil : une plaque sous la
+              goupille, pas un texte gris. */}
           <button
-            onClick={dismiss}
-            className="mt-2 w-full rounded-md py-2.5 text-center text-sm font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            onClick={() => dismiss()}
+            className="plate card-hover mt-2 flex h-11 w-full items-center justify-center font-heading text-[16px] font-bold uppercase tracking-[0.08em] text-foreground"
           >
             Plus tard
           </button>

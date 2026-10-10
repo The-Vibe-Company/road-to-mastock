@@ -141,7 +141,9 @@ export default async function Home() {
   return (
     <div className="flex min-h-dvh flex-col px-4 pb-32 pt-10">
       <RefreshOnReturn />
-      {/* L'annonce des Skins : une fois par appareil, à la reconnexion */}
+      {/* L'annonce des Skins : une fois par appareil, à la reconnexion — en
+          tête de la tournée, les annonces de HomeExtras attendent sa fermeture
+          pour ne jamais s'empiler. */}
       <SkinsAnnouncement />
       {/* L'entête — la plaque de tête de la pile : le nom de l'appli frappé
           à gauche, l'identité à droite, puis la rangée d'outils. */}
