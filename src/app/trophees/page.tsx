@@ -167,8 +167,12 @@ export default function TrophiesPage() {
                     {t.rewardLabel}
                   </p>
                 </div>
-                <span className="stamp h-7 shrink-0 self-start px-2 text-[16px]">
-                  {fmt(t.progress)}/{fmt(t.target)}
+                {/* Gagné : la progression a atteint la cible, seule la cible est frappée. */}
+                <span
+                  className="stamp h-7 min-w-[2.75rem] shrink-0 self-start px-1.5 text-[16px]"
+                  aria-label={`${fmt(t.progress)} sur ${fmt(t.target)}`}
+                >
+                  {fmt(t.target)}
                 </span>
               </article>
             ))
