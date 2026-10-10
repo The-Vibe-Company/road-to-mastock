@@ -45,8 +45,9 @@ const BLOCK_TITLE =
 // plaques est clair, le gris atténué n'y suffit plus.
 const ON_GAP = "text-muted-foreground [.light_&]:text-secondary-foreground";
 
-// La glissière : les choix rangés dans le jour sombre de la pile. Celui
-// qu'on a pris en sort, devient une plaque, et porte la goupille.
+// La glissière : les choix rangés dans le jour sombre de la pile, chacun
+// enfoncé dans son logement. Celui qu'on a pris en sort, devient une
+// plaque, et porte la goupille.
 function Slot({ className = "", children }: { className?: string; children: React.ReactNode }) {
   return <div className={`gap-[3px] rounded-lg bg-gap p-[3px] ${className}`}>{children}</div>;
 }
@@ -68,7 +69,9 @@ function SlotOption({
       aria-pressed={selected}
       onClick={onClick}
       className={`flex min-h-10 items-center justify-center gap-2 rounded-[3px] px-3 text-[13px] font-semibold transition-colors active:translate-y-px ${
-        selected ? "plate text-foreground" : `${ON_GAP} hover:bg-secondary hover:text-foreground`
+        selected
+          ? "plate text-foreground"
+          : "bg-background text-muted-foreground hover:bg-secondary hover:text-foreground"
       } ${className}`}
     >
       {selected && <span aria-hidden className="pin size-2" />}
