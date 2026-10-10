@@ -12,6 +12,7 @@ import { useTrophies } from "@/components/trophies-provider";
 import { Medallion, METAL_NAMES, TROPHY_FAMILIES, gradeOf, trophyStatOf } from "@/components/trophy-medallion";
 import { TalentDescription } from "@/components/talent-description";
 import { PowerRules } from "@/components/power-rules";
+import { useSkinsSettled } from "@/components/skins-announcement";
 import { powerLabel, polarityBreakdown, ENERGY_BY_RARITY } from "@/lib/powers";
 import { RARITIES, RARITY_COLORS, RARITY_LABELS, type Rarity } from "@/lib/rarities";
 
@@ -44,15 +45,22 @@ interface PreviewCard {
 
 export function HomeExtras() {
   const { loaded, has, assets } = useTalents();
+  // Une annonce à la fois : tant que celle des Skins est ouverte, les
+  // annonces d'ici ne montent pas — elles prennent la suite à sa fermeture.
+  const skinsSettled = useSkinsSettled();
 
   return (
     <>
       <ThroneBackdrop page="home" />
-      <NewsModal />
-      <TalentAnnounceModal />
-      <TrophyAnnounceModal />
-      <MagnesieAnnounceModal />
-      <PactesAnnounceModal />
+      {skinsSettled && (
+        <>
+          <NewsModal />
+          <TalentAnnounceModal />
+          <TrophyAnnounceModal />
+          <MagnesieAnnounceModal />
+          <PactesAnnounceModal />
+        </>
+      )}
 
       {/* Le Squatteur : le chat traverse le bas de l'écran, sans se presser */}
       {loaded && has("squatteur") && <CatWalker />}
@@ -185,7 +193,12 @@ function NewsModal() {
 
   return (
     <div className="fixed inset-0 z-[110] flex items-end justify-center scrim sm:items-center">
-      <div className="relative flex h-[37rem] max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl border-t-2 border-t-primary/40 bg-background sm:rounded-xl sm:border-2 sm:border-primary/30">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Tes cartes ont des pouvoirs"
+        className="relative flex h-[37rem] max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl border-t-2 border-t-primary/40 bg-background sm:rounded-xl sm:border-2 sm:border-primary/30"
+      >
         <button
           onClick={dismiss}
           aria-label="Fermer"
@@ -201,7 +214,7 @@ function NewsModal() {
               <div className="text-center">
                 <p className="flex items-center justify-center gap-2 font-heading text-[13px] font-bold uppercase tracking-[0.28em] text-muted-foreground">
                   <span aria-hidden className="pin size-2" />
-                  Nouveauté
+                  Les Gardiens
                 </p>
                 <h2 className="mt-2 text-[2rem] font-extrabold uppercase leading-[0.95]">
                   Tes cartes ont des pouvoirs
@@ -227,9 +240,9 @@ function NewsModal() {
                 </div>
               )}
               <p className="mt-5 text-center text-sm leading-relaxed text-muted-foreground">
-                Chacune de tes {cards.length} cartes porte désormais un pouvoir.
+                Chacune de tes {cards.length > 0 ? `${cards.length} ` : ""}cartes porte un pouvoir.
                 Posées sur tes machines, elles deviennent des{" "}
-                <strong className="text-foreground">Gardiens</strong> : elles
+                <strong className="text-foreground">Gardiens</strong>&nbsp;: elles
                 s&apos;éveillent à chaque séance et améliorent tes prochains tirages.
               </p>
               <p className="mt-3 text-center text-xs text-muted-foreground">
@@ -413,13 +426,12 @@ function NewsModal() {
               </Button>
             )}
             {step === 0 && (
-              <Button
+              <button
                 onClick={dismiss}
-                variant="outline"
-                className="h-12 rounded-lg border-primary/30 px-4 text-sm font-bold text-primary"
+                className="plate card-hover flex h-12 items-center justify-center px-4 font-heading text-[16px] font-bold uppercase tracking-[0.08em] text-foreground"
               >
                 Plus tard
-              </Button>
+              </button>
             )}
           </div>
         </div>
@@ -701,7 +713,12 @@ function TalentAnnounceModal() {
 
   return (
     <div className="fixed inset-0 z-[105] flex items-end justify-center scrim sm:items-center">
-      <div className="relative flex h-[31rem] max-h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl border-t-2 border-t-amber-400/50 bg-background sm:rounded-xl sm:border-2 sm:border-amber-400/40">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Révélation des talents"
+        className="relative flex h-[31rem] max-h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl border-t-2 border-t-amber-400/50 bg-background sm:rounded-xl sm:border-2 sm:border-amber-400/40"
+      >
         <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4 pt-8">
 
           <p className="text-center font-mono text-[10px] font-black uppercase tracking-[0.35em] text-amber-300/70">
@@ -861,12 +878,17 @@ function PactesAnnounceModal() {
 
   return (
     <div data-pactes="" className="fixed inset-0 z-[103] flex items-end justify-center scrim sm:items-center">
-      <div className="relative flex max-h-[90dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl border-t-2 border-t-primary/50 bg-background sm:rounded-xl sm:border-2 sm:border-primary/40">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pactes-announce-title"
+        className="relative flex max-h-[90dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl border-t-2 border-t-primary/50 bg-background sm:rounded-xl sm:border-2 sm:border-primary/40"
+      >
         <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4 pt-8">
           <p className="text-center font-mono text-[10px] font-black uppercase tracking-[0.35em] text-primary/70">
             Rééquilibrage
           </p>
-          <h2 className="mt-1 text-center text-2xl font-black leading-tight tracking-tighter">
+          <h2 id="pactes-announce-title" className="mt-1 text-center text-2xl font-black leading-tight tracking-tighter">
             Tes pactes ont <span className="text-gradient-orange">changé</span>
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
@@ -974,12 +996,17 @@ function MagnesieAnnounceModal() {
 
   return (
     <div className="fixed inset-0 z-[103] flex items-end justify-center scrim sm:items-center">
-      <div className="relative flex h-[34rem] max-h-[90dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl border-t-2 border-t-sky-400/50 bg-background sm:rounded-xl sm:border-2 sm:border-sky-400/40">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="magnesie-announce-title"
+        className="relative flex h-[34rem] max-h-[90dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl border-t-2 border-t-sky-400/50 bg-background sm:rounded-xl sm:border-2 sm:border-sky-400/40"
+      >
         <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4 pt-8">
           <p className="text-center font-mono text-[10px] font-black uppercase tracking-[0.35em] text-sky-300/70">
             Nouveauté
           </p>
-          <h2 className="mt-1 text-center text-2xl font-black leading-tight tracking-tighter">
+          <h2 id="magnesie-announce-title" className="mt-1 text-center text-2xl font-black leading-tight tracking-tighter">
             La <span className="text-sky-300">Magnésie</span>
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
@@ -1273,7 +1300,12 @@ function TrophyAnnounceModal() {
 
   return (
     <div className="fixed inset-0 z-[104] flex items-end justify-center scrim sm:items-center">
-      <div className="relative flex h-[31rem] max-h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl border-t-2 border-t-yellow-400/50 bg-background sm:rounded-xl sm:border-2 sm:border-yellow-400/40">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Palmarès"
+        className="relative flex h-[31rem] max-h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl border-t-2 border-t-yellow-400/50 bg-background sm:rounded-xl sm:border-2 sm:border-yellow-400/40"
+      >
         <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4 pt-8">
           {/* Le halo prend la couleur de la famille du trophée */}
 
