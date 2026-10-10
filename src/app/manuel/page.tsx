@@ -190,14 +190,14 @@ export default function ManuelPage() {
             <div className="relative mt-3">
               <span
                 aria-hidden
-                className="absolute inset-x-[12.5%] top-[7px] h-[3px] rounded-full bg-[linear-gradient(180deg,var(--steel),var(--steel-dark))]"
+                className="absolute inset-x-[12.5%] top-[12px] h-[4px] rounded-full bg-[linear-gradient(180deg,var(--steel),var(--steel-dark))]"
               />
               <ol className="relative grid grid-cols-4">
                 {LOOP.map((step) => (
                   <li key={step} className="flex flex-col items-center gap-2">
                     <span
                       aria-hidden
-                      className="block h-4 w-8 rounded-[2px] bg-steel shadow-[inset_0_1px_0_var(--plate-edge),inset_0_-2px_0_var(--plate-shade)]"
+                      className="block h-7 w-3 rounded-[2px] bg-steel shadow-[inset_1px_0_0_var(--plate-edge),inset_-1px_0_0_var(--plate-shade),0_1px_0_var(--plate-shade)]"
                     />
                     <span className="font-heading text-[15px] font-bold uppercase leading-none tracking-[0.06em]">
                       {step}
@@ -265,7 +265,7 @@ export default function ManuelPage() {
                 </>,
                 <>
                   Fais au moins une série sur cette machine puis clôture la
-                  séance : le Gardien <B>s&apos;éveille</B> et son pouvoir
+                  séance : le Gardien <B>s&apos;éveille</B>{" "}et son pouvoir
                   s&apos;applique. Une fois par séance, pas plus.
                 </>,
                 <>
@@ -290,7 +290,7 @@ export default function ManuelPage() {
             summary="Ce que fait chaque carte, et dans quel sens : Attractif ou Répulsif."
           >
             <p>
-              Chaque carte du commun à l&apos;épique exerce un <B>métier</B> selon
+              Chaque carte du commun à l&apos;épique exerce un <B>métier</B>{" "}selon
               sa nature. Et c&apos;est toi qui choisis son sens sur la fiche :{" "}
               <B>Attractif</B> ou <B>Répulsif</B>, modifiable à volonté.
             </p>
@@ -393,7 +393,7 @@ export default function ManuelPage() {
             summary="Les jours de record, et ce que coûte un Gardien qu'on veut délier."
           >
             <p>
-              Un <B>record</B> — charge max ou volume, avec au moins 3 séances
+              Un <B>record</B>{" "}— charge max ou volume, avec au moins 3 séances
               d&apos;historique — compte pour tes trophées, et certains Gardiens
               (la Banshee, le Sphinx, Marshadow, Victini…) n&apos;offrent leur
               pouvoir que ce jour-là.
@@ -402,7 +402,7 @@ export default function ManuelPage() {
               <Lock className="mr-1 inline size-3.5 -translate-y-px text-foreground" />
               Un Gardien posé est <B>lié</B> dès son premier éveil : pour changer
               sa carte, attends 30 jours… ou paie sa <B>magnésie</B>. Et un
-              Gardien ne tient qu&apos;<B>un seul poste</B> — impossible de
+              Gardien ne tient qu&apos;<B>un seul poste</B>{" "}— impossible de
               poser la même carte sur deux machines. Tant qu&apos;il ne
               s&apos;est pas éveillé, tu peux encore changer d&apos;avis
               librement.
@@ -466,7 +466,7 @@ export default function ManuelPage() {
               ))}
             </ol>
             <p>
-              Le temple est dans <B>Collection → Oracle</B> — il s&apos;allume
+              Le temple est dans <B>Collection → Oracle</B>{" "}— il s&apos;allume
               carte par carte.
             </p>
           </Chapter>
