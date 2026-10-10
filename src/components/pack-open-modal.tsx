@@ -512,20 +512,19 @@ export function PackOpenModal({
           ))}
         </div>
       )}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onClose();
-        }}
-        aria-label="Fermer"
-        className="plate fixed right-4 top-4 z-20 flex size-10 items-center justify-center text-muted-foreground transition-colors hover:bg-plate-hover hover:text-foreground"
-      >
-        <X className="size-5" />
-      </button>
-
       {/* La plaque de tête : le tirage se joue sur le fond de l'appli, lisible
           dans les deux fontes. */}
       <div className="relative m-auto flex min-h-dvh w-full max-w-xl flex-col items-center justify-center gap-6 bg-background px-6 py-14 shadow-[inset_0_1px_0_var(--plate-edge),0_24px_60px_-20px_oklch(0_0_0/0.8)] sm:min-h-0 sm:rounded-xl">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          aria-label="Fermer"
+          className="plate fixed right-4 top-4 sm:absolute sm:right-3 sm:top-3 z-20 flex size-10 items-center justify-center text-muted-foreground transition-colors hover:bg-plate-hover hover:text-foreground"
+        >
+          <X className="size-5" />
+        </button>
         {/* STAGE SKINS — 3 skins avant la carte */}
         {stage === "skins" && currentSkin && (
           <>

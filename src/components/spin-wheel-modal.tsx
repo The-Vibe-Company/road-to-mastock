@@ -67,15 +67,14 @@ export function SpinWheelModal({
 
   return (
     <div className="scrim fixed inset-0 z-[100] flex overflow-y-auto sm:p-6">
-      <button
-        onClick={onClose}
-        aria-label="Fermer"
-        className="plate fixed right-4 top-4 z-30 flex size-10 items-center justify-center text-muted-foreground transition-colors hover:bg-plate-hover hover:text-foreground"
-      >
-        <X className="size-5" />
-      </button>
-
       <div className="relative m-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center gap-8 bg-background px-6 py-14 shadow-[inset_0_1px_0_var(--plate-edge),0_24px_60px_-20px_oklch(0_0_0/0.8)] sm:min-h-0 sm:rounded-xl">
+        <button
+          onClick={onClose}
+          aria-label="Fermer"
+          className="plate fixed right-4 top-4 sm:absolute sm:right-3 sm:top-3 z-30 flex size-10 items-center justify-center text-muted-foreground transition-colors hover:bg-plate-hover hover:text-foreground"
+        >
+          <X className="size-5" />
+        </button>
         <div className="text-center">
           <p className="etched inline-flex items-center gap-1.5">
             <Star className="size-3.5 text-amber-600 dark:text-amber-300" strokeWidth={2.5} />

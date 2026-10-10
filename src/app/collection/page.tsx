@@ -576,39 +576,43 @@ export default function CollectionPage() {
           )}
 
           <div
-            className="plate flex items-center gap-3 py-2.5 pl-3 pr-2.5"
+            className="plate py-2.5 pl-3 pr-2.5"
             title={
               forgeFull
                 ? "Roue de la Forge — un fragment garanti : 42 % commun, 30 % peu commun, 18 % rare, 10 % épique"
                 : "La Forge — les Gardiens forgerons la remplissent à chaque éveil"
             }
           >
-            <span className="stamp h-11 min-w-[3.5rem] px-2 text-[22px]">
-              {forging ? "..." : `${forgePoints}/20`}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className={`flex items-center gap-1.5 ${BLOCK_LABEL}`}>
-                <Flame className="size-3.5 text-steel" />
-                La Forge
-              </p>
-              <div className="segments relative mt-2 h-2 bg-muted">
-                <div
-                  className="absolute inset-y-0 left-0 bg-primary transition-[width] duration-500"
-                  style={{ width: `${Math.min(100, (forgePoints / 20) * 100)}%` }}
-                />
+            <div className="flex items-center gap-3">
+              <span className="stamp h-11 min-w-[3.5rem] px-2 text-[22px]">
+                {forging ? "..." : `${forgePoints}/20`}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className={`flex items-center gap-1.5 ${BLOCK_LABEL}`}>
+                  <Flame className="size-3.5 text-steel" />
+                  La Forge
+                </p>
+                <div className="segments relative mt-2 h-2 bg-muted">
+                  <div
+                    className="absolute inset-y-0 left-0 bg-primary transition-[width] duration-500"
+                    style={{ width: `${Math.min(100, (forgePoints / 20) * 100)}%` }}
+                  />
+                </div>
+                <p className="mt-1.5 text-xs leading-snug text-muted-foreground">
+                  {forgeFull
+                    ? "Pleine : un fragment garanti — 42 % commun, 30 % peu commun, 18 % rare, 10 % épique."
+                    : "Les Gardiens forgerons la remplissent à chaque éveil."}
+                </p>
               </div>
-              <p className="mt-1.5 text-xs leading-snug text-muted-foreground">
-                {forgeFull
-                  ? "Pleine : un fragment garanti — 42 % commun, 30 % peu commun, 18 % rare, 10 % épique."
-                  : "Les Gardiens forgerons la remplissent à chaque éveil."}
-              </p>
             </div>
+            {/* Pleine, la Forge se lance : la goupille, sous la jauge. */}
             {forgeFull && (
               <Button
                 onClick={handleForgeWheel}
                 disabled={forging}
-                className="h-10 shrink-0 rounded-full bg-gradient-orange-intense px-4 font-heading text-[15px] font-bold uppercase tracking-[0.06em] text-primary-foreground disabled:opacity-100"
+                className="mt-2.5 h-11 w-full gap-2 rounded-full bg-gradient-orange-intense font-heading text-[16px] font-bold uppercase tracking-[0.06em] text-primary-foreground disabled:opacity-100"
               >
+                <Flame className="size-4" />
                 {forging ? "Elle tourne..." : "Lancer la Roue"}
               </Button>
             )}
