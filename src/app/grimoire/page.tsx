@@ -3,14 +3,22 @@
 import { Spinner } from "@/components/spinner";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { BookOpen, HelpCircle, Key } from "@/components/icons";
+import Link from "next/link";
+import { Key, Lock, Package } from "@/components/icons";
 import { BackButton } from "@/components/back-button";
-import { RARITY_COLORS, type Rarity } from "@/lib/rarities";
+import { Button } from "@/components/ui/button";
+import { RARITY_COLORS, RARITY_LABELS, type Rarity } from "@/lib/rarities";
 import { TalentDescription } from "@/components/talent-description";
 
 // Le Grimoire : la collection dans la collection. Les talents découverts
 // s'illuminent ; les autres restent des silhouettes — aucun indice sur la
 // carte qui les porte.
+//
+// Dans la pile : chaque talent est une plaque de la jauge. Les plaques
+// éveillées prennent la couleur de la charge, les scellées restent dans le
+// jour sombre. Les talents éveillés sont rangés par famille, chacun sur sa
+// plaque ; le reste tient dans une seule plaque scellée, avec la goupille
+// qui mène aux packs.
 
 interface DiscoveredTalent {
   id: string;
@@ -31,20 +39,20 @@ interface GrimoireData {
   discovered: DiscoveredTalent[];
 }
 
+const FAMILY_ORDER: DiscoveredTalent["family"][] = [
+  "parure",
+  "trone",
+  "oracle",
+  "relique",
+  "etendard",
+];
+
 const FAMILY_LABELS: Record<DiscoveredTalent["family"], string> = {
   parure: "Parure",
   trone: "Trône",
   oracle: "Oracle",
   relique: "Relique",
   etendard: "Étendard",
-};
-
-const FAMILY_COLORS: Record<DiscoveredTalent["family"], string> = {
-  parure: "text-fuchsia-300 bg-fuchsia-500/10 ring-fuchsia-500/40",
-  trone: "text-sky-300 bg-sky-500/10 ring-sky-500/40",
-  oracle: "text-violet-300 bg-violet-500/10 ring-violet-500/40",
-  relique: "text-emerald-300 bg-emerald-500/10 ring-emerald-500/40",
-  etendard: "text-amber-300 bg-amber-500/10 ring-amber-500/40",
 };
 
 export default function GrimoirePage() {
@@ -70,7 +78,7 @@ export default function GrimoirePage() {
   if (loading) {
     return (
       <div className="flex min-h-dvh items-center justify-center">
-        <Spinner />
+        <Spinner label="Ouverture du Grimoire" />
       </div>
     );
   }
@@ -82,92 +90,175 @@ export default function GrimoirePage() {
         <p className="text-sm text-muted-foreground">
           Le Grimoire ne répond pas. Vérifie ta connexion, puis réessaie.
         </p>
-        <button
+        <Button
+          variant="secondary"
+          size="lg"
           onClick={() => window.location.reload()}
-          className="rounded-xl bg-secondary/60 px-4 py-2.5 text-sm font-bold text-primary ring-1 ring-border"
+          className="h-11 px-5"
         >
           Réessayer
-        </button>
+        </Button>
       </div>
     );
   }
 
-  const unknownCount = Math.max(0, data.total - data.discovered.length);
+  const found = data.discovered.length;
+  const unknownCount = Math.max(0, data.total - found);
+  const slots = Math.max(data.total, found);
+  const families = FAMILY_ORDER.map((family) => ({
+    family,
+    talents: data.discovered.filter((t) => t.family === family),
+  })).filter((g) => g.talents.length > 0);
 
   return (
     <div className="min-h-dvh px-4 pb-12 pt-6">
       <BackButton fallback="/collection" />
 
       <header className="mb-6 mt-3">
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/70">
-          Secrets
-        </p>
-        <h1 className="mt-1 text-3xl font-black tracking-tighter">Grimoire</h1>
+        <p className="etched">Secrets</p>
+        <h1 className="mt-1 text-4xl uppercase leading-none">Grimoire</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Certaines cartes cachent un talent — un privilège qui s&apos;éveille dès
           qu&apos;elles rejoignent ta collection. Personne ne sait lesquelles.
         </p>
       </header>
 
-      <div className="mb-6 flex items-center gap-3 rounded-2xl bg-secondary/30 px-4 py-3 ring-1 ring-border">
-        <BookOpen className="size-5 text-primary" />
-        <p className="text-sm font-bold">
-          Talents découverts :{" "}
-          <span className="font-mono tabular-nums text-primary">
-            {data.discovered.length}
-          </span>
-          <span className="text-muted-foreground"> / {data.total}</span>
-        </p>
-      </div>
-
-      {data.discovered.length > 0 && (
-        <div className="mb-8 space-y-2.5">
-          {data.discovered.map((t) => (
-            <div
-              key={t.id}
-              className={`rounded-2xl px-4 py-3 ring-1 ${FAMILY_COLORS[t.family]}`}
-            >
-              <div className="flex items-center gap-3">
-                {/* La carte responsable, en chair et en os */}
-                {t.card?.imageUrl ? (
-                  <div className={`relative size-11 shrink-0 overflow-hidden rounded-lg ${RARITY_COLORS[t.card.rarity as Rarity]?.bg ?? "bg-secondary/40"} ring-1 ${RARITY_COLORS[t.card.rarity as Rarity]?.ring ?? "ring-border"}`}>
-                    <Image src={t.card.imageUrl} alt="" fill unoptimized className="object-cover" />
-                  </div>
-                ) : (
-                  <Key className="size-3.5 shrink-0" />
-                )}
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-black tracking-tight">{t.name}</p>
-                  {t.card && (
-                    <p className={`truncate text-[11px] font-bold ${RARITY_COLORS[t.card.rarity as Rarity]?.text ?? "text-muted-foreground"}`}>
-                      {t.card.name}
-                    </p>
-                  )}
-                </div>
-                <span className="shrink-0 rounded-md bg-black/20 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest opacity-80">
-                  {FAMILY_LABELS[t.family]}
-                </span>
-              </div>
-              <TalentDescription
-                text={t.description}
-                className="mt-2 text-xs leading-relaxed text-foreground/80"
-              />
-            </div>
-          ))}
+      {/* La jauge : une plaque par talent. Éveillés à la couleur de la
+          charge, scellés dans le jour sombre de la pile. */}
+      <section aria-labelledby="grimoire-count" className="plate mb-6 px-4 pb-4 pt-3.5">
+        <div className="flex items-end justify-between gap-3">
+          <h2 id="grimoire-count" className="etched font-sans">
+            Talents découverts
+          </h2>
+          <p className="flex items-baseline gap-1.5">
+            <span className="stamp h-9 min-w-10 px-2 text-[26px]">{found}</span>
+            <span className="font-heading text-[22px] font-bold leading-none tabular-nums text-muted-foreground">
+              / {data.total}
+            </span>
+          </p>
         </div>
-      )}
-
-      {unknownCount > 0 && (
-        <div className="grid grid-cols-4 gap-2">
-          {Array.from({ length: unknownCount }, (_, i) => (
-            <div
+        <div
+          role="img"
+          aria-label={`${found} talent${found > 1 ? "s" : ""} découvert${found > 1 ? "s" : ""} sur ${data.total}`}
+          className="mt-3 flex h-6 gap-[2px] rounded-[2px] bg-gap p-[2px]"
+        >
+          {Array.from({ length: slots }, (_, i) => (
+            <span
               key={i}
-              className="flex aspect-square items-center justify-center rounded-xl bg-secondary/20 ring-1 ring-border/50"
-            >
-              <HelpCircle className="size-5 text-muted-foreground/30" />
-            </div>
+              className={`min-w-0 flex-1 rounded-[1px] ${
+                i < found ? "bg-primary" : "bg-secondary"
+              }`}
+            />
           ))}
         </div>
+        {unknownCount === 0 && (
+          <p className="mt-3 text-sm font-semibold">
+            Le Grimoire est complet : tous les talents sont éveillés.
+          </p>
+        )}
+      </section>
+
+      {/* Les talents éveillés, rangés par famille : chaque talent sur sa
+          plaque, avec la carte qui le porte. */}
+      {families.map(({ family, talents }) => (
+        <section key={family} aria-labelledby={`famille-${family}`} className="mb-6">
+          <h2
+            id={`famille-${family}`}
+            className="etched mb-2 flex items-center gap-2 font-sans"
+          >
+            {FAMILY_LABELS[family]}
+            <span className="stamp h-5 min-w-5 px-1 text-[13px] tracking-normal">
+              {talents.length}
+            </span>
+          </h2>
+          <div className="plate-stack">
+            {talents.map((t) => {
+              const rarity = t.card?.rarity as Rarity | undefined;
+              const tint = rarity ? RARITY_COLORS[rarity] : undefined;
+              return (
+                <article key={t.id} className="plate px-3 py-3">
+                  <div className="flex items-center gap-3">
+                    {/* La carte responsable, en chair et en os */}
+                    {t.card?.imageUrl ? (
+                      <div
+                        className={`relative size-12 shrink-0 overflow-hidden rounded-[3px] ring-2 ${tint?.bg ?? "bg-secondary"} ${tint?.ring ?? "ring-border"}`}
+                      >
+                        <Image
+                          src={t.card.imageUrl}
+                          alt=""
+                          fill
+                          unoptimized
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <span className="stamp size-12 shrink-0">
+                        <Key className="size-5" />
+                      </span>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-[19px] uppercase leading-tight tracking-[0.03em]">
+                        {t.name}
+                      </h3>
+                      {t.card && (
+                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                          <span className="font-semibold text-foreground">
+                            {t.card.name}
+                          </span>
+                          {rarity && RARITY_LABELS[rarity] && (
+                            <> · {RARITY_LABELS[rarity]}</>
+                          )}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <TalentDescription
+                    text={t.description}
+                    className="mt-2.5 text-[13px] leading-relaxed text-secondary-foreground"
+                  />
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      ))}
+
+      {/* Le reste : une seule plaque scellée, et la goupille vers les packs —
+          c'est en tirant des cartes qu'un talent s'éveille. */}
+      {unknownCount > 0 && (
+        <section aria-labelledby="grimoire-sealed" className="plate px-4 py-4">
+          <div className="flex items-start gap-3">
+            <span className="stamp size-12 shrink-0 flex-col gap-1">
+              <Lock className="size-3.5 text-steel" />
+              <span className="text-[20px] leading-none">{unknownCount}</span>
+            </span>
+            <div className="min-w-0">
+              <h2
+                id="grimoire-sealed"
+                className="text-[21px] uppercase leading-tight tracking-[0.03em]"
+              >
+                {unknownCount > 1 ? "Talents scellés" : "Talent scellé"}
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {found === 0 ? "Aucun talent éveillé pour l'instant. " : ""}
+                Chacun dort dans une carte que tu n&apos;as pas encore. Aucun
+                indice : il s&apos;éveille le jour où elle rejoint ta collection.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/collection"
+            className="bg-gradient-orange-intense mt-4 inline-flex h-12 items-center gap-3 rounded-full pl-1.5 pr-6 font-heading text-[17px] font-bold uppercase tracking-[0.06em]"
+          >
+            <span
+              aria-hidden
+              className="flex size-9 items-center justify-center rounded-full bg-primary-foreground/15 shadow-[inset_0_2px_3px_oklch(0_0_0/0.3),0_1px_0_oklch(1_0_0/0.25)]"
+            >
+              <Package className="size-[18px]" />
+            </span>
+            Ouvrir des packs
+          </Link>
+        </section>
       )}
     </div>
   );
