@@ -1,0 +1,23 @@
+src/app/globals.css
+  s_9f13ff8a0fe04c::t_06e86d3b87d778 132-133,182-183,444,446
+src/app/page.tsx
+  s_9f13ff8a0fe04c::t_7841ea677af8e7 187,191
+src/components/session-card.tsx
+  s_9f13ff8a0fe04c::t_ea483c20db6f3f 43,48,53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cb6c5375f49d52c4caa4a4e7cbb4c8c0f5e9cf20",
+  "prompts": {},
+  "sessions": {
+    "s_9f13ff8a0fe04c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f6f8144-2e0f-4365-a2df-7a153cae490d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
