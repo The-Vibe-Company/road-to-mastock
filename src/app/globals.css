@@ -4,11 +4,29 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ══ LA PILE DE FONTE ═══════════════════════════════════════════════════════
+   Le kit de l'appli est tiré d'une seule chose : la pile de plaques d'une
+   machine guidée. Des plaques de fonte graphite empilées, séparées par un
+   jour sombre où l'on aperçoit les tiges chromées ; sur chaque plaque, un
+   chiffre frappé blanc sur une étiquette noire ; et la goupille, seule pièce
+   de couleur, plantée dans la plaque qu'on a choisie.
+
+   Règles du kit :
+   - rectangle = plaque = contenu ; rond = goupille = action ou sélection ;
+   - la couleur d'accent (celle du joueur) ne sert qu'à la goupille : le
+     bouton principal, l'onglet choisi, la semaine en cours, la charge ;
+   - les chiffres sont frappés (Barlow Condensed), le texte courant reste
+     en Geist. */
+
 /* Tailwind v4 dropped the default cursor: pointer on buttons in preflight.
    Restore it globally so every <button> and role="button" feels clickable. */
 @layer base {
   button:not(:disabled),
-  [role="button"]:not([aria-disabled="true"]) {
+  [role="button"]:not([aria-disabled="true"]),
+  a[href],
+  summary,
+  select,
+  label[for] {
     cursor: pointer;
   }
   button:disabled,
@@ -20,6 +38,8 @@
 @theme inline {
   --font-sans: var(--font-sans);
   --font-heading: var(--font-display);
+  /* Les chiffres « mono » de l'appli deviennent des chiffres frappés. */
+  --font-mono: var(--font-display), ui-monospace, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -51,6 +71,12 @@
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
+  --color-steel: var(--steel);
+  --color-steel-dark: var(--steel-dark);
+  --color-gap: var(--gap);
+  --color-plate-hover: var(--plate-hover);
+  --color-stamp: var(--stamp);
+  --color-stamp-foreground: var(--stamp-foreground);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -60,6 +86,7 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ── La fonte, de nuit (défaut) : graphite bleuté, pas du noir. ─────────── */
 :root {
   --accent-l: 0.72;
   --accent-c: 0.21;
@@ -68,76 +95,99 @@
   --accent-gradient-mid: #ff5f0f;
   --accent-gradient-end: #e84a00;
 
-  --background: oklch(0.10 0.01 45);
-  --foreground: oklch(0.97 0 0);
-  --card: oklch(0.15 0.008 50);
-  --card-foreground: oklch(0.97 0 0);
-  --popover: oklch(0.14 0.008 50);
-  --popover-foreground: oklch(0.97 0 0);
+  --background: oklch(0.235 0.012 255);
+  --foreground: oklch(0.965 0.004 250);
+  --card: oklch(0.285 0.013 255);
+  --card-foreground: oklch(0.965 0.004 250);
+  --popover: oklch(0.265 0.013 255);
+  --popover-foreground: oklch(0.965 0.004 250);
   --primary: oklch(var(--accent-l) var(--accent-c) var(--accent-h));
-  --primary-foreground: oklch(0.10 0 0);
-  --secondary: oklch(0.20 0.01 50);
-  --secondary-foreground: oklch(0.88 0 0);
-  --muted: oklch(0.20 0.008 50);
-  --muted-foreground: oklch(0.52 0.01 50);
-  --accent: oklch(0.22 0.02 var(--accent-h));
-  --accent-foreground: oklch(0.97 0 0);
-  --destructive: oklch(0.60 0.24 25);
-  --border: oklch(0.22 0.012 50);
-  --input: oklch(0.22 0.012 50);
+  --primary-foreground: oklch(0.17 0.012 255);
+  --secondary: oklch(0.325 0.013 255);
+  --secondary-foreground: oklch(0.92 0.005 250);
+  --muted: oklch(0.325 0.012 255);
+  --muted-foreground: oklch(0.80 0.011 255);
+  /* Le cran sous le gris : plein, jamais translucide, lisible partout. */
+  --muted-dim: oklch(0.71 0.012 255);
+  --accent: oklch(0.34 0.03 var(--accent-h));
+  --accent-foreground: oklch(0.965 0.004 250);
+  --destructive: oklch(0.64 0.21 25);
+  --border: oklch(0.38 0.012 255);
+  --input: oklch(0.37 0.012 255);
   --ring: oklch(var(--accent-l) var(--accent-c) var(--accent-h));
   --chart-1: oklch(var(--accent-l) var(--accent-c) var(--accent-h));
   --chart-2: oklch(0.60 0.17 var(--accent-h));
   --chart-3: oklch(0.50 0.13 var(--accent-h));
   --chart-4: oklch(0.40 0.09 var(--accent-h));
   --chart-5: oklch(0.30 0.05 var(--accent-h));
-  --radius: 3px;
-  --sidebar: oklch(0.12 0.008 50);
-  --sidebar-foreground: oklch(0.97 0 0);
+  --radius: 4px;
+  --sidebar: oklch(0.255 0.012 255);
+  --sidebar-foreground: oklch(0.965 0.004 250);
   --sidebar-primary: oklch(var(--accent-l) var(--accent-c) var(--accent-h));
-  --sidebar-primary-foreground: oklch(0.10 0 0);
-  --sidebar-accent: oklch(0.22 0.015 var(--accent-h));
-  --sidebar-accent-foreground: oklch(0.97 0 0);
-  --sidebar-border: oklch(0.22 0.012 50);
+  --sidebar-primary-foreground: oklch(0.17 0.012 255);
+  --sidebar-accent: oklch(0.34 0.03 var(--accent-h));
+  --sidebar-accent-foreground: oklch(0.965 0.004 250);
+  --sidebar-border: oklch(0.38 0.012 255);
   --sidebar-ring: oklch(var(--accent-l) var(--accent-c) var(--accent-h));
+
+  /* La pile : le jour entre deux plaques, le chrome des tiges, l'étiquette
+     noire où le chiffre est frappé, l'arête claire d'une plaque. */
+  --gap: oklch(0.17 0.011 255);
+  --steel: oklch(0.80 0.01 250);
+  --steel-dark: oklch(0.46 0.01 250);
+  --stamp: oklch(0.17 0.011 255);
+  --stamp-foreground: oklch(0.975 0.003 250);
+  --plate-edge: oklch(1 0 0 / 0.08);
+  --plate-shade: oklch(0 0 0 / 0.42);
+  --plate-hover: oklch(0.315 0.014 255);
 }
 
-
 /* ── LA FONTE, version papier ──────────────────────────────────────────────
-   Le mode clair — gagné à la centième séance. Même brutalisme, même
-   orange, mais sur béton clair et papier d'atelier. */
+   Le mode clair — gagné à la centième séance. La même pile, mais en acier
+   laqué gris clair, comme les machines peintes d'atelier : les étiquettes
+   restent noires, la goupille garde la couleur du joueur. */
 .light {
-  --background: oklch(0.955 0.004 80);
-  --foreground: oklch(0.17 0.012 50);
-  --card: oklch(0.985 0.002 85);
-  --card-foreground: oklch(0.17 0.012 50);
-  --popover: oklch(0.985 0.002 85);
-  --popover-foreground: oklch(0.17 0.012 50);
-  --primary: oklch(var(--accent-l) var(--accent-c) var(--accent-h));
+  --background: oklch(0.915 0.006 250);
+  --foreground: oklch(0.22 0.014 255);
+  --card: oklch(0.975 0.003 250);
+  --card-foreground: oklch(0.22 0.014 255);
+  --popover: oklch(0.975 0.003 250);
+  --popover-foreground: oklch(0.22 0.014 255);
+  --primary: oklch(calc(var(--accent-l) - 0.14) var(--accent-c) var(--accent-h));
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.905 0.006 75);
-  --secondary-foreground: oklch(0.24 0.01 50);
-  --muted: oklch(0.905 0.006 75);
-  --muted-foreground: oklch(0.44 0.014 50);
+  --secondary: oklch(0.885 0.007 250);
+  --secondary-foreground: oklch(0.26 0.014 255);
+  --muted: oklch(0.885 0.007 250);
+  --muted-foreground: oklch(0.45 0.014 255);
+  --muted-dim: oklch(0.50 0.014 255);
   --accent: oklch(0.90 0.035 var(--accent-h));
-  --accent-foreground: oklch(0.17 0 0);
-  --destructive: oklch(0.55 0.24 25);
-  --border: oklch(0.83 0.012 65);
-  --input: oklch(0.86 0.012 65);
-  --ring: oklch(var(--accent-l) var(--accent-c) var(--accent-h));
+  --accent-foreground: oklch(0.22 0.014 255);
+  --destructive: oklch(0.55 0.22 25);
+  --border: oklch(0.80 0.01 250);
+  --input: oklch(0.82 0.01 250);
+  --ring: oklch(calc(var(--accent-l) - 0.14) var(--accent-c) var(--accent-h));
   --chart-1: oklch(var(--accent-l) var(--accent-c) var(--accent-h));
   --chart-2: oklch(0.60 0.17 var(--accent-h));
   --chart-3: oklch(0.50 0.13 var(--accent-h));
   --chart-4: oklch(0.40 0.09 var(--accent-h));
   --chart-5: oklch(0.30 0.05 var(--accent-h));
-  --sidebar: oklch(0.94 0.004 80);
-  --sidebar-foreground: oklch(0.17 0.012 50);
-  --sidebar-primary: oklch(var(--accent-l) var(--accent-c) var(--accent-h));
+  --sidebar: oklch(0.94 0.005 250);
+  --sidebar-foreground: oklch(0.22 0.014 255);
+  --sidebar-primary: oklch(calc(var(--accent-l) - 0.14) var(--accent-c) var(--accent-h));
   --sidebar-primary-foreground: oklch(0.99 0 0);
   --sidebar-accent: oklch(0.90 0.02 var(--accent-h));
-  --sidebar-accent-foreground: oklch(0.17 0 0);
-  --sidebar-border: oklch(0.83 0.012 65);
-  --sidebar-ring: oklch(var(--accent-l) var(--accent-c) var(--accent-h));
+  --sidebar-accent-foreground: oklch(0.22 0.014 255);
+  --sidebar-border: oklch(0.80 0.01 250);
+  --sidebar-ring: oklch(calc(var(--accent-l) - 0.14) var(--accent-c) var(--accent-h));
+
+  --gap: oklch(0.80 0.008 250);
+  --steel: oklch(0.70 0.01 250);
+  --steel-dark: oklch(0.52 0.01 250);
+  --stamp: oklch(0.24 0.014 255);
+  --stamp-foreground: oklch(0.975 0.003 250);
+  --plate-edge: oklch(1 0 0 / 0.9);
+  --plate-shade: oklch(0.3 0.02 255 / 0.16);
+  --plate-hover: oklch(0.995 0.002 250);
 }
 
 @layer base {
@@ -146,24 +196,25 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    /* Papier millimétré d'atelier : la grille de la salle des machines. */
-    background-image:
-      linear-gradient(color-mix(in oklch, var(--foreground) 3%, transparent) 1px, transparent 1px),
-      linear-gradient(90deg, color-mix(in oklch, var(--foreground) 3%, transparent) 1px, transparent 1px);
-    background-size: 26px 26px;
-    background-attachment: fixed;
   }
   html {
     @apply font-sans;
+    background: var(--background);
   }
 
-  /* LA FONTE : Anton sur les titres et les gros chiffres. Le corps, les
-     labels et la data tabulaire restent en Geist / mono. */
+  /* Le focus clavier : l'anneau de la goupille, net, décalé de la plaque. */
+  :where(a, button, [role="button"], [role="tab"], input, select, textarea, summary):focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Les titres et les gros chiffres sont frappés : Barlow Condensed. Le
+     corps, les labels et les phrases restent en Geist. */
   h1, h2, h3,
   .text-2xl, .text-3xl, .text-4xl {
     font-family: var(--font-display), var(--font-sans), sans-serif;
-    font-weight: 400;
-    letter-spacing: 0.01em;
+    font-weight: 700;
+    letter-spacing: 0.005em;
   }
 
   ::-webkit-scrollbar {
@@ -188,83 +239,198 @@
 }
 
 @layer utilities {
-  /* LA FONTE — orange peint au pochoir, plus de dégradé. Les noms de
-     classes historiques restent, leur rendu change. */
+  /* ── Les noms historiques : ils restent, leur rendu suit la pile. ── */
+
+  /* L'accent en texte : la couleur de la goupille, sans dégradé. */
   .text-gradient-orange {
     color: var(--primary);
   }
 
+  /* L'accent en aplat : la peinture de la goupille. */
   .bg-gradient-orange {
     background: var(--primary);
   }
 
-  /* Le bouton mécanique : un bloc d'acier peint qui s'enfonce au doigt. */
+  /* Le bouton plein : une pièce d'acier laquée à la couleur du joueur,
+     arête claire en haut, ombre en bas ; il s'enfonce au doigt. */
   .bg-gradient-orange-intense {
     background: var(--primary);
-    border: 2px solid oklch(0.12 0 0);
-    box-shadow: 3px 3px 0 oklch(0.06 0 0);
-    transition: transform 0.08s ease, box-shadow 0.08s ease;
+    color: var(--primary-foreground);
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.32),
+      inset 0 -2px 0 oklch(0 0 0 / 0.22),
+      0 1px 0 oklch(0 0 0 / 0.35);
+    transition: filter 0.12s ease, transform 0.08s ease, box-shadow 0.08s ease;
   }
   .bg-gradient-orange-intense:hover {
-    transform: translate(-1px, -1px);
-    box-shadow: 4px 4px 0 oklch(0.06 0 0);
+    filter: brightness(1.08);
   }
   .bg-gradient-orange-intense:active {
-    transform: translate(2px, 2px);
-    box-shadow: 0 0 0 oklch(0.06 0 0);
+    transform: translateY(1px);
+    box-shadow:
+      inset 0 2px 0 oklch(0 0 0 / 0.2),
+      0 0 0 oklch(0 0 0 / 0);
   }
 
+  /* Plus de lueur : une pièce posée projette une ombre, c'est tout. */
   .glow-orange {
-    box-shadow: 4px 4px 0 oklch(0.06 0 0);
+    box-shadow: 0 10px 24px -8px oklch(0 0 0 / 0.6), 0 2px 0 oklch(0 0 0 / 0.3);
   }
-
   .glow-orange-sm {
-    box-shadow: 3px 3px 0 oklch(0.06 0 0);
+    box-shadow: 0 6px 14px -6px oklch(0 0 0 / 0.55);
+  }
+  /* Le bouton plein posé au-dessus du reste : arête + ombre portée. */
+  .bg-gradient-orange-intense.glow-orange {
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.32),
+      inset 0 -2px 0 oklch(0 0 0 / 0.22),
+      0 12px 28px -10px oklch(0 0 0 / 0.75),
+      0 2px 0 oklch(0 0 0 / 0.3);
   }
 
   .card-hover {
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    transition: background-color 0.12s ease, transform 0.1s ease;
+  }
+  .card-hover:hover {
+    background-color: var(--plate-hover);
   }
   .card-hover:active {
-    transform: scale(0.97);
+    transform: scale(0.985);
   }
 
-  /* La caisse d'atelier : plate, bord franc, ombre portée dure. */
+  /* ── La plaque ─────────────────────────────────────────────────────
+     Une plaque de fonte : pleine, arête claire en haut, ombre en bas,
+     angles à peine cassés. Jamais de contour coloré. */
+  :where(.plate) {
+    background-color: var(--card);
+    border-radius: var(--radius);
+    box-shadow:
+      inset 0 1px 0 var(--plate-edge),
+      inset 0 -1px 0 var(--plate-shade),
+      0 1px 0 var(--plate-shade);
+  }
+
+  /* L'ancienne caisse à bord dégradé : c'est désormais une plaque. */
   .card-gradient-border {
     position: relative;
-    border: 1px solid color-mix(in oklch, var(--foreground) 14%, transparent);
-    background: var(--card);
-    box-shadow: 4px 4px 0 oklch(0 0 0 / 0.5);
-    transition: border-color 0.15s ease;
-  }
-  .card-gradient-border:hover {
-    border-color: color-mix(in oklch, var(--primary) 55%, transparent);
+    border: 0;
+    background-color: var(--card);
+    box-shadow:
+      inset 0 1px 0 var(--plate-edge),
+      inset 0 -1px 0 var(--plate-shade),
+      0 1px 0 var(--plate-shade);
   }
 
-  /* Podium : plaques métal, tranche colorée à gauche. */
-  .card-gradient-gold {
+  /* La pile : des plaques serrées, un jour sombre entre chacune, et les
+     deux tiges chromées qu'on aperçoit dans ce jour. */
+  .plate-stack {
     position: relative;
-    border: 1px solid oklch(0.80 0.18 85 / 0.5);
-    border-left: 4px solid oklch(0.80 0.18 85);
-    background: var(--card);
-    box-shadow: 4px 4px 0 oklch(0 0 0 / 0.5);
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
-  .card-gradient-silver {
+  .plate-stack > * {
     position: relative;
-    border: 1px solid oklch(0.75 0.01 0 / 0.4);
-    border-left: 4px solid oklch(0.75 0.01 0);
-    background: var(--card);
-    box-shadow: 4px 4px 0 oklch(0 0 0 / 0.5);
   }
+  .plate-stack::before,
+  .plate-stack::after {
+    content: "";
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    width: 5px;
+    z-index: -1;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--steel-dark), var(--steel) 45%, var(--steel-dark));
+    opacity: 0.85;
+  }
+  .plate-stack::before {
+    left: 30%;
+  }
+  .plate-stack::after {
+    right: 30%;
+  }
+
+  /* Le chiffre frappé : blanc sur étiquette noire, enfoncé dans la plaque. */
+  :where(.stamp) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--stamp);
+    color: var(--stamp-foreground);
+    font-family: var(--font-display), var(--font-sans), sans-serif;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    border-radius: 2px;
+    box-shadow: inset 0 1px 2px oklch(0 0 0 / 0.55), 0 1px 0 var(--plate-edge);
+  }
+
+  /* La goupille : la seule pièce de couleur. Une tête ronde laquée, et sa
+     tige d'acier qui entre dans la plaque. */
+  :where(.pin) {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 9999px;
+    background: var(--primary);
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.4),
+      inset 0 -2px 0 oklch(0 0 0 / 0.25),
+      0 1px 2px oklch(0 0 0 / 0.5);
+  }
+  .pin-rod::after {
+    content: "";
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    width: 9px;
+    height: 3px;
+    transform: translateY(-50%);
+    border-radius: 0 1px 1px 0;
+    background: linear-gradient(180deg, var(--steel), var(--steel-dark));
+  }
+
+  /* La charge en plaques : une barre découpée en plaques régulières. */
+  .segments {
+    -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 7px, transparent 7px 9px);
+    mask-image: repeating-linear-gradient(90deg, #000 0 7px, transparent 7px 9px);
+  }
+
+  /* Le petit label gravé au-dessus d'un bloc. */
+  :where(.etched) {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+
+  /* Podium : la tranche colorée à gauche, sur une plaque. */
+  .card-gradient-gold,
+  .card-gradient-silver,
   .card-gradient-bronze {
     position: relative;
-    border: 1px solid oklch(0.55 0.12 55 / 0.5);
-    border-left: 4px solid oklch(0.55 0.12 55);
-    background: var(--card);
-    box-shadow: 4px 4px 0 oklch(0 0 0 / 0.5);
+    background-color: var(--card);
+    box-shadow:
+      inset 0 1px 0 var(--plate-edge),
+      inset 0 -1px 0 var(--plate-shade),
+      0 1px 0 var(--plate-shade);
+  }
+  .card-gradient-gold {
+    border-left: 4px solid oklch(0.80 0.15 85);
+  }
+  .card-gradient-silver {
+    border-left: 4px solid oklch(0.78 0.01 250);
+  }
+  .card-gradient-bronze {
+    border-left: 4px solid oklch(0.60 0.11 55);
   }
 
-  /* L'entête d'atelier : plat, souligné d'une bande hachurée chantier. */
+  /* L'entête : la plaque de tête de la pile, posée sur un filet d'acier. */
   .hero-gradient {
     position: relative;
     background: transparent;
@@ -272,24 +438,19 @@
   .hero-gradient::after {
     content: "";
     position: absolute;
-    left: 0;
-    right: 0;
+    left: 16px;
+    right: 16px;
     bottom: 0;
-    height: 6px;
-    background: repeating-linear-gradient(
-      -45deg,
-      var(--primary) 0 10px,
-      transparent 10px 20px
-    );
-    opacity: 0.85;
+    height: 1px;
+    background: var(--border);
   }
 
-  /* La bande chantier : pour les records et les moments forts. */
+  /* La bande des records : des plaques alternées, accent et fonte. */
   .hazard {
     background: repeating-linear-gradient(
-      -45deg,
-      var(--primary) 0 10px,
-      oklch(0.1 0 0) 10px 20px
+      90deg,
+      var(--primary) 0 14px,
+      var(--gap) 14px 17px
     );
   }
 
@@ -304,6 +465,29 @@
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
     pointer-events: none;
     z-index: 0;
+  }
+
+  /* Le chargement : quatre plaques qui montent l'une après l'autre. */
+  @keyframes plate-lift {
+    0%, 100% { opacity: 0.25; }
+    40%      { opacity: 1; }
+  }
+  .plate-loader > span {
+    display: block;
+    width: 28px;
+    height: 5px;
+    border-radius: 1px;
+    background: var(--steel);
+    animation: plate-lift 1s ease-in-out infinite;
+  }
+  .plate-loader > span:nth-child(1) { animation-delay: 0.45s; background: var(--primary); }
+  .plate-loader > span:nth-child(2) { animation-delay: 0.3s; }
+  .plate-loader > span:nth-child(3) { animation-delay: 0.15s; }
+  .plate-loader > span:nth-child(4) { animation-delay: 0s; }
+
+  /* Les modales d'annonce : une plaque de tête posée sur l'écran assombri. */
+  .scrim {
+    background: oklch(0.12 0.01 255 / 0.86);
   }
 
   @keyframes spin-slow {
@@ -354,6 +538,38 @@
     background-size: 200% 100%;
     mix-blend-mode: screen;
     animation: holo-shimmer-anim 3s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .plate-loader > span {
+      animation: none;
+      opacity: 0.8;
+    }
+  }
+}
+
+/* La colonne de l'appli, sur grand écran : tenue entre ses deux tiges de
+   guidage, comme la pile dans son bâti. */
+@media (min-width: 640px) {
+  .column-rods {
+    position: relative;
+  }
+  .column-rods::before,
+  .column-rods::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    pointer-events: none;
+    background: linear-gradient(90deg, var(--steel-dark), var(--steel) 45%, var(--steel-dark));
+    opacity: 0.22;
+  }
+  .column-rods::before {
+    left: calc(50% - 16rem - 20px);
+  }
+  .column-rods::after {
+    left: calc(50% + 16rem + 17px);
   }
 }
 
@@ -506,31 +722,63 @@
 .card-ring-rare,
 .card-ring-uncommon {
   position: relative;
-  border: 1px solid color-mix(in oklch, var(--foreground) 14%, transparent);
+  border: 0;
   background: var(--card);
 }
 .card-ring-mythic {
   box-shadow:
-    4px 4px 0 oklch(0 0 0 / 0.5),
+    inset 0 1px 0 var(--plate-edge),
+    0 1px 0 var(--plate-shade),
     0 0 34px -8px rgba(251, 113, 133, 0.55);
 }
 .card-ring-legendary {
   box-shadow:
-    4px 4px 0 oklch(0 0 0 / 0.5),
+    inset 0 1px 0 var(--plate-edge),
+    0 1px 0 var(--plate-shade),
     0 0 26px -8px rgba(251, 191, 36, 0.42);
 }
 .card-ring-epic {
   box-shadow:
-    4px 4px 0 oklch(0 0 0 / 0.5),
+    inset 0 1px 0 var(--plate-edge),
+    0 1px 0 var(--plate-shade),
     0 0 20px -8px rgba(167, 139, 250, 0.34);
 }
 .card-ring-rare {
   box-shadow:
-    4px 4px 0 oklch(0 0 0 / 0.5),
+    inset 0 1px 0 var(--plate-edge),
+    0 1px 0 var(--plate-shade),
     0 0 16px -8px rgba(125, 211, 252, 0.26);
 }
 .card-ring-uncommon {
   box-shadow:
-    4px 4px 0 oklch(0 0 0 / 0.5),
+    inset 0 1px 0 var(--plate-edge),
+    0 1px 0 var(--plate-shade),
     0 0 14px -9px rgba(110, 231, 183, 0.22);
+}
+
+/* Dans la pile, l'accent ne se dilue pas : il est plein (la goupille) ou
+   absent. Les labels d'accent translucides des autres pages deviennent des
+   gravures d'acier, et le gris atténué garde un seul cran, plein — lisibles
+   sur toutes les plaques. Dans la couche utilities, après les utilitaires
+   générés : même poids, donc ils gagnent, mais un hover: les bat encore. */
+@layer utilities {
+  .text-primary\/60,
+  .text-primary\/70 {
+    color: var(--steel);
+  }
+  .text-primary\/80 {
+    color: var(--primary);
+  }
+  .text-muted-foreground\/60,
+  .text-muted-foreground\/70,
+  .text-muted-foreground\/80 {
+    color: var(--muted-dim);
+  }
+
+  /* Un chiffre frappé ne se serre pas : la condensée l'est déjà. Les
+     titres « tracking-tight/tighter » des autres pages gardent leur
+     approche naturelle au lieu de se chevaucher. */
+  :is(h1, h2, h3, .text-2xl, .text-3xl, .text-4xl):is(.tracking-tighter, .tracking-tight) {
+    letter-spacing: 0.005em;
+  }
 }

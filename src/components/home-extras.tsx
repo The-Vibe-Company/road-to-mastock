@@ -184,12 +184,12 @@ function NewsModal() {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-end justify-center bg-black/85 backdrop-blur-sm sm:items-center">
-      <div className="relative flex h-[37rem] max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border-t-2 border-t-primary/40 bg-background sm:rounded-3xl sm:border-2 sm:border-primary/30">
+    <div className="fixed inset-0 z-[110] flex items-end justify-center scrim sm:items-center">
+      <div className="relative flex h-[37rem] max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl border-t-2 border-t-primary/40 bg-background sm:rounded-xl sm:border-2 sm:border-primary/30">
         <button
           onClick={dismiss}
           aria-label="Fermer"
-          className="absolute right-4 top-4 z-20 flex size-9 items-center justify-center rounded-xl bg-secondary/60 text-muted-foreground transition-colors hover:text-primary"
+          className="absolute right-4 top-4 z-20 flex size-9 items-center justify-center plate text-muted-foreground transition-colors hover:bg-plate-hover hover:text-foreground"
         >
           <X className="size-4" />
         </button>
@@ -198,14 +198,13 @@ function NewsModal() {
         <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4 pt-6">
           {step === 0 && (
             <div>
-              <div className="pointer-events-none absolute left-1/2 top-24 size-64 -translate-x-1/2 rounded-full bg-primary/15 blur-3xl" />
               <div className="text-center">
-                <p className="text-[10px] font-black uppercase tracking-[0.35em] text-primary">
+                <p className="flex items-center justify-center gap-2 font-heading text-[13px] font-bold uppercase tracking-[0.28em] text-muted-foreground">
+                  <span aria-hidden className="pin size-2" />
                   Nouveauté
                 </p>
-                <h2 className="mt-1 text-[1.7rem] font-black leading-tight tracking-tighter">
-                  Tes cartes ont des{" "}
-                  <span className="text-gradient-orange">pouvoirs</span>
+                <h2 className="mt-2 text-[2rem] font-extrabold uppercase leading-[0.95]">
+                  Tes cartes ont des pouvoirs
                 </h2>
               </div>
               {fan.length > 0 && (
@@ -265,7 +264,7 @@ function NewsModal() {
                   const breakdown = polarityBreakdown(c.category, c.rarity, c.subtype);
                   const pts = pointsOf(c);
                   return (
-                    <div key={i} className="flex gap-3 rounded-xl bg-secondary/30 p-2.5 ring-1 ring-border">
+                    <div key={i} className="flex gap-3 plate p-2.5">
                       <div className={`relative size-14 shrink-0 overflow-hidden rounded-lg ${RARITY_COLORS[c.rarity].bg} ring-1 ${RARITY_COLORS[c.rarity].ring}`}>
                         {c.imageUrl && (
                           <Image src={c.imageUrl} alt="" fill unoptimized className="object-cover" />
@@ -321,7 +320,6 @@ function NewsModal() {
               : { text: "text-amber-300", ring: "ring-amber-500/40", bg: "bg-amber-400/10", glow: "bg-amber-400/15", btn: "bg-amber-400/15 text-amber-200 ring-amber-400/50" };
             return (
               <div key={big.slug} className="animate-card-reveal flex flex-col items-center pb-2 text-center">
-                <div className={`pointer-events-none absolute left-1/2 top-20 size-64 -translate-x-1/2 rounded-full ${accent.glow} blur-3xl`} />
                 <p className={`font-mono text-[10px] font-black uppercase tracking-[0.35em] ${accent.text}`}>
                   {isMythic ? "Mythique" : "Légendaire"}
                 </p>
@@ -341,12 +339,12 @@ function NewsModal() {
                 {!revealed ? (
                   <button
                     onClick={() => setRevealed(true)}
-                    className={`mt-4 w-full max-w-xs animate-pulse rounded-2xl px-4 py-4 text-xs font-black uppercase tracking-wider ring-2 transition-all active:scale-95 ${accent.btn}`}
+                    className={`mt-4 w-full max-w-xs animate-pulse rounded-lg px-4 py-4 text-xs font-black uppercase tracking-wider ring-2 transition-all active:scale-95 ${accent.btn}`}
                   >
                     Toucher pour révéler son {isMythic ? "miracle" : "prodige"}
                   </button>
                 ) : (
-                  <div className={`animate-card-reveal mt-4 w-full max-w-xs rounded-2xl px-4 py-4 text-left ring-1 ${accent.bg} ${accent.ring}`}>
+                  <div className={`animate-card-reveal mt-4 w-full max-w-xs rounded-lg px-4 py-4 text-left ring-1 ${accent.bg} ${accent.ring}`}>
                     <p className={`text-center text-[10px] font-black uppercase tracking-[0.3em] ${accent.text}`}>
                       {isMythic ? "Miracle" : "Prodige"}
                     </p>
@@ -379,7 +377,7 @@ function NewsModal() {
               <Button
                 onClick={() => goTo(step - 1)}
                 variant="outline"
-                className="h-12 rounded-2xl border-primary/30 px-4 text-sm font-bold text-primary"
+                className="h-12 rounded-lg border-primary/30 px-4 text-sm font-bold text-primary"
               >
                 <ChevronLeft className="size-4" />
               </Button>
@@ -388,14 +386,14 @@ function NewsModal() {
               forced ? (
                 <Button
                   onClick={dismiss}
-                  className="h-12 flex-1 rounded-2xl bg-gradient-orange-intense text-sm font-black uppercase tracking-wider text-black"
+                  className="h-12 flex-1 rounded-lg bg-gradient-orange-intense font-heading text-[17px] font-bold uppercase tracking-[0.08em]"
                 >
                   Continuer la tournée
                   <ChevronRight className="size-4" strokeWidth={3} />
                 </Button>
               ) : (
                 <Link href="/exercises" className="flex-1" onClick={dismiss}>
-                  <Button className="h-12 w-full rounded-2xl bg-gradient-orange-intense text-sm font-black uppercase tracking-wider text-black">
+                  <Button className="h-12 w-full rounded-lg bg-gradient-orange-intense font-heading text-[17px] font-bold uppercase tracking-[0.08em]">
                     <Shield className="size-4" strokeWidth={3} />
                     Poser mes gardiens
                   </Button>
@@ -404,7 +402,7 @@ function NewsModal() {
             ) : (
               <Button
                 onClick={() => goTo(step + 1)}
-                className="h-12 flex-1 rounded-2xl bg-gradient-orange-intense text-sm font-black uppercase tracking-wider text-black"
+                className="h-12 flex-1 rounded-lg bg-gradient-orange-intense font-heading text-[17px] font-bold uppercase tracking-[0.08em]"
               >
                 {step === 0
                   ? "Comment ça marche"
@@ -418,7 +416,7 @@ function NewsModal() {
               <Button
                 onClick={dismiss}
                 variant="outline"
-                className="h-12 rounded-2xl border-primary/30 px-4 text-sm font-bold text-primary"
+                className="h-12 rounded-lg border-primary/30 px-4 text-sm font-bold text-primary"
               >
                 Plus tard
               </Button>
@@ -468,7 +466,7 @@ function GuideScreen({ index, total }: { index: number; total: number }) {
       ),
       visual: (
         <div className="w-full space-y-2 text-left">
-          <div className="rounded-xl bg-secondary/30 px-3 py-2 ring-1 ring-border">
+          <div className="plate px-3 py-2">
             <p className="text-xs font-black">La Famille</p>
             <p className="text-[11px] leading-snug text-muted-foreground">
               Un Pokémon ajoute des tickets « pack Pokémon » dans le chapeau,
@@ -478,7 +476,7 @@ function GuideScreen({ index, total }: { index: number; total: number }) {
               Répulsif, il les retire.
             </p>
           </div>
-          <div className="rounded-xl bg-secondary/30 px-3 py-2 ring-1 ring-border">
+          <div className="plate px-3 py-2">
             <p className="text-xs font-black">Le Lest</p>
             <p className="text-[11px] leading-snug text-muted-foreground">
               Il joue sur les tickets « pack Basique » (64 % de base). En
@@ -487,7 +485,7 @@ function GuideScreen({ index, total }: { index: number; total: number }) {
               ajoute — pour farmer du commun et des fragments.
             </p>
           </div>
-          <div className="rounded-xl bg-secondary/30 px-3 py-2 ring-1 ring-border">
+          <div className="plate px-3 py-2">
             <p className="text-xs font-black">L&apos;Étincelle</p>
             <p className="text-[11px] leading-snug text-muted-foreground">
               En Attractif, il ajoute 0,1 à 0,6 ticket « pack Mythique » par
@@ -496,7 +494,7 @@ function GuideScreen({ index, total }: { index: number; total: number }) {
               des tickets Basique.
             </p>
           </div>
-          <div className="rounded-xl bg-secondary/30 px-3 py-2 ring-1 ring-border">
+          <div className="plate px-3 py-2">
             <p className="text-xs font-black">La Balance</p>
             <p className="text-[11px] leading-snug text-muted-foreground">
               Quand un pack Basique s&apos;ouvre, la carte tirée est animale à
@@ -551,7 +549,7 @@ function GuideScreen({ index, total }: { index: number; total: number }) {
       body: <>Plus la carte est rare, plus l&apos;étage est haut.</>,
       visual: (
         <div className="w-full space-y-2 text-left">
-          <div className="flex gap-3 rounded-xl bg-secondary/30 px-3 py-2.5 ring-1 ring-border">
+          <div className="flex gap-3 plate px-3 py-2.5">
             <span className="font-mono text-lg font-black text-primary">1</span>
             <div>
               <p className="text-xs font-black">La Polarité <span className="font-bold text-muted-foreground">· commun → épique</span></p>
@@ -624,7 +622,7 @@ function GuideScreen({ index, total }: { index: number; total: number }) {
 
   return (
     <div className="flex min-h-[24rem] flex-col items-center justify-center px-2 text-center">
-      <div className="flex size-16 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/20">
+      <div className="stamp size-16">
         {screen.icon}
       </div>
       <p className="mt-4 font-mono text-[10px] font-black uppercase tracking-[0.3em] text-primary/60">
@@ -702,17 +700,16 @@ function TalentAnnounceModal() {
   const isLast = step >= items.length - 1;
 
   return (
-    <div className="fixed inset-0 z-[105] flex items-end justify-center bg-black/85 backdrop-blur-sm sm:items-center">
-      <div className="relative flex h-[31rem] max-h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border-t-2 border-t-amber-400/50 bg-background sm:rounded-3xl sm:border-2 sm:border-amber-400/40">
+    <div className="fixed inset-0 z-[105] flex items-end justify-center scrim sm:items-center">
+      <div className="relative flex h-[31rem] max-h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl border-t-2 border-t-amber-400/50 bg-background sm:rounded-xl sm:border-2 sm:border-amber-400/40">
         <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4 pt-8">
-          <div className="pointer-events-none absolute left-1/2 top-16 size-56 -translate-x-1/2 rounded-full bg-amber-400/10 blur-3xl" />
 
           <p className="text-center font-mono text-[10px] font-black uppercase tracking-[0.35em] text-amber-300/70">
             Révélation · {step + 1} / {items.length}
           </p>
 
           <div key={current.id} className="animate-card-reveal mt-5 flex flex-col items-center text-center">
-            <div className={`relative size-32 overflow-hidden rounded-2xl ${RARITY_COLORS[current.card!.rarity as Rarity]?.bg ?? "bg-secondary/40"} ring-2 ${RARITY_COLORS[current.card!.rarity as Rarity]?.ring ?? "ring-border"} drop-shadow-2xl`}>
+            <div className={`relative size-32 overflow-hidden rounded-lg ${RARITY_COLORS[current.card!.rarity as Rarity]?.bg ?? "bg-secondary/40"} ring-2 ${RARITY_COLORS[current.card!.rarity as Rarity]?.ring ?? "ring-border"} drop-shadow-2xl`}>
               {current.card!.imageUrl && (
                 <Image src={current.card!.imageUrl} alt="" fill unoptimized className="object-cover" />
               )}
@@ -727,12 +724,12 @@ function TalentAnnounceModal() {
             {!revealed ? (
               <button
                 onClick={() => setRevealed(true)}
-                className="mt-5 w-full max-w-xs animate-pulse rounded-2xl bg-amber-400/15 px-4 py-4 text-xs font-black uppercase tracking-wider text-amber-200 ring-2 ring-amber-400/50 transition-all active:scale-95"
+                className="mt-5 w-full max-w-xs animate-pulse rounded-lg bg-amber-400/15 px-4 py-4 text-xs font-black uppercase tracking-wider text-amber-200 ring-2 ring-amber-400/50 transition-all active:scale-95"
               >
                 Toucher pour révéler son talent
               </button>
             ) : (
-              <div className="animate-card-reveal mt-5 w-full max-w-xs rounded-2xl bg-amber-400/5 px-4 py-4 text-left ring-1 ring-amber-400/30">
+              <div className="animate-card-reveal mt-5 w-full max-w-xs rounded-lg bg-amber-400/5 px-4 py-4 text-left ring-1 ring-amber-400/30">
                 <p className="text-center text-[10px] font-black uppercase tracking-[0.3em] text-amber-300">
                   Talent
                 </p>
@@ -762,7 +759,7 @@ function TalentAnnounceModal() {
           {isLast ? (
             <Button
               onClick={dismiss}
-              className="h-12 w-full rounded-2xl bg-amber-400 text-sm font-black uppercase tracking-wider text-black hover:bg-amber-300"
+              className="h-12 w-full rounded-lg bg-amber-400 font-heading text-[17px] font-bold uppercase tracking-[0.08em] text-black hover:bg-amber-300"
             >
               <Check className="size-4" />
               Compris, ils sont à moi
@@ -773,7 +770,7 @@ function TalentAnnounceModal() {
                 setStep((n) => n + 1);
                 setRevealed(false);
               }}
-              className="h-12 w-full rounded-2xl bg-amber-400 text-sm font-black uppercase tracking-wider text-black hover:bg-amber-300"
+              className="h-12 w-full rounded-lg bg-amber-400 font-heading text-[17px] font-bold uppercase tracking-[0.08em] text-black hover:bg-amber-300"
             >
               Talent suivant
               <ChevronRight className="size-4" strokeWidth={3} />
@@ -863,8 +860,8 @@ function PactesAnnounceModal() {
   const shown = cards.length > 0 ? cards : [];
 
   return (
-    <div data-pactes="" className="fixed inset-0 z-[103] flex items-end justify-center bg-black/85 backdrop-blur-sm sm:items-center">
-      <div className="relative flex max-h-[90dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border-t-2 border-t-primary/50 bg-background sm:rounded-3xl sm:border-2 sm:border-primary/40">
+    <div data-pactes="" className="fixed inset-0 z-[103] flex items-end justify-center scrim sm:items-center">
+      <div className="relative flex max-h-[90dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl border-t-2 border-t-primary/50 bg-background sm:rounded-xl sm:border-2 sm:border-primary/40">
         <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4 pt-8">
           <p className="text-center font-mono text-[10px] font-black uppercase tracking-[0.35em] text-primary/70">
             Rééquilibrage
@@ -885,7 +882,7 @@ function PactesAnnounceModal() {
               const chg = PACT_CHANGES[c.slug];
               if (!chg) return null;
               return (
-                <div key={c.slug} className="rounded-xl bg-secondary/30 p-3 ring-1 ring-border">
+                <div key={c.slug} className="plate p-3">
                   <div className="flex items-center gap-2.5">
                     {c.imageUrl && (
                       <div className={`relative size-9 shrink-0 overflow-hidden rounded-lg ${RARITY_COLORS[c.rarity]?.bg ?? ""} ring-1 ${RARITY_COLORS[c.rarity]?.ring ?? "ring-border"}`}>
@@ -913,7 +910,7 @@ function PactesAnnounceModal() {
         <div className="border-t border-border/60 px-6 py-4">
           <button
             onClick={dismiss}
-            className="w-full rounded-xl bg-gradient-orange-intense py-3 text-sm font-black uppercase tracking-wider text-black transition-all active:scale-95"
+            className="w-full rounded-xl bg-gradient-orange-intense py-3 font-heading text-[17px] font-bold uppercase tracking-[0.08em] transition-all active:scale-95"
           >
             Compris
           </button>
@@ -976,10 +973,9 @@ function MagnesieAnnounceModal() {
   const carriers = data?.carriers ?? [];
 
   return (
-    <div className="fixed inset-0 z-[103] flex items-end justify-center bg-black/85 backdrop-blur-sm sm:items-center">
-      <div className="relative flex h-[34rem] max-h-[90dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border-t-2 border-t-sky-400/50 bg-background sm:rounded-3xl sm:border-2 sm:border-sky-400/40">
+    <div className="fixed inset-0 z-[103] flex items-end justify-center scrim sm:items-center">
+      <div className="relative flex h-[34rem] max-h-[90dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl border-t-2 border-t-sky-400/50 bg-background sm:rounded-xl sm:border-2 sm:border-sky-400/40">
         <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4 pt-8">
-          <div className="pointer-events-none absolute left-1/2 top-14 size-56 -translate-x-1/2 rounded-full bg-sky-400/10 blur-3xl" />
           <p className="text-center font-mono text-[10px] font-black uppercase tracking-[0.35em] text-sky-300/70">
             Nouveauté
           </p>
@@ -1031,7 +1027,7 @@ function MagnesieAnnounceModal() {
               </div>
             </div>
           ) : (
-            <p className="mt-4 rounded-xl bg-secondary/30 px-3 py-2.5 text-xs leading-relaxed text-muted-foreground ring-1 ring-border">
+            <p className="mt-4 plate px-3 py-2.5 text-xs leading-relaxed text-muted-foreground">
               Aucune de tes cartes actuelles ne la porte — elle t&apos;attend
               dans les packs. Personne ne sait lesquelles avant de les tirer.
             </p>
@@ -1040,7 +1036,7 @@ function MagnesieAnnounceModal() {
         <div className="border-t border-border/50 px-6 pb-6 pt-4">
           <Button
             onClick={dismiss}
-            className="h-12 w-full rounded-2xl bg-sky-400 text-sm font-black uppercase tracking-wider text-black hover:bg-sky-300"
+            className="h-12 w-full rounded-lg bg-sky-400 font-heading text-[17px] font-bold uppercase tracking-[0.08em] text-black hover:bg-sky-300"
           >
             <Check className="size-4" />
             Compris
@@ -1115,13 +1111,11 @@ export function HomeTrinkets() {
 
   return (
     <div className="relative mt-8 space-y-2">
-      <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">
-        La vitrine
-      </p>
+      <p className="etched">La vitrine</p>
 
       {/* La Sieste : Ronflex garde sa place — c'est un rappel, pas un gadget */}
       {has("sieste") && assets["sieste"] && (home.siesteDays ?? 0) >= 4 && (
-        <button onClick={() => setExplain("sieste")} className="flex w-full items-center gap-3 rounded-xl bg-secondary/30 px-3 py-2 text-left ring-1 ring-border transition-all active:scale-[0.99]">
+        <button onClick={() => setExplain("sieste")} className="plate card-hover flex w-full items-center gap-3 px-3 py-2 text-left transition-all active:scale-[0.99]">
           <div className="relative size-10 shrink-0">
             <Image src={assets["sieste"]!} alt="" fill unoptimized className="snorlax-sleep object-contain" />
           </div>
@@ -1134,37 +1128,37 @@ export function HomeTrinkets() {
 
       <div className="flex flex-wrap gap-2">
         {has("flamme-v") && (
-          <button onClick={() => setExplain("flamme-v")} className="inline-flex items-center gap-1.5 rounded-lg bg-secondary/30 px-2.5 py-1.5 ring-1 ring-border transition-all active:scale-95">
+          <button onClick={() => setExplain("flamme-v")} className="plate card-hover inline-flex items-center gap-1.5 px-2.5 py-1.5 transition-all active:scale-95">
             <Flame className={`size-3.5 ${(home.recordStreak ?? 0) > 0 ? "text-orange-400" : "text-muted-foreground/40"}`} />
             <span className="font-mono text-xs font-black tabular-nums text-primary">{home.recordStreak ?? 0}</span>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">records</span>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">records</span>
           </button>
         )}
         {has("resolution") && profile?.weeklyGoal ? (
-          <button onClick={() => setExplain("resolution")} className="inline-flex items-center gap-1.5 rounded-lg bg-secondary/30 px-2.5 py-1.5 ring-1 ring-border transition-all active:scale-95">
+          <button onClick={() => setExplain("resolution")} className="plate card-hover inline-flex items-center gap-1.5 px-2.5 py-1.5 transition-all active:scale-95">
             <Target className={`size-3.5 ${(home.weekSessions ?? 0) >= profile.weeklyGoal ? "text-emerald-400" : "text-primary"}`} />
             <span className="font-mono text-xs font-black tabular-nums text-primary">
               {home.weekSessions ?? 0}/{profile.weeklyGoal}
             </span>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">semaine</span>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">semaine</span>
           </button>
         ) : null}
         {has("tonnage") && home.tonnageWhales != null && (
-          <button onClick={() => setExplain("tonnage")} className="inline-flex items-center gap-1.5 rounded-lg bg-secondary/30 px-2.5 py-1.5 ring-1 ring-border transition-all active:scale-95">
+          <button onClick={() => setExplain("tonnage")} className="plate card-hover inline-flex items-center gap-1.5 px-2.5 py-1.5 transition-all active:scale-95">
             {assets["tonnage"] && (
               <Image src={assets["tonnage"]!} alt="" width={16} height={16} unoptimized className="size-4 object-contain" />
             )}
             <span className="font-mono text-xs font-black tabular-nums text-primary">{home.tonnageWhales}</span>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">baleines</span>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">baleines</span>
           </button>
         )}
         {has("songe") && home.dream?.imageUrl && (
-          <button onClick={() => setExplain("songe")} className="inline-flex items-center gap-1.5 rounded-lg bg-secondary/30 px-2.5 py-1.5 ring-1 ring-border transition-all active:scale-95">
+          <button onClick={() => setExplain("songe")} className="plate card-hover inline-flex items-center gap-1.5 px-2.5 py-1.5 transition-all active:scale-95">
             <Image src={home.dream.imageUrl} alt="" width={16} height={16} unoptimized className="size-4 object-contain" />
             <span className={`max-w-32 truncate text-xs font-black ${RARITY_COLORS[home.dream.rarity as Rarity]?.text ?? ""}`}>
               {home.dream.name}
             </span>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">rêve de Baku</span>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">rêve de Baku</span>
           </button>
         )}
       </div>
@@ -1172,12 +1166,12 @@ export function HomeTrinkets() {
       {/* Pourquoi je vois ça : la carte responsable, son talent, son effet */}
       {explained && (
         <div
-          className="fixed inset-0 z-[120] flex items-end justify-center bg-black/80 backdrop-blur-sm sm:items-center"
+          className="fixed inset-0 z-[120] flex items-end justify-center scrim sm:items-center"
           onClick={() => setExplain(null)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md rounded-t-3xl border-t-2 border-t-primary/40 bg-background px-6 pb-8 pt-6 sm:rounded-3xl sm:border-2 sm:border-primary/30"
+            className="w-full max-w-md rounded-t-xl border-t-2 border-t-primary/40 bg-background px-6 pb-8 pt-6 sm:rounded-xl sm:border-2 sm:border-primary/30"
           >
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/70">
               Pourquoi je vois ça
@@ -1208,7 +1202,7 @@ export function HomeTrinkets() {
             </p>
             <Button
               onClick={() => setExplain(null)}
-              className="mt-4 h-11 w-full rounded-2xl bg-gradient-orange-intense text-sm font-black uppercase tracking-wider text-black"
+              className="mt-4 h-11 w-full rounded-lg bg-gradient-orange-intense font-heading text-[17px] font-bold uppercase tracking-[0.08em]"
             >
               Compris
             </Button>
@@ -1278,11 +1272,10 @@ function TrophyAnnounceModal() {
   const fam = TROPHY_FAMILIES[trophyStatOf(current.id)] ?? TROPHY_FAMILIES.sessions;
 
   return (
-    <div className="fixed inset-0 z-[104] flex items-end justify-center bg-black/85 backdrop-blur-sm sm:items-center">
-      <div className="relative flex h-[31rem] max-h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border-t-2 border-t-yellow-400/50 bg-background sm:rounded-3xl sm:border-2 sm:border-yellow-400/40">
+    <div className="fixed inset-0 z-[104] flex items-end justify-center scrim sm:items-center">
+      <div className="relative flex h-[31rem] max-h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl border-t-2 border-t-yellow-400/50 bg-background sm:rounded-xl sm:border-2 sm:border-yellow-400/40">
         <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4 pt-8">
           {/* Le halo prend la couleur de la famille du trophée */}
-          <div className={`pointer-events-none absolute left-1/2 top-10 size-52 -translate-x-1/2 rounded-full ${fam.glow} blur-3xl`} />
 
           <p className="text-center font-mono text-[10px] font-black uppercase tracking-[0.35em] text-yellow-300/70">
             Palmarès · {step + 1} / {items.length}
@@ -1322,7 +1315,7 @@ function TrophyAnnounceModal() {
           {isLast ? (
             <>
               <Link href="/trophees" onClick={dismiss}>
-                <Button className="h-12 w-full rounded-2xl bg-yellow-400 text-sm font-black uppercase tracking-wider text-black hover:bg-yellow-300">
+                <Button className="h-12 w-full rounded-lg bg-yellow-400 font-heading text-[17px] font-bold uppercase tracking-[0.08em] text-black hover:bg-yellow-300">
                   <Trophy className="size-4" />
                   Voir la Salle des Trophées
                 </Button>
@@ -1337,7 +1330,7 @@ function TrophyAnnounceModal() {
           ) : (
             <Button
               onClick={() => setStep((n) => n + 1)}
-              className="h-12 w-full rounded-2xl bg-yellow-400 text-sm font-black uppercase tracking-wider text-black hover:bg-yellow-300"
+              className="h-12 w-full rounded-lg bg-yellow-400 font-heading text-[17px] font-bold uppercase tracking-[0.08em] text-black hover:bg-yellow-300"
             >
               Trophée suivant
               <ChevronRight className="size-4" strokeWidth={3} />
