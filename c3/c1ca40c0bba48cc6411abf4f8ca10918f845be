@@ -1,0 +1,19 @@
+src/components/settings-page.tsx
+  s_9f13ff8a0fe04c::t_4b50b1668cffdd 48-50,72-74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c3c1ca40c0bba48cc6411abf4f8ca10918f845be",
+  "prompts": {},
+  "sessions": {
+    "s_9f13ff8a0fe04c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f6f8144-2e0f-4365-a2df-7a153cae490d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
