@@ -1,0 +1,63 @@
+src/app/globals.css
+  s_7c7d151152e4a5::t_f2357dbaa1b6a5 11-15,26-28,61-68,78-85,94-101,103-112,115-121,123-126,128-140,144-147,149-154,156-165,168-173,175-178,180-183,195,198-199,201-202,204-216,241-242,251-252,255-258,261,264-267,270-271,273-275,279-281,285,288,291,294,296-297,299-301,305,308-309,314-315,320-321,325,331,333-339,343-368,571-574,581,585,588,591,594,597
+src/app/layout.tsx
+  s_9f13ff8a0fe04c::t_1d220696d73614 2,10-15,18,36,45
+src/app/page.tsx
+  s_7c7d151152e4a5::t_35424c223e97a8 7,139-140,142,146-148,167-175,178-182,185-186,190,194,202,207-209,219,221-222,226,232,234-235,238,242-244,265
+src/components/back-button.tsx
+  s_9f13ff8a0fe04c::t_e9b2b7a3d6dce8 38
+src/components/dashboard.tsx
+  s_9f13ff8a0fe04c::t_0622955fca8ebd 5,22-30,44-48,60-71,76-94,97-114,116-126,128-130,132-176,179,185,191,193,203-204,207-209,211-212,214,221,224-228,231,233,236-237,240-249,252,268,271,276,278,280,328,331,334,346-347
+src/components/exercise-ranking.tsx
+  s_9f13ff8a0fe04c::t_fc4271349b60b8 71,79-81,84-85,108,114,123,125,133,135,150,152-153,164-167,182,191,201,208
+src/components/home-extras.tsx
+  s_9f13ff8a0fe04c::t_a8dbc02dc0d447 6,188,192,202-203,206,382,391,398,407,421,627,630,706,710,765,776,867,869,916,980,983,1043,1118,1124,1137,1144,1153,1162,1180,1182,1204,1211,1282,1287,1325,1332,1340
+src/components/home-tabs.tsx
+  s_9f13ff8a0fe04c::t_cd0027b9ec5c8b 8,24,42-43,47-48,50,52-53,67-68,70-77,82-85
+src/components/icons.tsx
+  s_9f13ff8a0fe04c::t_c0335bbfbeaa71 109-297
+src/components/new-session-button.tsx
+  s_9f13ff8a0fe04c::t_ea30941d631ff1 21
+src/components/session-card.tsx
+  s_9f13ff8a0fe04c::t_b16e4993493210 2,21,24-34,36-38,41-42,44,51,56,61,69
+src/components/skins-announcement.tsx
+  s_9f13ff8a0fe04c::t_6869319b91f054 6,55-61,65,71-72,75,78,83-86,90,107-109,113,121-122,126,135-136,140,155
+src/components/spinner.tsx
+  s_9f13ff8a0fe04c::t_2bb079e8c6fb6e 6-8,14,25-44
+src/components/ui/badge.tsx
+  s_9f13ff8a0fe04c::t_5f1c3abe30bbd4 8,14
+src/components/ui/button.tsx
+  s_9f13ff8a0fe04c::t_0ed5774dae6718 9,13,15,17,19
+src/components/ui/card.tsx
+  s_9f13ff8a0fe04c::t_5baf6504962b20 15
+src/components/ui/dialog.tsx
+  s_9f13ff8a0fe04c::t_6c6c3df4f7e8b3 34,56,75,113
+src/components/ui/input.tsx
+  s_9f13ff8a0fe04c::t_2d8b0611f82d6f 12
+src/components/ui/sheet.tsx
+  s_9f13ff8a0fe04c::t_e36cc11035bb19 31,56,75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bd4a16b69433495c85dea5bac5fd995a5ebc55d2",
+  "prompts": {},
+  "sessions": {
+    "s_7c7d151152e4a5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a29eecb1-aff7-46c8-aee7-b990bcc7e60c",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    },
+    "s_9f13ff8a0fe04c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f6f8144-2e0f-4365-a2df-7a153cae490d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
