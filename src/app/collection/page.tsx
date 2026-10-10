@@ -177,7 +177,7 @@ const MYST_BG: Record<Rarity, string> = {
 
 // Une plaque dans sa glissière : celle qu'on a choisie sort de la glissière
 // (plaque pleine) et porte la goupille ; les autres restent dans le jour.
-const SLOT_ON = "plate text-foreground";
+const SLOT_ON = "plate text-foreground hover:bg-plate-hover";
 const SLOT_OFF = "text-muted-foreground hover:bg-secondary/70 hover:text-foreground";
 
 // Le nom d'un bloc, gravé en capitales étroites.
@@ -1125,7 +1125,7 @@ export default function CollectionPage() {
                     setCrits((prev) => (active ? prev.filter((k) => k !== key) : [...prev, key]))
                   }
                   className={`flex items-start gap-2.5 rounded-[var(--radius)] px-3 py-3 text-left transition-colors ${
-                    active ? "plate" : "bg-gap hover:bg-secondary"
+                    active ? "plate hover:bg-plate-hover" : "bg-gap hover:bg-secondary"
                   }`}
                 >
                   <Icon className={`mt-0.5 size-4 shrink-0 ${tint}`} />

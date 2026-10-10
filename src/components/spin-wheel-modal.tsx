@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, ChevronRight, Spin } from "@/components/icons";
+import { X, ChevronRight, Spin, Star } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { SlotReel } from "@/components/slot-reel";
 import { JackpotCoin } from "@/components/emblems/jackpot-coin";
@@ -66,35 +66,34 @@ export function SpinWheelModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/85 backdrop-blur-sm">
+    <div className="scrim fixed inset-0 z-[100] flex overflow-y-auto sm:p-6">
       <button
         onClick={onClose}
         aria-label="Fermer"
-        className="absolute right-4 top-4 z-30 flex size-10 items-center justify-center rounded-xl bg-secondary/60 text-muted-foreground backdrop-blur transition-colors hover:text-primary"
+        className="plate fixed right-4 top-4 z-30 flex size-10 items-center justify-center text-muted-foreground transition-colors hover:bg-plate-hover hover:text-foreground"
       >
         <X className="size-5" />
       </button>
 
-      <div className="flex w-full max-w-md flex-col items-center gap-8 px-6 py-12">
+      <div className="relative m-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center gap-8 bg-background px-6 py-14 shadow-[inset_0_1px_0_var(--plate-edge),0_24px_60px_-20px_oklch(0_0_0/0.8)] sm:min-h-0 sm:rounded-xl">
         <div className="text-center">
-          <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-amber-300/90">
+          <p className="etched inline-flex items-center gap-1.5">
+            <Star className="size-3.5 text-amber-600 dark:text-amber-300" strokeWidth={2.5} />
             Jeton spécial
           </p>
-          <h2 className="mt-1 text-3xl font-black tracking-tighter">Tourne la roue</h2>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <h2 className="mt-1.5 text-4xl uppercase leading-none">Tourne la roue</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
             Convertit ton jeton spécial en {minR} à {maxR} jetons normaux
           </p>
         </div>
 
         <div className="w-full">
           {phase === "ready" && (
-            <div className="flex items-end justify-center gap-3 py-3">
+            <div className="plate flex items-end justify-center gap-3 px-3 py-4">
               {segments.map(({ r, pct }) => (
-                <div key={r} className="flex flex-col items-center gap-1.5">
+                <div key={r} className="flex flex-col items-center gap-2">
                   <JackpotCoin reward={r as 1 | 2 | 3 | 4 | 10} size={72} />
-                  <span className="font-mono text-[10px] tabular-nums text-muted-foreground">
-                    {pct}%
-                  </span>
+                  <span className="stamp h-6 min-w-10 px-1.5 text-[14px]">{pct}%</span>
                 </div>
               ))}
             </div>
@@ -115,26 +114,19 @@ export function SpinWheelModal({
         </div>
 
         {phase === "result" && reward !== null && (
-          <div className="text-center animate-card-reveal">
-            <p
-              className={`text-5xl font-black tracking-tighter ${
-                reward === 4
-                  ? "text-amber-300"
-                  : reward === 3
-                  ? "text-stone-200"
-                  : reward === 2
-                  ? "text-orange-200"
-                  : "text-zinc-300"
-              }`}
-            >
-              ×{reward} jeton{reward > 1 ? "s" : ""}
-            </p>
+          <div className="flex flex-col items-center text-center animate-card-reveal">
             {reward === 4 && (
-              <p className="mt-2 text-xs font-black uppercase tracking-[0.3em] text-amber-300">
-                ★ Jackpot ★
+              <p className="etched mb-2 inline-flex items-center gap-1.5 text-amber-700 dark:text-amber-300">
+                <Star className="size-3.5" strokeWidth={2.5} />
+                Jackpot
+                <Star className="size-3.5" strokeWidth={2.5} />
               </p>
             )}
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="flex items-center gap-3">
+              <span className="stamp h-16 min-w-16 px-3 text-[48px]">×{reward}</span>
+              <span className="text-4xl uppercase leading-none">jeton{reward > 1 ? "s" : ""}</span>
+            </p>
+            <p className="mt-3 text-sm text-muted-foreground">
               ajouté{reward > 1 ? "s" : ""} à ton solde de jetons normaux
             </p>
           </div>
@@ -145,7 +137,7 @@ export function SpinWheelModal({
         <Button
           onClick={phase === "result" ? onClose : handleSpin}
           disabled={phase === "spinning"}
-          className="h-11 w-full max-w-xs rounded-2xl bg-gradient-orange-intense text-sm font-black uppercase tracking-wider text-black disabled:opacity-100"
+          className="h-12 w-full max-w-xs gap-2 rounded-full bg-gradient-orange-intense font-heading text-[18px] font-bold uppercase tracking-[0.06em] text-primary-foreground disabled:opacity-100"
         >
           {phase === "ready" && (
             <>

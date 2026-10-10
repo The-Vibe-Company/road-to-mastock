@@ -4,7 +4,7 @@ import { useState } from "react";
 import { X, Ruler, Weight, MapPin, Shield, Pencil, Check, Gem } from "@/components/icons";
 import { useTalents } from "@/components/talents-provider";
 import { CreatureCard } from "@/components/creature-card";
-import { RARITY_COLORS, RARITY_LABELS, type Rarity } from "@/lib/rarities";
+import { RARITY_LABELS, type Rarity } from "@/lib/rarities";
 import { PowerRules } from "@/components/power-rules";
 import { magnesieOf, powerLabel, polarityBreakdown } from "@/lib/powers";
 
@@ -39,6 +39,25 @@ export interface DetailedCreature {
   baseImageUrl?: string | null;
 }
 
+// La rareté est une donnée de la carte, pas un accent : un point de couleur
+// et une teinte d'icône, lisibles dans les deux fontes (la nuit, le papier).
+const RARITY_DOT: Record<Rarity, string> = {
+  common: "bg-zinc-400",
+  uncommon: "bg-emerald-400",
+  rare: "bg-sky-400",
+  epic: "bg-violet-400",
+  legendary: "bg-amber-400",
+  mythic: "bg-rose-400",
+};
+const RARITY_TEXT: Record<Rarity, string> = {
+  common: "text-zinc-600 dark:text-zinc-300",
+  uncommon: "text-emerald-700 dark:text-emerald-300",
+  rare: "text-sky-700 dark:text-sky-300",
+  epic: "text-violet-700 dark:text-violet-300",
+  legendary: "text-amber-700 dark:text-amber-300",
+  mythic: "text-rose-700 dark:text-rose-300",
+};
+
 function formatHeight(cm: number | null): string | null {
   if (cm == null) return null;
   if (cm >= 100) return `${(cm / 100).toFixed(1).replace(".0", "")} m`;
@@ -62,7 +81,6 @@ export function CardDetailModal({
   onNicknameChange?: () => void;
   onSkinChange?: () => void;
 }) {
-  const colors = RARITY_COLORS[creature.rarity];
   // Le Vœu (Jirachi) : renommer une carte possédée.
   const { has } = useTalents();
   const canRename = has("voeu") && onNicknameChange !== undefined;
@@ -130,16 +148,17 @@ export function CardDetailModal({
   const dust = magnesieOf(creature.kind, creature.slug, creature.rarity);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-black/85 backdrop-blur-sm">
+    <div className="scrim fixed inset-0 z-[100] flex overflow-y-auto sm:p-6">
       <button
         onClick={onClose}
         aria-label="Fermer"
-        className="fixed right-4 top-4 z-10 flex size-10 items-center justify-center rounded-xl bg-secondary/80 text-muted-foreground backdrop-blur transition-colors hover:text-primary"
+        className="plate fixed right-4 top-4 z-10 flex size-10 items-center justify-center text-muted-foreground transition-colors hover:bg-plate-hover hover:text-foreground"
       >
         <X className="size-5" />
       </button>
 
-      <div className="flex w-full max-w-md flex-col items-center gap-5 px-5 py-10">
+      {/* La fiche : posée sur le fond de l'appli, lisible dans les deux fontes. */}
+      <div className="relative m-auto flex min-h-dvh w-full max-w-md flex-col items-center gap-5 bg-background px-5 py-14 shadow-[inset_0_1px_0_var(--plate-edge),0_24px_60px_-20px_oklch(0_0_0/0.8)] sm:min-h-0 sm:rounded-xl">
         <div className="w-[18rem] sm:w-80">
           <CreatureCard
             name={displayName}
@@ -155,17 +174,18 @@ export function CardDetailModal({
         </div>
 
         <div className="text-center">
-          <p className={`text-[10px] font-black uppercase tracking-widest ${colors.text}`}>
+          <p className="etched inline-flex items-center gap-1.5">
+            <span aria-hidden className={`size-2 rounded-full ${RARITY_DOT[creature.rarity]}`} />
             {RARITY_LABELS[creature.rarity]} · {creature.kind === "animal" ? "Animal" : "Pokémon"}
           </p>
-          <h2 className="mt-1 text-2xl font-black tracking-tight">{displayName}</h2>
+          <h2 className="mt-1.5 text-3xl uppercase leading-none">{displayName}</h2>
           {creature.nickname && (
-            <p className="mt-0.5 text-xs italic text-muted-foreground">{creature.name}</p>
+            <p className="mt-1 text-xs italic text-muted-foreground">{creature.name}</p>
           )}
           {canRename && !renaming && (
             <button
               onClick={() => setRenaming(true)}
-              className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-bold text-muted-foreground transition-colors hover:text-primary"
+              className="mt-2 inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[12px] font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               <Pencil className="size-3" />
               {creature.nickname ? "Changer le surnom" : "Donner un surnom"}
@@ -183,21 +203,23 @@ export function CardDetailModal({
                 value={nick}
                 onChange={(e) => setNick(e.target.value)}
                 placeholder={creature.name}
+                aria-label="Surnom"
                 maxLength={40}
                 autoFocus
-                className="h-9 flex-1 rounded-lg bg-secondary/50 px-3 text-sm font-bold outline-none focus:ring-1 focus:ring-primary/40"
+                className="h-10 flex-1 rounded-[var(--radius)] bg-secondary/50 px-3 text-sm font-semibold shadow-[inset_0_1px_2px_oklch(0_0_0/0.35)] outline-none placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring"
               />
               <button
                 type="submit"
                 disabled={savingNick}
-                className="flex size-9 items-center justify-center rounded-lg bg-primary/15 text-primary disabled:opacity-50"
+                aria-label="Enregistrer le surnom"
+                className="bg-gradient-orange-intense flex size-10 shrink-0 items-center justify-center rounded-full disabled:opacity-100"
               >
                 <Check className="size-4" strokeWidth={3} />
               </button>
             </form>
           )}
           {subtitle && (
-            <p className="mt-1 text-xs uppercase tracking-widest text-muted-foreground">
+            <p className="mt-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               {subtitle}
             </p>
           )}
@@ -205,19 +227,25 @@ export function CardDetailModal({
 
         {/* Le vestiaire : le classique + les 5 skins. Un skin possédé se
             porte d'un tap ; les autres restent des silhouettes à gagner
-            (un skin par séance clôturée). */}
+            (un skin par séance clôturée). Celui qu'on porte a la goupille. */}
         {creature.skins && creature.skins.length > 0 && (
           <div className="w-full">
-            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground">
-              Vestiaire · {creature.skins.filter((sk) => sk.owned).length}/{creature.skins.length} skins
-            </p>
+            <div className="mb-2 flex items-center gap-2.5">
+              <p className="etched">Vestiaire</p>
+              <span className="stamp h-6 min-w-6 px-1.5 text-[14px]">
+                {creature.skins.filter((sk) => sk.owned).length}/{creature.skins.length}
+              </span>
+              <span aria-hidden className="h-px flex-1 bg-border" />
+            </div>
             <div className="grid grid-cols-6 gap-1.5">
               <button
                 onClick={() => equipSkin(null)}
                 disabled={equipping !== null}
                 title="Le classique"
-                className={`relative aspect-square overflow-hidden rounded-[3px] ring-1 transition-all active:scale-95 ${
-                  equippedLevel == null ? "ring-2 ring-primary" : "ring-border"
+                aria-label="Le classique"
+                aria-pressed={equippedLevel == null}
+                className={`relative aspect-square overflow-hidden rounded-[var(--radius)] bg-gap transition-transform active:scale-95 ${
+                  equippedLevel == null ? "outline-2 outline-offset-2 outline-primary" : "hover:brightness-110"
                 }`}
               >
                 {(creature.baseImageUrl ?? creature.imageUrl) && (
@@ -227,26 +255,29 @@ export function CardDetailModal({
               </button>
               {creature.skins.map((sk) => {
                 const isEquipped = equippedLevel === sk.level;
+                const wearable = sk.owned && Boolean(sk.imageUrl);
                 return (
                   <button
                     key={sk.level}
-                    onClick={() => (sk.owned && sk.imageUrl ? equipSkin(sk.level) : undefined)}
-                    disabled={equipping !== null || !sk.owned || !sk.imageUrl}
+                    onClick={() => (wearable ? equipSkin(sk.level) : undefined)}
+                    disabled={equipping !== null || !wearable}
                     title={sk.owned ? `${sk.name} (niv. ${sk.level})` : `Niveau ${sk.level} — à gagner en séance`}
-                    className={`relative aspect-square overflow-hidden rounded-[3px] ring-1 transition-all active:scale-95 ${
-                      isEquipped ? "ring-2 ring-primary" : "ring-border"
+                    aria-label={sk.owned ? `${sk.name}, niveau ${sk.level}` : `Niveau ${sk.level}, à gagner en séance`}
+                    aria-pressed={isEquipped}
+                    className={`relative aspect-square overflow-hidden rounded-[var(--radius)] bg-gap transition-transform active:scale-95 ${
+                      isEquipped ? "outline-2 outline-offset-2 outline-primary" : wearable ? "hover:brightness-110" : ""
                     }`}
                   >
-                    {sk.owned && sk.imageUrl ? (
+                    {wearable ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={sk.imageUrl} alt="" className="size-full object-cover" />
+                      <img src={sk.imageUrl!} alt="" className="size-full object-cover" />
                     ) : (
                       // Non possédé : rien à deviner — un « ? » et c'est tout.
-                      <span className="flex size-full items-center justify-center bg-secondary/40 font-mono text-sm font-black text-muted-foreground/70">
+                      <span className="flex size-full items-center justify-center font-heading text-lg font-bold text-muted-foreground">
                         ?
                       </span>
                     )}
-                    <span className={`absolute bottom-0 right-0 rounded-tl px-1 font-mono text-[8px] font-black ${sk.owned ? "bg-primary text-black" : "bg-black/70 text-muted-foreground"}`}>
+                    <span className="stamp absolute bottom-0 right-0 h-4 min-w-4 rounded-none rounded-tl-[2px] px-1 text-[11px]">
                       {sk.level}
                     </span>
                   </button>
@@ -254,7 +285,8 @@ export function CardDetailModal({
               })}
             </div>
             {equippedLevel != null && (
-              <p className="mt-1.5 text-center text-[11px] font-bold text-primary">
+              <p className="mt-2 flex items-center justify-center gap-1.5 text-center text-[12px] font-semibold">
+                <span aria-hidden className="pin size-2" />
                 {creature.skins.find((sk) => sk.level === equippedLevel)?.name}
               </p>
             )}
@@ -262,44 +294,44 @@ export function CardDetailModal({
         )}
 
         {power && (
-          <div className={`w-full rounded-xl ${colors.bg} ring-1 ${colors.ring} px-4 py-3`}>
+          <div className="plate w-full px-4 py-3">
             <div className="flex items-center gap-2">
-              <Shield className={`size-4 shrink-0 ${colors.text}`} />
-              <p className={`text-xs font-black uppercase tracking-widest ${colors.text}`}>
+              <Shield className={`size-4 shrink-0 ${RARITY_TEXT[creature.rarity]}`} />
+              <p className="font-heading text-[16px] font-bold uppercase leading-none tracking-[0.08em]">
                 {breakdown ? breakdown.name : power.name}
               </p>
               {tierBadge && (
-                <span className="ml-auto rounded-md bg-black/20 px-1.5 py-0.5 font-mono text-[10px] font-black tabular-nums text-foreground/70">
+                <span className="stamp ml-auto h-6 px-2 text-[13px] uppercase tracking-[0.06em]">
                   {tierBadge}
                 </span>
               )}
             </div>
             {breakdown ? (
-              <div className="mt-2.5 space-y-2.5">
+              <div className="mt-3 space-y-2.5">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-11 min-w-16 shrink-0 items-center justify-center whitespace-nowrap rounded-lg bg-emerald-500/15 px-2 font-mono text-lg font-black tabular-nums text-emerald-300 ring-1 ring-emerald-500/40">
+                  <span className="stamp h-11 min-w-16 shrink-0 whitespace-nowrap px-2 text-[20px] text-emerald-300">
                     {breakdown.attract.delta}
                   </span>
                   <div className="min-w-0">
-                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-300">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">
                       Attractif
                     </p>
-                    <p className="text-xs leading-snug text-foreground/80">{breakdown.attract.text}</p>
-                    <p className="mt-0.5 font-mono text-[10px] tabular-nums text-muted-foreground">
+                    <p className="text-xs leading-snug text-foreground">{breakdown.attract.text}</p>
+                    <p className="mt-0.5 font-heading text-[12px] tabular-nums text-muted-foreground">
                       {breakdown.attract.example}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="flex h-11 min-w-16 shrink-0 items-center justify-center whitespace-nowrap rounded-lg bg-red-500/15 px-2 font-mono text-lg font-black tabular-nums text-red-300 ring-1 ring-red-500/40">
+                  <span className="stamp h-11 min-w-16 shrink-0 whitespace-nowrap px-2 text-[20px] text-red-300">
                     {breakdown.repel.delta}
                   </span>
                   <div className="min-w-0">
-                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-red-300">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-red-700 dark:text-red-300">
                       Répulsif
                     </p>
-                    <p className="text-xs leading-snug text-foreground/80">{breakdown.repel.text}</p>
-                    <p className="mt-0.5 font-mono text-[10px] tabular-nums text-muted-foreground">
+                    <p className="text-xs leading-snug text-foreground">{breakdown.repel.text}</p>
+                    <p className="mt-0.5 font-heading text-[12px] tabular-nums text-muted-foreground">
                       {breakdown.repel.example}
                     </p>
                   </div>
@@ -307,7 +339,7 @@ export function CardDetailModal({
               </div>
             ) : (
               <>
-                <p className="mt-1.5 text-xs italic leading-relaxed text-foreground/70">
+                <p className="mt-2 text-xs italic leading-relaxed text-muted-foreground">
                   {power.description}
                 </p>
                 {power.rules && <PowerRules text={power.rules} reminder className="mt-2" />}
@@ -317,14 +349,14 @@ export function CardDetailModal({
         )}
 
         {dust != null && (
-          <div className="flex w-full items-center gap-2.5 rounded-xl bg-sky-500/10 px-4 py-2.5 ring-1 ring-sky-500/30">
-            <Gem className="size-4 shrink-0 text-sky-300" />
+          <div className="plate flex w-full items-center gap-3 px-4 py-3">
+            <Gem className="size-4 shrink-0 text-sky-700 dark:text-sky-300" />
             <div className="min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-widest text-sky-300">
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-sky-700 dark:text-sky-300">
                 Porteuse de magnésie
               </p>
-              <p className="text-xs leading-snug text-foreground/80">
-                À chaque éveil, elle dépose <span className="font-black text-sky-200">+{dust} magnésie</span> —
+              <p className="mt-0.5 text-xs leading-snug text-foreground">
+                À chaque éveil, elle dépose <span className="font-bold">+{dust} magnésie</span> —
                 la poudre qui délie les Gardiens liés.
               </p>
             </div>
@@ -332,42 +364,36 @@ export function CardDetailModal({
         )}
 
         {(height || weight || creature.habitat) && (
-          <div className="w-full space-y-2">
+          <div className="plate-stack w-full">
             {(height || weight) && (
-              <div className={`flex items-center justify-around gap-2 rounded-xl ${colors.bg} ring-1 ${colors.ring} px-3 py-3`}>
+              <div className="plate flex items-center justify-around gap-2 px-3 py-3">
                 {height && (
-                  <div className="flex items-center gap-2">
-                    <Ruler className={`size-4 ${colors.text}`} />
+                  <div className="flex items-center gap-2.5">
+                    <Ruler className={`size-4 ${RARITY_TEXT[creature.rarity]}`} />
                     <div className="text-left">
-                      <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-none">
-                        Taille
-                      </p>
-                      <p className={`mt-0.5 text-sm font-black ${colors.text} leading-none`}>{height}</p>
+                      <p className="etched leading-none">Taille</p>
+                      <p className="mt-1 font-heading text-[20px] font-bold leading-none tabular-nums">{height}</p>
                     </div>
                   </div>
                 )}
-                {height && weight && <div className="h-7 w-px bg-border/60" />}
+                {height && weight && <div aria-hidden className="h-8 w-px bg-border" />}
                 {weight && (
-                  <div className="flex items-center gap-2">
-                    <Weight className={`size-4 ${colors.text}`} />
+                  <div className="flex items-center gap-2.5">
+                    <Weight className={`size-4 ${RARITY_TEXT[creature.rarity]}`} />
                     <div className="text-left">
-                      <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-none">
-                        Poids
-                      </p>
-                      <p className={`mt-0.5 text-sm font-black ${colors.text} leading-none`}>{weight}</p>
+                      <p className="etched leading-none">Poids</p>
+                      <p className="mt-1 font-heading text-[20px] font-bold leading-none tabular-nums">{weight}</p>
                     </div>
                   </div>
                 )}
               </div>
             )}
             {creature.habitat && (
-              <div className={`flex items-center gap-3 rounded-xl ${colors.bg} ring-1 ${colors.ring} px-4 py-3`}>
-                <MapPin className={`size-4 shrink-0 ${colors.text}`} />
+              <div className="plate flex items-center gap-3 px-4 py-3">
+                <MapPin className={`size-4 shrink-0 ${RARITY_TEXT[creature.rarity]}`} />
                 <div className="min-w-0 flex-1">
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-none">
-                    Milieu
-                  </p>
-                  <p className={`mt-1 text-sm font-black ${colors.text}`}>{creature.habitat}</p>
+                  <p className="etched leading-none">Milieu</p>
+                  <p className="mt-1 text-sm font-semibold">{creature.habitat}</p>
                 </div>
               </div>
             )}
@@ -375,18 +401,19 @@ export function CardDetailModal({
         )}
 
         {flavorText ? (
-          <div className="w-full rounded-2xl bg-secondary/30 px-4 py-3 text-sm leading-relaxed text-foreground/90">
+          <div className="plate w-full px-4 py-3 text-sm leading-relaxed text-foreground">
             {flavorText}
           </div>
         ) : (
-          <div className="w-full rounded-2xl bg-secondary/30 px-4 py-3 text-center text-xs italic text-muted-foreground">
+          <div className="plate w-full px-4 py-3 text-center text-xs italic text-muted-foreground">
             Aucune description disponible pour le moment.
           </div>
         )}
 
         {creature.count && creature.count > 1 && (
-          <p className="text-xs font-bold text-muted-foreground">
-            Possédé ×{creature.count}
+          <p className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+            Possédé
+            <span className="stamp h-6 min-w-6 px-1.5 text-[14px]">×{creature.count}</span>
           </p>
         )}
       </div>

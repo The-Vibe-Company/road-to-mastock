@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { X, ChevronRight, Gem, Package, Eye, Cards, Shield } from "@/components/icons";
+import { X, ChevronRight, Gem, Package, Eye, Cards, Shield, Sparkles, BookOpen } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { CreatureCard } from "@/components/creature-card";
 import { SlotReel, type ReelItem } from "@/components/slot-reel";
@@ -10,7 +10,7 @@ import { AnimalEmblem } from "@/components/emblems/animal-emblem";
 import { PokemonEmblem } from "@/components/emblems/pokemon-emblem";
 import { RarityEmblem } from "@/components/emblems/rarity-emblem";
 import { HelpCircle } from "@/components/icons";
-import { FUSION_NEXT, RARITIES, RARITY_COLORS, RARITY_LABELS, type Rarity } from "@/lib/rarities";
+import { FUSION_NEXT, RARITIES, RARITY_LABELS, type Rarity } from "@/lib/rarities";
 import {
   PACK_DESCRIPTIONS,
   PACK_LABELS,
@@ -148,6 +148,21 @@ const TIER_GLOW_BIG: Record<Rarity, string> = {
   mythic:    "shadow-[0_0_110px_-2px_rgba(244,114,182,0.95)]",
 };
 
+// La goupille : le bouton qui fait avancer le tirage, à la couleur du joueur.
+const CTA =
+  "h-12 w-full max-w-xs gap-2 rounded-full bg-gradient-orange-intense font-heading text-[18px] font-bold uppercase tracking-[0.06em] text-primary-foreground";
+
+// La rareté est une donnée du tirage : sa teinte, lisible dans les deux
+// fontes (la nuit par défaut, le papier gagné).
+const RARITY_TEXT: Record<Rarity, string> = {
+  common:    "text-zinc-600 dark:text-zinc-300",
+  uncommon:  "text-emerald-700 dark:text-emerald-300",
+  rare:      "text-sky-700 dark:text-sky-300",
+  epic:      "text-violet-700 dark:text-violet-300",
+  legendary: "text-amber-700 dark:text-amber-300",
+  mythic:    "text-rose-700 dark:text-rose-300",
+};
+
 // ─── Pack tile (full size for the SlotReel) ──────────────────────────────
 function PackTile({ packType }: { packType: PackType }) {
   const isHolo = packType === "premium" || packType === "mythic";
@@ -245,7 +260,7 @@ export interface LiveOdds {
 function LivePct({
   live,
   base,
-  className = "font-mono text-[11px] font-bold tabular-nums",
+  className = "font-heading text-[14px] font-bold tabular-nums",
 }: {
   live: number;
   base: number;
@@ -258,10 +273,10 @@ function LivePct({
   }
   return (
     <span className="flex flex-col items-center leading-tight">
-      <span className={`${className} ${boosted ? "text-emerald-300" : "text-red-300"}`}>
+      <span className={`${className} ${boosted ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
         {live}%
       </span>
-      <span className="font-mono text-[9px] tabular-nums text-muted-foreground/60 line-through decoration-1">
+      <span className="font-heading text-[12px] tabular-nums text-muted-foreground line-through decoration-1">
         {base}%
       </span>
     </span>
@@ -274,7 +289,7 @@ function PackPreviewRow({ odds }: { odds?: LiveOdds }) {
       {PACK_TYPES.map((t) => (
         <div key={t} className="flex flex-1 flex-col items-center gap-2">
           <PackTileMini packType={t} />
-          <p className="text-[10px] font-black uppercase tracking-wider text-foreground/85 text-center leading-tight">
+          <p className="text-center font-heading text-[13px] font-bold uppercase leading-tight tracking-[0.04em]">
             {PACK_SHORT_NAME[t]}
           </p>
           <LivePct
@@ -301,24 +316,24 @@ function CategoryPreviewRow({ packType, odds }: { packType: PackType; odds?: Liv
     <div className="flex w-full items-end justify-around gap-6">
       <div className="flex flex-1 flex-col items-center gap-3">
         <AnimalEmblem size={168} />
-        <p className="text-sm font-black uppercase tracking-wider text-foreground">
+        <p className="font-heading text-[18px] font-bold uppercase leading-none tracking-[0.06em]">
           Animal
         </p>
         <LivePct
           live={pAnimal}
           base={100 - basePokemon}
-          className="font-mono text-base font-black tabular-nums"
+          className="font-heading text-[20px] font-bold tabular-nums"
         />
       </div>
       <div className="flex flex-1 flex-col items-center gap-3">
         <PokemonEmblem size={168} />
-        <p className="text-sm font-black uppercase tracking-wider text-foreground">
+        <p className="font-heading text-[18px] font-bold uppercase leading-none tracking-[0.06em]">
           Pokémon
         </p>
         <LivePct
           live={pPokemon}
           base={basePokemon}
-          className="font-mono text-base font-black tabular-nums"
+          className="font-heading text-[20px] font-bold tabular-nums"
         />
       </div>
     </div>
@@ -340,15 +355,15 @@ function RarityPreviewRow({ packType, shift }: { packType: PackType; shift?: Par
         return (
           <div
             key={r}
-            className={`flex flex-1 flex-col items-center gap-1.5 ${dim ? "opacity-25" : ""}`}
+            className="flex flex-1 flex-col items-center gap-1.5"
           >
-            <div className="aspect-square w-full max-w-[58px]">
+            <div className={`aspect-square w-full max-w-[58px] ${dim ? "opacity-30 grayscale" : ""}`}>
               <RarityEmblem rarity={r} size={58} />
             </div>
-            <p className="text-[9px] font-black uppercase tracking-wider text-foreground/80 text-center leading-tight">
+            <p className={`text-center text-[11px] font-semibold leading-tight ${dim ? "text-muted-foreground" : ""}`}>
               {RARITY_LABELS[r]}
             </p>
-            <LivePct live={live} base={pct} className="font-mono text-[10px] font-bold tabular-nums" />
+            <LivePct live={live} base={pct} className="font-heading text-[13px] font-bold tabular-nums" />
           </div>
         );
       })}
@@ -370,15 +385,15 @@ function SkinOddsRow({ odds }: { odds?: Partial<Record<Rarity, number>> }) {
         return (
           <div
             key={r}
-            className={`flex flex-1 flex-col items-center gap-1.5 ${dim ? "opacity-25" : ""}`}
+            className="flex flex-1 flex-col items-center gap-1.5"
           >
-            <div className="aspect-square w-full max-w-[58px]">
+            <div className={`aspect-square w-full max-w-[58px] ${dim ? "opacity-30 grayscale" : ""}`}>
               <RarityEmblem rarity={r} size={58} />
             </div>
-            <p className="text-[9px] font-black uppercase tracking-wider text-foreground/80 text-center leading-tight">
+            <p className={`text-center text-[11px] font-semibold leading-tight ${dim ? "text-muted-foreground" : ""}`}>
               {RARITY_LABELS[r]}
             </p>
-            <span className="font-mono text-[10px] font-bold tabular-nums text-muted-foreground">
+            <span className="font-heading text-[13px] font-bold tabular-nums text-muted-foreground">
               {pct}%
             </span>
           </div>
@@ -434,7 +449,6 @@ export function PackOpenModal({
     }
   }, [stage]);
 
-  const colors = RARITY_COLORS[result.rarity];
   const categoryLabel = CATEGORY_LABELS[result.category];
   const isHolo = result.rarity === "legendary" || result.rarity === "mythic";
   const nextRarity = FUSION_NEXT[result.rarity];
@@ -478,11 +492,11 @@ export function PackOpenModal({
   return (
     <div
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-[100] flex select-none items-center justify-center overflow-y-auto bg-black/85 backdrop-blur-sm"
+      className="scrim fixed inset-0 z-[100] flex select-none overflow-y-auto sm:p-6"
     >
       {/* Le Vol de Ziz : des plumes-cartes tombent du ciel pendant l'ouverture */}
       {hasZiz && (
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="pointer-events-none fixed inset-0 z-10 overflow-hidden">
           {Array.from({ length: 14 }, (_, i) => (
             <span
               key={i}
@@ -504,26 +518,31 @@ export function PackOpenModal({
           onClose();
         }}
         aria-label="Fermer"
-        className="absolute right-4 top-4 z-10 flex size-10 items-center justify-center rounded-xl bg-secondary/60 text-muted-foreground backdrop-blur transition-colors hover:text-primary"
+        className="plate fixed right-4 top-4 z-20 flex size-10 items-center justify-center text-muted-foreground transition-colors hover:bg-plate-hover hover:text-foreground"
       >
         <X className="size-5" />
       </button>
 
-      <div className="flex w-full max-w-xl flex-col items-center gap-6 px-6 py-12">
+      {/* La plaque de tête : le tirage se joue sur le fond de l'appli, lisible
+          dans les deux fontes. */}
+      <div className="relative m-auto flex min-h-dvh w-full max-w-xl flex-col items-center justify-center gap-6 bg-background px-6 py-14 shadow-[inset_0_1px_0_var(--plate-edge),0_24px_60px_-20px_oklch(0_0_0/0.8)] sm:min-h-0 sm:rounded-xl">
         {/* STAGE SKINS — 3 skins avant la carte */}
         {stage === "skins" && currentSkin && (
           <>
-            <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-muted-foreground">
-              Skin {skinIdx + 1} / {skins.length}
+            <p className="etched flex items-center gap-2">
+              Skin
+              <span className="stamp h-6 px-1.5 text-[14px]">
+                {skinIdx + 1}/{skins.length}
+              </span>
             </p>
 
             {phase === "ready" && (
               <>
                 {skinIdx === 0 && (
-                  <p className="text-center text-xs leading-relaxed text-muted-foreground">
+                  <p className="text-center text-sm leading-relaxed text-muted-foreground">
                     3 skins tombent avant ta carte.
                     <br />
-                    Carte possédée : le skin se révèle. Sinon, il reste <span className="font-black text-primary">mystère</span>.
+                    Carte possédée : le skin se révèle. Sinon, il reste <span className="font-bold text-foreground">mystère</span>.
                   </p>
                 )}
                 <SkinOddsRow odds={result.skinOdds} />
@@ -532,7 +551,7 @@ export function PackOpenModal({
                     e.stopPropagation();
                     triggerSpin();
                   }}
-                  className="h-11 w-full max-w-xs rounded-2xl bg-gradient-orange-intense text-sm font-black uppercase tracking-wider text-black"
+                  className={CTA}
                 >
                   <Eye className="size-4" />
                   {stageActionLabel.skins}
@@ -558,8 +577,8 @@ export function PackOpenModal({
               >
                 {currentSkin.owned ? (
                   <>
-                    <div className="w-64 overflow-hidden rounded-xl border-2 border-white/5 bg-card ring-2 ring-emerald-500/60 shadow-[0_0_36px_-6px_rgba(16,185,129,0.5)]">
-                      <div className="relative aspect-square w-full bg-black/40">
+                    <div className="plate w-64 overflow-hidden shadow-[0_0_36px_-6px_rgba(16,185,129,0.5)]">
+                      <div className="relative aspect-square w-full bg-gap">
                         {currentSkin.imageUrl ? (
                           <Image src={currentSkin.imageUrl} alt="" fill unoptimized className="object-contain" />
                         ) : (
@@ -569,13 +588,14 @@ export function PackOpenModal({
                         )}
                       </div>
                       <div className="px-3 py-2.5 text-center">
-                        <p className="text-sm font-black tracking-tight">« {currentSkin.skinName} »</p>
-                        <p className="mt-0.5 text-[10px] font-bold text-muted-foreground">
+                        <p className="font-heading text-[18px] font-bold leading-tight">« {currentSkin.skinName} »</p>
+                        <p className="mt-0.5 text-[12px] font-semibold text-muted-foreground">
                           {currentSkin.cardName} · {RARITY_LABELS[currentSkin.cardRarity]} · Niveau {currentSkin.level}
                         </p>
                       </div>
                     </div>
-                    <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500/10 px-2 py-1 text-[10px] font-black text-emerald-300 ring-1 ring-emerald-500/30">
+                    <span className="plate inline-flex h-8 items-center gap-1.5 px-2.5 text-[12px] font-semibold">
+                      <Sparkles className="size-3.5 text-emerald-700 dark:text-emerald-300" />
                       Nouveau skin — équipable dans sa garde-robe
                     </span>
                   </>
@@ -583,13 +603,13 @@ export function PackOpenModal({
                   <>
                     <CardBack rarity={currentSkin.cardRarity} />
                     <div className="text-center">
-                      <p className={`text-xl font-black tracking-tight ${RARITY_COLORS[currentSkin.cardRarity].text}`}>
+                      <p className={`text-2xl uppercase leading-none ${RARITY_TEXT[currentSkin.cardRarity]}`}>
                         {CATEGORY_LABELS[currentSkin.category]} {RARITY_LABELS[currentSkin.cardRarity].toLowerCase()}
                       </p>
-                      <span className="mt-1.5 inline-block rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] ring-1 ring-white/15">
+                      <span className="stamp mt-2 h-7 px-2.5 text-[15px] uppercase tracking-[0.06em]">
                         Niveau {currentSkin.level}
                       </span>
-                      <p className="mt-2 text-xs text-muted-foreground">
+                      <p className="mt-2 text-sm text-muted-foreground">
                         Skin mystère — il se révélera le jour où tu tireras sa carte.
                       </p>
                     </div>
@@ -600,7 +620,7 @@ export function PackOpenModal({
                   {skins.map((_, i) => (
                     <span
                       key={i}
-                      className={`size-1.5 rounded-full ${i <= skinIdx ? "bg-primary" : "bg-white/15"}`}
+                      className={`h-1.5 w-6 rounded-[1px] ${i <= skinIdx ? "bg-primary" : "bg-muted"}`}
                     />
                   ))}
                 </div>
@@ -610,7 +630,7 @@ export function PackOpenModal({
                     e.stopPropagation();
                     advanceSkin();
                   }}
-                  className="h-11 w-full max-w-xs rounded-2xl bg-gradient-orange-intense text-sm font-black uppercase tracking-wider text-black"
+                  className={CTA}
                 >
                   {skinIdx + 1 < skins.length ? "Skin suivant" : "Et maintenant… ta carte"}
                 </Button>
@@ -622,9 +642,7 @@ export function PackOpenModal({
         {/* STAGE 0 — Pack */}
         {stage === "pack" && (
           <>
-            <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-muted-foreground">
-              Pack
-            </p>
+            <p className="etched">Pack</p>
 
             {phase === "ready" && (
               <>
@@ -634,7 +652,7 @@ export function PackOpenModal({
                     e.stopPropagation();
                     triggerSpin();
                   }}
-                  className="h-11 w-full max-w-xs rounded-2xl bg-gradient-orange-intense text-sm font-black uppercase tracking-wider text-black"
+                  className={CTA}
                 >
                   <Package className="size-4" />
                   {stageActionLabel.pack}
@@ -657,10 +675,10 @@ export function PackOpenModal({
               <div className="flex flex-col items-center gap-4 animate-card-reveal">
                 <PackTile packType={packType} />
                 <div className="text-center">
-                  <p className="text-3xl font-black tracking-tighter">
+                  <p className="text-4xl uppercase leading-none">
                     {PACK_LABELS[packType]}
                   </p>
-                  <p className="mt-2 max-w-xs text-xs leading-relaxed text-muted-foreground">
+                  <p className="mt-2 max-w-xs text-sm leading-relaxed text-muted-foreground">
                     {PACK_DESCRIPTIONS[packType]}
                   </p>
                 </div>
@@ -673,9 +691,7 @@ export function PackOpenModal({
         {/* STAGE 1 — Category */}
         {stage === "category" && (
           <>
-            <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-muted-foreground">
-              Catégorie
-            </p>
+            <p className="etched">Catégorie</p>
 
             {phase === "ready" && (
               <>
@@ -685,7 +701,7 @@ export function PackOpenModal({
                     e.stopPropagation();
                     triggerSpin();
                   }}
-                  className="h-11 w-full max-w-xs rounded-2xl bg-gradient-orange-intense text-sm font-black uppercase tracking-wider text-black"
+                  className={CTA}
                 >
                   <Eye className="size-4" />
                   {stageActionLabel.category}
@@ -707,7 +723,7 @@ export function PackOpenModal({
             {phase === "result" && (
               <div className="flex flex-col items-center gap-4 animate-card-reveal">
                 {result.category === "animal" ? <AnimalEmblem /> : <PokemonEmblem />}
-                <p className="text-5xl font-black tracking-tighter text-primary">
+                <p className="text-5xl uppercase leading-none">
                   {categoryLabel}
                 </p>
                 <TapHint />
@@ -719,9 +735,7 @@ export function PackOpenModal({
         {/* STAGE 2 — Rarity */}
         {stage === "rarity" && (
           <>
-            <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-muted-foreground">
-              Rareté
-            </p>
+            <p className="etched">Rareté</p>
 
             {phase === "ready" && (
               <>
@@ -731,7 +745,7 @@ export function PackOpenModal({
                     e.stopPropagation();
                     triggerSpin();
                   }}
-                  className="h-11 w-full max-w-xs rounded-2xl bg-gradient-orange-intense text-sm font-black uppercase tracking-wider text-black"
+                  className={CTA}
                 >
                   <Eye className="size-4" />
                   {stageActionLabel.rarity}
@@ -753,7 +767,7 @@ export function PackOpenModal({
             {phase === "result" && (
               <div className="flex flex-col items-center gap-4 animate-card-reveal">
                 <RarityEmblem rarity={result.rarity} />
-                <p className={`text-5xl font-black tracking-tighter ${colors.text}`}>
+                <p className={`text-5xl uppercase leading-none ${RARITY_TEXT[result.rarity]}`}>
                   {RARITY_LABELS[result.rarity]}
                 </p>
                 <TapHint />
@@ -770,16 +784,14 @@ export function PackOpenModal({
           >
             {phase === "ready" ? (
               <>
-                <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-muted-foreground">
-                  Ta carte
-                </p>
+                <p className="etched">Ta carte</p>
                 <CardBack rarity={result.rarity} />
                 <Button
                   onClick={(e) => {
                     e.stopPropagation();
                     setPhase("result");
                   }}
-                  className="h-11 w-full max-w-xs rounded-2xl bg-gradient-orange-intense text-sm font-black uppercase tracking-wider text-black"
+                  className={CTA}
                 >
                   <Cards className="size-3.5" />
                   Révéler la carte
@@ -813,11 +825,11 @@ export function PackOpenModal({
                 </div>
 
                 <div className="text-center">
-                  <p className={`text-xs font-black uppercase tracking-widest ${colors.text}`}>
+                  <p className={`text-[12px] font-bold uppercase tracking-[0.16em] ${RARITY_TEXT[result.rarity]}`}>
                     {RARITY_LABELS[result.rarity]} · {categoryLabel}
                   </p>
                   {result.isDuplicate && (
-                    <p className="mt-2 text-xs text-muted-foreground">
+                    <p className="mt-2 text-sm text-muted-foreground">
                       Tu possèdes déjà cette carte
                     </p>
                   )}
@@ -837,13 +849,13 @@ export function PackOpenModal({
                   const dust = magnesieOf(result.creature.kind, result.creature.slug, result.rarity);
                   return (
                     <div className="flex flex-wrap items-center justify-center gap-1.5">
-                      <span className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-2 py-1 text-[10px] font-black text-primary ring-1 ring-primary/30">
-                        <Shield className="size-3" />
+                      <span className="plate inline-flex h-8 items-center gap-1.5 px-2.5 text-[12px] font-semibold">
+                        <Shield className="size-3.5 text-steel" />
                         Gardien : {hint}
                       </span>
                       {dust != null && (
-                        <span className="inline-flex items-center gap-1.5 rounded-md bg-sky-500/10 px-2 py-1 text-[10px] font-black text-sky-300 ring-1 ring-sky-500/30">
-                          <Gem className="size-3" />
+                        <span className="plate inline-flex h-8 items-center gap-1.5 px-2.5 text-[12px] font-semibold">
+                          <Gem className="size-3.5 text-sky-700 dark:text-sky-300" />
                           +{dust} magnésie / éveil
                         </span>
                       )}
@@ -853,28 +865,31 @@ export function PackOpenModal({
 
                 {/* Les skins mystère qui visaient cette carte, révélés avec elle */}
                 {!result.isDuplicate && (result.awaitingSkins?.length ?? 0) > 0 && (
-                  <div className="w-full max-w-sm rounded-2xl bg-amber-400/5 px-4 py-3 ring-1 ring-amber-400/40 animate-card-reveal">
-                    <p className="text-center text-xs font-black">
-                      ✨ <span className="text-amber-300">{result.awaitingSkins!.length === 1 ? "1 skin t'attendait" : `${result.awaitingSkins!.length} skins t'attendaient`}</span> pour cette carte
+                  <div className="plate w-full max-w-sm px-4 py-3 animate-card-reveal">
+                    <p className="flex items-center justify-center gap-1.5 text-center text-sm font-semibold">
+                      <Sparkles className="size-4 shrink-0 text-amber-700 dark:text-amber-300" />
+                      <span>
+                        {result.awaitingSkins!.length === 1 ? "1 skin t'attendait" : `${result.awaitingSkins!.length} skins t'attendaient`} pour cette carte
+                      </span>
                     </p>
                     <div className="mt-2.5 flex flex-wrap justify-center gap-2.5">
                       {result.awaitingSkins!.map((s, i) => (
-                        <div key={i} className="w-28 overflow-hidden rounded-xl bg-card ring-1 ring-amber-400/50">
-                          <div className="relative aspect-square w-full bg-black/40">
+                        <div key={i} className="w-28 overflow-hidden rounded-[var(--radius)] bg-secondary shadow-[inset_0_1px_0_var(--plate-edge)]">
+                          <div className="relative aspect-square w-full bg-gap">
                             {s.imageUrl ? (
                               <Image src={s.imageUrl} alt="" fill unoptimized className="object-contain" />
                             ) : (
-                              <div className="flex h-full items-center justify-center text-[9px] text-muted-foreground">Bientôt…</div>
+                              <div className="flex h-full items-center justify-center text-[11px] text-muted-foreground">Bientôt…</div>
                             )}
-                            <span className="absolute right-1 top-1 rounded-full bg-gradient-to-br from-amber-200 to-amber-500 px-1.5 py-0.5 text-[8px] font-black text-black">
+                            <span className="stamp absolute right-1 top-1 h-5 px-1.5 text-[12px]">
                               N{s.level}
                             </span>
                           </div>
-                          <p className="px-1.5 py-1.5 text-center text-[9px] font-bold leading-tight">« {s.name} »</p>
+                          <p className="px-1.5 py-1.5 text-center text-[12px] font-semibold leading-tight">« {s.name} »</p>
                         </div>
                       ))}
                     </div>
-                    <p className="mt-2 text-center text-[10px] text-muted-foreground">
+                    <p className="mt-2 text-center text-xs text-muted-foreground">
                       Révélés — ils rejoignent sa garde-robe
                     </p>
                   </div>
@@ -882,18 +897,19 @@ export function PackOpenModal({
 
                 {/* Le jackpot dans le jackpot : un Talent caché découvert */}
                 {result.talent && (
-                  <div className="w-full max-w-xs rounded-2xl bg-amber-400/10 px-4 py-3 ring-1 ring-amber-400/60 shadow-[0_0_44px_-8px_rgba(251,191,36,0.8)] animate-card-reveal">
-                    <p className="text-center text-[10px] font-black uppercase tracking-[0.3em] text-amber-300">
+                  <div className="plate w-full max-w-xs px-4 py-3 shadow-[0_0_44px_-8px_rgba(251,191,36,0.8)] animate-card-reveal">
+                    <p className="etched flex items-center justify-center gap-1.5 text-center">
+                      <BookOpen className="size-3.5 text-amber-700 dark:text-amber-300" />
                       Talent caché découvert
                     </p>
-                    <p className="mt-1.5 text-center text-base font-black tracking-tight text-amber-200">
+                    <p className="mt-1.5 text-center text-2xl uppercase leading-none">
                       {result.talent.name}
                     </p>
                     <TalentDescription
                       text={result.talent.description}
-                      className="mt-1 text-left text-xs leading-relaxed text-amber-100/80"
+                      className="mt-2 text-left text-xs leading-relaxed text-foreground"
                     />
-                    <p className="mt-2 text-center text-[10px] font-bold text-amber-200/60">
+                    <p className="mt-2 text-center text-xs font-semibold text-muted-foreground">
                       Inscrit dans ton Grimoire — certains talents ouvrent l&apos;Oracle
                     </p>
                   </div>
@@ -901,7 +917,7 @@ export function PackOpenModal({
 
                 <Button
                   onClick={() => (result.isDuplicate ? setStage("duplicate") : onClose())}
-                  className="h-11 w-full max-w-xs rounded-2xl bg-gradient-orange-intense text-sm font-black uppercase tracking-wider text-black"
+                  className={CTA}
                 >
                   {result.isDuplicate ? "Voir ma récompense" : "Continuer"}
                 </Button>
@@ -917,10 +933,8 @@ export function PackOpenModal({
             className="flex w-full flex-col items-center gap-6 animate-card-reveal"
           >
             <div className="text-center">
-              <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-muted-foreground">
-                Doublon
-              </p>
-              <p className="mt-2 text-2xl font-black tracking-tight">
+              <p className="etched">Doublon</p>
+              <p className="mt-1.5 text-3xl uppercase leading-none">
                 Cette carte se transforme
               </p>
             </div>
@@ -941,8 +955,8 @@ export function PackOpenModal({
                 />
               </div>
               <div className="flex flex-col items-center gap-0.5">
-                <ChevronRight className={`size-6 ${colors.text}`} />
-                <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                <ChevronRight className={`size-6 ${RARITY_TEXT[result.rarity]}`} />
+                <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
                   devient
                 </span>
               </div>
@@ -952,22 +966,23 @@ export function PackOpenModal({
                 {isHolo && (
                   <div className="pointer-events-none absolute inset-0 rounded-2xl holo-shimmer" />
                 )}
-                <Gem className={`size-12 ${colors.text}`} strokeWidth={1.5} />
+                <Gem className={`size-12 ${RARITY_TEXT[result.rarity]}`} strokeWidth={1.5} />
               </div>
             </div>
 
             <div className="text-center">
-              <p className={`text-3xl font-black tracking-tighter ${colors.text}`}>
-                +1 fragment
+              <p className="flex items-center justify-center gap-2.5">
+                <span className="stamp h-11 min-w-11 px-2 text-[30px]">+1</span>
+                <span className="text-4xl uppercase leading-none">fragment</span>
               </p>
-              <p className={`mt-1 text-xs font-black uppercase tracking-widest ${colors.text}`}>
+              <p className={`mt-2 text-[12px] font-bold uppercase tracking-[0.16em] ${RARITY_TEXT[result.rarity]}`}>
                 {RARITY_LABELS[result.rarity]} · {categoryLabel}
               </p>
               {nextRarity && (
-                <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-                  Combine <span className="font-mono tabular-nums">3</span> fragments {RARITY_LABELS[result.rarity].toLowerCase()}{" "}
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                  Combine <span className="font-heading font-bold tabular-nums text-foreground">3</span> fragments {RARITY_LABELS[result.rarity].toLowerCase()}{" "}
                   pour fusionner en une carte{" "}
-                  <span className={`font-bold ${RARITY_COLORS[nextRarity].text}`}>
+                  <span className={`font-bold ${RARITY_TEXT[nextRarity]}`}>
                     {RARITY_LABELS[nextRarity].toLowerCase()}
                   </span>
                 </p>
@@ -976,7 +991,7 @@ export function PackOpenModal({
 
             <Button
               onClick={onClose}
-              className="h-11 w-full max-w-xs rounded-2xl bg-gradient-orange-intense text-sm font-black uppercase tracking-wider text-black"
+              className={CTA}
             >
               Continuer
             </Button>
@@ -989,7 +1004,7 @@ export function PackOpenModal({
 
 function TapHint() {
   return (
-    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground/80 animate-pulse">
+    <div className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-[0.16em] text-muted-foreground animate-pulse">
       <span>Tape pour continuer</span>
       <ChevronRight className="size-3" />
     </div>
