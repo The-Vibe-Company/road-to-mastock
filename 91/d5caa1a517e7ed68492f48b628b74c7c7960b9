@@ -1,0 +1,19 @@
+src/app/oracle/page.tsx
+  s_9f13ff8a0fe04c::t_b2050bd3e50864 3,5,79-82,93-99,101-111,116,120-127,130-132,136-137,148-154,157,161,163-165,178-184,187,192,194-196,199,212-218,220-230,259-265,268,276,284,286-287,289,296-298,307-313,315-316,321,323,330-341,344-350,353,360,362-364,367-368,373-375,385-404
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "91d5caa1a517e7ed68492f48b628b74c7c7960b9",
+  "prompts": {},
+  "sessions": {
+    "s_9f13ff8a0fe04c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f6f8144-2e0f-4365-a2df-7a153cae490d",
+        "model": "unknown"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
