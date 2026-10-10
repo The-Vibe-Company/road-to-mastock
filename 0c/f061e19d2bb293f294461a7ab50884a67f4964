@@ -1,0 +1,23 @@
+src/components/color-picker.tsx
+  s_9f13ff8a0fe04c::t_0f8f5f6f233243 51,136,147
+src/components/logout-button.tsx
+  s_9f13ff8a0fe04c::t_5ef9efd89f9611 29
+src/components/settings-page.tsx
+  s_9f13ff8a0fe04c::t_6455088896b6b0 48-52,76,78,215,356,387
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0cf061e19d2bb293f294461a7ab50884a67f4964",
+  "prompts": {},
+  "sessions": {
+    "s_9f13ff8a0fe04c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f6f8144-2e0f-4365-a2df-7a153cae490d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
