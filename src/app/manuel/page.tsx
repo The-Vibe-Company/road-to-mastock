@@ -207,16 +207,16 @@ export default function ManuelPage() {
               </ol>
             </div>
             <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
-              Chaque séance clôturée rapporte un jeton ; le jeton ouvre un pack ;
+              Chaque séance clôturée rapporte un jeton ; le jeton ouvre un pack ;
               la carte tirée devient le Gardien d&apos;une machine. Entraîne-toi
-              dessus : il s&apos;éveille et son pouvoir s&apos;applique.
+              dessus : il s&apos;éveille et son pouvoir s&apos;applique.
             </p>
           </div>
 
           <Chapter
             n={1}
             title="Les jetons et les packs"
-            summary="Une séance, un jeton ; un jeton, un pack."
+            summary="Une séance, un jeton ; un jeton, un pack."
           >
             <p>
               Chaque séance clôturée rapporte <B>1 jeton</B>. La 1ʳᵉ et la 4ᵉ
@@ -226,7 +226,7 @@ export default function ManuelPage() {
             </p>
             <p>
               Un jeton ouvre un <B>pack</B>. L&apos;ouverture pioche un ticket dans
-              un chapeau qui en contient 100 :
+              un chapeau qui en contient 100 :
             </p>
             <Figures
               caption="Le chapeau · 100 tickets"
@@ -241,11 +241,11 @@ export default function ManuelPage() {
             />
             <p>
               Les packs mixtes (Basique, Premium, Mythique) tirent ensuite la
-              famille de la carte : 75 % animal / 25 % pokémon en Basique.
+              famille de la carte : 75 % animal / 25 % pokémon en Basique.
             </p>
             <p>
               Un doublon devient un <B>fragment</B> de sa rareté. 3 fragments
-              fusionnent en une carte de la rareté supérieure ; les fragments se
+              fusionnent en une carte de la rareté supérieure ; les fragments se
               convertissent aussi en jetons.
             </p>
           </Chapter>
@@ -260,16 +260,16 @@ export default function ManuelPage() {
             <ol className="space-y-2.5">
               {[
                 <>
-                  Pose une carte sur un exercice (sa fiche → <B>Mascotte</B>) :
+                  Pose une carte sur un exercice (sa fiche → <B>Mascotte</B>) :
                   elle devient son <B>Gardien</B> et décore le bloc en séance.
                 </>,
                 <>
                   Fais au moins une série sur cette machine puis clôture la
-                  séance : le Gardien <B>s&apos;éveille</B>{" "}et son pouvoir
+                  séance : le Gardien <B>s&apos;éveille</B>{" "}et son pouvoir
                   s&apos;applique. Une fois par séance, pas plus.
                 </>,
                 <>
-                  L&apos;écran de clôture liste toute la récolte : qui s&apos;est
+                  L&apos;écran de clôture liste toute la récolte : qui s&apos;est
                   éveillé, ce que chacun a produit.
                 </>,
               ].map((step, i) => (
@@ -287,21 +287,21 @@ export default function ManuelPage() {
             n={3}
             title="Les métiers et la polarité"
             tag="Commun → épique"
-            summary="Ce que fait chaque carte, et dans quel sens : Attractif ou Répulsif."
+            summary="Ce que fait chaque carte, et dans quel sens : Attractif ou Répulsif."
           >
             <p>
               Chaque carte du commun à l&apos;épique exerce un <B>métier</B>{" "}selon
-              sa nature. Et c&apos;est toi qui choisis son sens sur la fiche :{" "}
+              sa nature. Et c&apos;est toi qui choisis son sens sur la fiche :{" "}
               <B>Attractif</B> ou <B>Répulsif</B>, modifiable à volonté.
             </p>
             <Figures
               caption="La force du métier, selon la rareté"
               cols="grid-cols-4"
               items={[
-                ["±1 %", "commun"],
-                ["±2 %", "peu commun"],
-                ["±4 %", "rare"],
-                ["±6 %", "épique"],
+                ["±1 %", "commun"],
+                ["±2 %", "peu commun"],
+                ["±4 %", "rare"],
+                ["±6 %", "épique"],
               ]}
             />
             <dl className="divide-y-2 divide-gap">
@@ -311,7 +311,7 @@ export default function ManuelPage() {
                 ["L'Étincelle", "Sème 0,1 à 0,6 ticket Mythique par éveil, ou brûle du Basique."],
                 [
                   "La Balance",
-                  "Penche le 75/25 des packs mixtes vers les animaux ou les Pokémon (1 à 6 % par éveil).",
+                  "Penche le 75/25 des packs mixtes vers les animaux ou les Pokémon (1 à 6 % par éveil).",
                 ],
               ].map(([name, text]) => (
                 <div key={name} className="py-2.5 first:pt-0 last:pb-0">
@@ -328,8 +328,8 @@ export default function ManuelPage() {
                 Sur une machine de cardio, chaque quart d&apos;heure{" "}
                 <B>entamé</B> après le premier tire une carte au hasard dans ta
                 réserve (tes cartes qui ne gardent aucune machine). À la clôture,
-                tu places chacune en Attractif ou Répulsif : son éveil part dans
-                le chapeau. Les légendaires et mythiques tirés pèsent leur rang :
+                tu places chacune en Attractif ou Répulsif : son éveil part dans
+                le chapeau. Les légendaires et mythiques tirés pèsent leur rang :
                 ±8 et ±13 tickets de leur famille.
               </p>
               <Figures
@@ -353,7 +353,7 @@ export default function ManuelPage() {
             <div className="space-y-1.5">
               <Sub>Légendaire · le Prodige</Sub>
               <p>
-                Les <B>légendaires</B> ne comptent pas en tickets : chacun porte
+                Les <B>légendaires</B> ne comptent pas en tickets : chacun porte
                 un <B>Prodige unique</B>, écrit pour lui seul — 70 légendaires,
                 70 pouvoirs. Tickets Premium et Mythique, roue qui perd son ×1,
                 pack qui refuse d&apos;être Basique, fragments offerts sur
@@ -364,7 +364,7 @@ export default function ManuelPage() {
               <Sub>Mythique · le Miracle</Sub>
               <p>
                 Les <B>mythiques</B> portent chacun un <B>Miracle unique</B>, un
-                étage encore au-dessus : un jeton spécial offert chaque semaine,
+                étage encore au-dessus : un jeton spécial offert chaque semaine,
                 la roue qui monte à ×10, le chapeau qui échappe à la remise à
                 zéro… Le détail de chaque carte raconte son pouvoir.
               </p>
@@ -375,12 +375,12 @@ export default function ManuelPage() {
             <p>
               L&apos;énergie des éveils se <B>consomme</B> quand tu ouvres un
               pack ou tournes la roue — le chapeau revient ensuite à la normale.
-              Ouvre ton pack <B>après la séance</B> : c&apos;est le rythme du
+              Ouvre ton pack <B>après la séance</B>{"\u00a0"}: c&apos;est le rythme du
               jeu.
             </p>
             <p>
               Car clôturer une nouvelle séance <B>remet le chapeau à zéro</B>{" "}
-              avant la nouvelle récolte : l&apos;énergie de pack non dépensée est
+              avant la nouvelle récolte : l&apos;énergie de pack non dépensée est
               annulée. Seules les jauges d&apos;atelier (Forge, Curée,
               Orpailleur) survivent — et quelques cartes savent tricher avec le
               temps.
@@ -400,7 +400,7 @@ export default function ManuelPage() {
             </p>
             <p>
               <Lock className="mr-1 inline size-3.5 -translate-y-px text-foreground" />
-              Un Gardien posé est <B>lié</B> dès son premier éveil : pour changer
+              Un Gardien posé est <B>lié</B> dès son premier éveil : pour changer
               sa carte, attends 30 jours… ou paie sa <B>magnésie</B>. Et un
               Gardien ne tient qu&apos;<B>un seul poste</B>{" "}— impossible de
               poser la même carte sur deux machines. Tant qu&apos;il ne
@@ -437,7 +437,7 @@ export default function ManuelPage() {
             summary="Des privilèges d'appli, cachés dans une cinquantaine de cartes."
           >
             <p>
-              Une cinquantaine de cartes portent un <B>Talent caché</B> : un
+              Une cinquantaine de cartes portent un <B>Talent caché</B>{"\u00a0"}: un
               privilège d&apos;appli — couleurs scellées, fonds d&apos;écran,
               pages de stats interdites, easter eggs. Posséder la carte suffit,
               pour toujours. Personne ne sait lesquelles avant de les tirer.
@@ -454,7 +454,7 @@ export default function ManuelPage() {
             title="Les Oracles"
             summary="Neuf savoirs à allumer, carte par carte."
           >
-            <p>Neuf savoirs cachés dans certaines auras :</p>
+            <p>Neuf savoirs cachés dans certaines auras :</p>
             <ol className="grid gap-x-4 gap-y-1.5 sm:grid-cols-2">
               {ORACLES.map((oracle, i) => (
                 <li key={oracle} className="flex items-center gap-2.5">
@@ -477,7 +477,7 @@ export default function ManuelPage() {
             summary="Ce que l'entraînement débloque, et les titres à porter."
           >
             <p>
-              <B>200 trophées</B>, gagnés à l&apos;entraînement, jamais au tirage :
+              <B>200 trophées</B>, gagnés à l&apos;entraînement, jamais au tirage :
               séances, records, tonnage, séries, charge max, cardio, régularité,
               variété, collection. La Salle des Trophées montre chaque jauge.
             </p>
