@@ -774,4 +774,11 @@
   .text-muted-foreground\/80 {
     color: var(--muted-dim);
   }
+
+  /* Un chiffre frappé ne se serre pas : la condensée l'est déjà. Les
+     titres « tracking-tight/tighter » des autres pages gardent leur
+     approche naturelle au lieu de se chevaucher. */
+  :is(h1, h2, h3, .text-2xl, .text-3xl, .text-4xl):is(.tracking-tighter, .tracking-tight) {
+    letter-spacing: 0.005em;
+  }
 }
