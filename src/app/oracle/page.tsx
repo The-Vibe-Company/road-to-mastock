@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 import { Download, Eye, Infinity as InfinityIcon, Layers, Anchor, Clock, Landmark, Calendar, Lock, Gauge } from "@/components/icons";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { BackButton } from "@/components/back-button";
 import { Spinner } from "@/components/spinner";
 import { useTalents } from "@/components/talents-provider";
@@ -25,6 +25,49 @@ interface OracleData {
 function fmtDate(raw: string) {
   return new Date(raw).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "2-digit" });
 }
+
+// Une salle = une plaque. Sur sa tête : l'icône frappée sur son étiquette
+// noire, le nom de la salle, et ce qu'elle montre.
+function RoomHeader({
+  Icon,
+  name,
+  line,
+}: {
+  Icon: ComponentType<{ className?: string }>;
+  name: string;
+  line?: string;
+}) {
+  return (
+    <CardHeader className="flex items-center gap-3">
+      <span aria-hidden className="stamp size-9 shrink-0">
+        <Icon className="size-[18px]" />
+      </span>
+      <div className="min-w-0">
+        <h2 className="text-[19px] uppercase leading-none tracking-[0.04em]">{name}</h2>
+        {line && <p className="mt-1 text-xs text-muted-foreground">{line}</p>}
+      </div>
+    </CardHeader>
+  );
+}
+
+// Une liste longue se lit dans sa propre fenêtre : elle défile aussi au
+// clavier, l'anneau de focus la cerne.
+function ScrollList({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div
+      tabIndex={0}
+      role="region"
+      aria-label={label}
+      className="max-h-80 overflow-y-auto rounded-[3px] pr-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+    >
+      {children}
+    </div>
+  );
+}
+
+// Une ligne de salle, et le chiffre frappé qui la clôt (la charge).
+const ROW = "flex items-center gap-2 py-2 first:pt-0 last:pb-0";
+const ROW_STAMP = "stamp h-7 min-w-[4.25rem] shrink-0 px-2 text-[17px]";
 
 export default function OraclePage() {
   const { loaded, has } = useTalents();
@@ -76,10 +119,8 @@ export default function OraclePage() {
       <BackButton fallback="/collection" />
 
       <header className="mb-6 mt-3">
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/70">
-          Savoirs
-        </p>
-        <h1 className="mt-1 text-3xl font-black tracking-tighter">L&apos;Oracle</h1>
+        <p className="etched">Savoirs</p>
+        <h1 className="mt-1 text-4xl uppercase leading-none">L&apos;Oracle</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           {anyOracle
             ? "Ce que tes cartes voient et que les autres ignorent."
@@ -88,53 +129,65 @@ export default function OraclePage() {
       </header>
 
       <div className="space-y-4">
+        {/* Aucune salle ouverte : l'Oracle se tait. */}
+        {!anyOracle && (
+          <div className="plate flex flex-col items-center gap-3 px-6 py-10 text-center">
+            <span aria-hidden className="stamp size-14">
+              <Eye className="size-7" />
+            </span>
+            <div>
+              <p className="font-heading text-xl font-bold uppercase tracking-[0.04em]">
+                L&apos;Oracle est muet
+              </p>
+              <p className="mx-auto mt-1 max-w-xs text-sm leading-relaxed text-muted-foreground">
+                Ses voix sont dispersées dans le catalogue — continue d&apos;ouvrir des packs.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* La Boucle (Ouroboros) */}
         {has("boucle") && data?.timeline && data.timeline.length > 0 && (
-          <Card className="card-gradient-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary/60">
-                <InfinityIcon className="size-4" />
-                La Boucle — tes records dans le temps
-              </CardTitle>
-            </CardHeader>
+          <Card>
+            <RoomHeader Icon={InfinityIcon} name="La Boucle" line="Tes records dans le temps" />
             <CardContent>
-              <div className="max-h-80 space-y-1.5 overflow-y-auto pr-1">
-                {data.timeline.map((r, i) => (
-                  <div key={i} className="flex items-center gap-2 text-sm">
-                    <span className="w-16 shrink-0 font-mono text-[10px] tabular-nums text-muted-foreground">
-                      {fmtDate(r.date)}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate font-bold">{r.name}</span>
-                    <span className="shrink-0 font-black text-primary">{r.weight} kg</span>
-                  </div>
-                ))}
-              </div>
+              <ScrollList label="Tes records dans le temps">
+                <div className="divide-y divide-[var(--gap)]">
+                  {data.timeline.map((r, i) => (
+                    <div key={i} className={ROW}>
+                      <span className="w-[4.5rem] shrink-0 font-heading text-[13px] font-semibold tabular-nums text-muted-foreground">
+                        {fmtDate(r.date)}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-sm font-semibold">{r.name}</span>
+                      <span className={ROW_STAMP}>{r.weight} kg</span>
+                    </div>
+                  ))}
+                </div>
+              </ScrollList>
             </CardContent>
           </Card>
         )}
 
-        {/* Les Sept Têtes (Hydre) */}
+        {/* Les Sept Têtes (Hydre) : le tonnage, en plaques */}
         {has("sept-tetes") && data?.muscles && data.muscles.length > 0 && (() => {
           const max = Math.max(...data.muscles!.map((m) => m.volume), 1);
           return (
-            <Card className="card-gradient-border">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary/60">
-                  <Layers className="size-4" />
-                  Les Sept Têtes — tonnage par muscle
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2.5">
+            <Card>
+              <RoomHeader Icon={Layers} name="Les Sept Têtes" line="Tonnage par muscle" />
+              <CardContent className="space-y-3">
                 {data.muscles.map((m) => (
                   <div key={m.muscle}>
-                    <div className="mb-1 flex items-center justify-between">
-                      <span className="text-xs font-bold">{m.muscle}</span>
-                      <span className="font-mono text-[10px] tabular-nums text-primary">
+                    <div className="mb-1.5 flex items-baseline justify-between gap-2">
+                      <span className="min-w-0 truncate text-[13px] font-semibold">{m.muscle}</span>
+                      <span className="shrink-0 font-heading text-[15px] font-bold leading-none tabular-nums">
                         {m.volume >= 1000 ? `${(m.volume / 1000).toFixed(1)}t` : `${Math.round(m.volume)}kg`}
                       </span>
                     </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-secondary/50">
-                      <div className="h-full rounded-full bg-gradient-orange" style={{ width: `${(m.volume / max) * 100}%` }} />
+                    <div className="segments relative h-2.5 bg-muted">
+                      <div
+                        className="absolute inset-y-0 left-0 bg-primary"
+                        style={{ width: `${(m.volume / max) * 100}%` }}
+                      />
                     </div>
                   </div>
                 ))}
@@ -145,24 +198,25 @@ export default function OraclePage() {
 
         {/* Les Profondeurs (Léviathan) */}
         {has("profondeurs") && data?.neglected && (
-          <Card className="card-gradient-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary/60">
-                <Anchor className="size-4" />
-                Les Profondeurs — ce que tu fuis
-              </CardTitle>
-            </CardHeader>
+          <Card>
+            <RoomHeader Icon={Anchor} name="Les Profondeurs" line="Ce que tu fuis" />
             <CardContent>
               {data.neglected.length === 0 ? (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Rien ne traîne — aucune machine délaissée depuis plus de 10 jours.
                 </p>
               ) : (
-                <div className="space-y-1.5">
+                <div className="divide-y divide-[var(--gap)]">
                   {data.neglected.map((n, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm">
-                      <span className="min-w-0 flex-1 truncate font-bold">{n.name}</span>
-                      <span className={`shrink-0 font-black ${n.days_ago > 21 ? "text-red-400" : "text-amber-400"}`}>
+                    <div key={i} className={ROW}>
+                      <span className="min-w-0 flex-1 truncate text-sm font-semibold">{n.name}</span>
+                      {/* L'étiquette reste noire dans les deux thèmes : le
+                          rouge et l'ambre y gardent leur contraste. */}
+                      <span
+                        className={`stamp h-7 min-w-[3rem] shrink-0 px-2 text-[17px] ${
+                          n.days_ago > 21 ? "text-red-400" : "text-amber-300"
+                        }`}
+                      >
                         {n.days_ago}j
                       </span>
                     </div>
@@ -175,28 +229,27 @@ export default function OraclePage() {
 
         {/* Le Voyage (Celebi) */}
         {has("voyage") && data?.journey && (
-          <Card className="card-gradient-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary/60">
-                <Clock className="size-4" />
-                Le Voyage — toi, contre toi d&apos;avant
-              </CardTitle>
-            </CardHeader>
+          <Card>
+            <RoomHeader Icon={Clock} name="Le Voyage" line="Toi, contre toi d'avant" />
             <CardContent>
               {data.journey.length === 0 ? (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm leading-relaxed text-muted-foreground">
                   Pas encore assez d&apos;histoire : reviens quand tes séances récentes
                   pourront se mesurer à celles d&apos;il y a quatre mois et plus.
                 </p>
               ) : (
-                <div className="space-y-1.5">
+                <div className="divide-y divide-[var(--gap)]">
                   {data.journey.map((j, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm">
-                      <span className="min-w-0 flex-1 truncate font-bold">{j.name}</span>
-                      <span className="shrink-0 font-mono text-[11px] tabular-nums text-muted-foreground">
+                    <div key={i} className={ROW}>
+                      <span className="min-w-0 flex-1 truncate text-sm font-semibold">{j.name}</span>
+                      <span className="shrink-0 font-heading text-[14px] font-semibold tabular-nums text-muted-foreground">
                         {j.before} → {j.now} kg
                       </span>
-                      <span className={`w-12 shrink-0 text-right font-black ${j.delta >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                      <span
+                        className={`stamp h-7 min-w-[3.25rem] shrink-0 px-2 text-[17px] ${
+                          j.delta >= 0 ? "text-emerald-400" : "text-red-400"
+                        }`}
+                      >
                         {j.delta >= 0 ? "+" : ""}{j.delta}
                       </span>
                     </div>
@@ -209,25 +262,22 @@ export default function OraclePage() {
 
         {/* Le Regard (Basilic) */}
         {has("regard") && data?.hall && data.hall.length > 0 && (
-          <Card className="card-gradient-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary/60">
-                <Landmark className="size-4" />
-                Le Hall des records — gravé dans la pierre
-              </CardTitle>
-            </CardHeader>
+          <Card>
+            <RoomHeader Icon={Landmark} name="Le Hall des records" line="Gravé dans la pierre" />
             <CardContent>
-              <div className="max-h-80 space-y-1.5 overflow-y-auto pr-1">
-                {data.hall.map((h, i) => (
-                  <div key={i} className="flex items-center gap-2 text-sm">
-                    <span className="min-w-0 flex-1 truncate font-bold">{h.name}</span>
-                    <span className="shrink-0 font-mono text-[10px] tabular-nums text-muted-foreground">
-                      {fmtDate(h.date)}
-                    </span>
-                    <span className="w-14 shrink-0 text-right font-black text-primary">{h.weight} kg</span>
-                  </div>
-                ))}
-              </div>
+              <ScrollList label="Le Hall des records">
+                <div className="divide-y divide-[var(--gap)]">
+                  {data.hall.map((h, i) => (
+                    <div key={i} className={ROW}>
+                      <span className="min-w-0 flex-1 truncate text-sm font-semibold">{h.name}</span>
+                      <span className="shrink-0 font-heading text-[13px] font-semibold tabular-nums text-muted-foreground">
+                        {fmtDate(h.date)}
+                      </span>
+                      <span className={ROW_STAMP}>{h.weight} kg</span>
+                    </div>
+                  ))}
+                </div>
+              </ScrollList>
             </CardContent>
           </Card>
         )}
@@ -255,17 +305,17 @@ export default function OraclePage() {
               cells.push({ x: w * (cell + gap), y: d * (cell + gap), on: dates.has(ds) });
             }
           }
+          const days = data.yearmap.length;
+          const caption = `jour${days > 1 ? "s" : ""} d'entraînement sur les 365 derniers`;
           return (
-            <Card className="card-gradient-border">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary/60">
-                  <Calendar className="size-4" />
-                  La Carte du Ciel — ton année, jour par jour
-                </CardTitle>
-              </CardHeader>
+            <Card>
+              <RoomHeader Icon={Calendar} name="La Carte du Ciel" line="Ton année, jour par jour" />
               <CardContent>
                 <div
-                  className="overflow-x-auto"
+                  tabIndex={0}
+                  role="region"
+                  aria-label="Ton année, jour par jour"
+                  className="overflow-x-auto rounded-[3px] pb-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                   // En mobile, la carte dépasse l'écran : on l'ouvre sur
                   // AUJOURD'HUI (bord droit), le passé se scrolle vers la
                   // gauche — sinon on ne voit que des semaines vides.
@@ -273,7 +323,14 @@ export default function OraclePage() {
                     if (el) el.scrollLeft = el.scrollWidth;
                   }}
                 >
-                  <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} className="min-w-full">
+                  <svg
+                    viewBox={`0 0 ${W} ${H}`}
+                    width={W}
+                    height={H}
+                    className="min-w-full"
+                    role="img"
+                    aria-label={`${days} ${caption}`}
+                  >
                     {cells.map((c, i) => (
                       <rect
                         key={i}
@@ -281,21 +338,23 @@ export default function OraclePage() {
                         y={c.y}
                         width={cell}
                         height={cell}
-                        rx={1.5}
+                        rx={1}
                         // Safari iOS refuse oklch(var(...)) en fill SVG →
-                        // tout noir. On peint avec le hex littéral de
-                        // l'accent et un blanc translucide : incassable.
+                        // tout noir. Le jour d'entraînement prend le hex
+                        // littéral de l'accent ; le jour vide, le gris de la
+                        // fonte (un oklch sans var, juste dans les deux
+                        // thèmes).
                         style={{
-                          fill: c.on ? "var(--accent-gradient-mid)" : "rgba(255,255,255,0.16)",
+                          fill: c.on ? "var(--accent-gradient-mid)" : "var(--muted)",
                           opacity: 1,
                         }}
                       />
                     ))}
                   </svg>
                 </div>
-                <p className="mt-2 font-mono text-[10px] tabular-nums text-muted-foreground">
-                  {data.yearmap.length} jour{data.yearmap.length > 1 ? "s" : ""}{" "}
-                  d&apos;entraînement sur les 365 derniers
+                <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                  <span className="stamp h-7 min-w-[2.5rem] shrink-0 px-2 text-[17px]">{days}</span>
+                  {caption}
                 </p>
               </CardContent>
             </Card>
@@ -304,75 +363,71 @@ export default function OraclePage() {
 
         {/* Les Racines (Niðhöggr) */}
         {has("racines") && (
-          <Card className="card-gradient-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary/60">
-                <Download className="size-4" />
-                Les Racines — l&apos;archive totale
-              </CardTitle>
-            </CardHeader>
+          <Card>
+            <RoomHeader Icon={Download} name="Les Racines" line="L'archive totale" />
             <CardContent>
-              <p className="mb-3 text-xs text-muted-foreground">
-                {data?.archive?.sessions ?? 0} séances archivées, jusqu&apos;à la première série.
+              <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span className="stamp h-7 min-w-[2.5rem] shrink-0 px-2 text-[17px]">
+                  {data?.archive?.sessions ?? 0}
+                </span>
+                séances archivées, jusqu&apos;à la première série.
               </p>
+              {/* La goupille : l'action de la salle, ronde, à la couleur du
+                  joueur. */}
               <a
                 href="/api/oracle/export"
                 download
-                className="inline-flex h-10 items-center gap-2 rounded-xl bg-gradient-orange-intense px-4 text-xs font-black uppercase tracking-wider text-black"
+                className="mt-4 inline-flex h-12 items-center gap-3 rounded-full bg-gradient-orange-intense pl-1.5 pr-6 font-heading text-[17px] font-bold uppercase tracking-[0.06em] text-primary-foreground"
               >
-                <Download className="size-3.5" strokeWidth={3} />
+                <span
+                  aria-hidden
+                  className="flex size-9 items-center justify-center rounded-full bg-primary-foreground/15 shadow-[inset_0_2px_3px_oklch(0_0_0/0.3),0_1px_0_oklch(1_0_0/0.25)]"
+                >
+                  <Download className="size-4" />
+                </span>
                 Exporter mes données
               </a>
             </CardContent>
           </Card>
         )}
 
-        {!anyOracle && (
-          <div className="flex flex-col items-center gap-3 py-16 text-center">
-            <div className="flex size-14 items-center justify-center rounded-2xl bg-secondary/40 ring-1 ring-border">
-              <Eye className="size-7 text-muted-foreground/60" />
-            </div>
-            <p className="max-w-xs text-xs leading-relaxed text-muted-foreground">
-              L&apos;Oracle est muet. Ses voix sont dispersées dans le catalogue —
-              continue d&apos;ouvrir des packs.
-            </p>
-          </div>
-        )}
-
         {/* Le Rapport de Force : la charge rapportée au poids de corps */}
         {has("rapport-force") && data?.powerRatio && (
-          <Card className="card-gradient-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary/60">
-                <Gauge className="size-4" />
-                Le Rapport de Force — charge / poids de corps
-              </CardTitle>
-            </CardHeader>
+          <Card>
+            <RoomHeader Icon={Gauge} name="Le Rapport de Force" line="Charge / poids de corps" />
             <CardContent>
               {data.powerRatio.bodyweight <= 0 ? (
-                <p className="text-xs leading-relaxed text-muted-foreground">
+                <p className="text-sm leading-relaxed text-muted-foreground">
                   L&apos;ours veut d&apos;abord te peser : enregistre ton poids
                   de corps (« Pèse-toi », en haut d&apos;une séance) et cette
                   salle s&apos;éveillera.
                 </p>
               ) : (
                 <>
-                  <div className="space-y-1.5">
+                  <div className="divide-y divide-[var(--gap)]">
                     {data.powerRatio.rows.map((r) => (
-                      <div key={r.name} className="flex items-baseline gap-2">
-                        <p className="min-w-0 flex-1 truncate text-xs font-bold">{r.name}</p>
-                        <span className="shrink-0 font-mono text-[10px] tabular-nums text-muted-foreground">
+                      <div key={r.name} className={ROW}>
+                        <p className="min-w-0 flex-1 truncate text-sm font-semibold">{r.name}</p>
+                        <span className="shrink-0 font-heading text-[14px] font-semibold tabular-nums text-muted-foreground">
                           {Math.round(r.best)} kg
                         </span>
-                        <span className={`w-14 shrink-0 text-right font-mono text-sm font-black tabular-nums ${r.ratio >= 1 ? "text-primary" : "text-foreground/80"}`}>
-                          ×{r.ratio.toFixed(2).replace(".", ",")}
+                        {/* La goupille marque les charges qui passent ton
+                            propre poids. */}
+                        <span className="flex w-[5.25rem] shrink-0 items-center justify-end gap-1.5">
+                          {r.ratio >= 1 && <span aria-hidden className="pin size-2" />}
+                          <span className="stamp h-7 min-w-[4rem] px-2 text-[17px]">
+                            ×{r.ratio.toFixed(2).replace(".", ",")}
+                          </span>
                         </span>
                       </div>
                     ))}
                   </div>
-                  <p className="mt-2.5 font-mono text-[10px] tabular-nums text-muted-foreground">
-                    rapporté à ton poids de corps : {Math.round(data.powerRatio.bodyweight)} kg
-                    — ×1,00 = tu soulèves ton propre poids
+                  <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                    Rapporté à ton poids de corps :{" "}
+                    <span className="font-semibold text-foreground">
+                      {Math.round(data.powerRatio.bodyweight)} kg
+                    </span>{" "}
+                    — ×1,00 = tu soulèves ton propre poids.
                   </p>
                 </>
               )}
@@ -382,26 +437,29 @@ export default function OraclePage() {
 
         {/* Les salles encore scellées : silhouettes, pas d'indices */}
         {lockedRooms.length > 0 && (
-          <div className="rounded-2xl bg-secondary/20 p-4 ring-1 ring-border/60">
-            <p className="mb-2.5 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">
-              <Lock className="size-3.5" />
-              {lockedRooms.length} salle{lockedRooms.length > 1 ? "s" : ""} encore scellée{lockedRooms.length > 1 ? "s" : ""}
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {lockedRooms.map((r) => (
-                <span
-                  key={r.id}
-                  className="rounded-md bg-secondary/40 px-2 py-1 text-[10px] font-bold text-muted-foreground/60 ring-1 ring-border/50"
-                >
-                  {r.label}
-                </span>
-              ))}
-            </div>
-            <p className="mt-2.5 text-[11px] leading-snug text-muted-foreground">
-              Chaque salle s&apos;ouvre quand la bonne carte rejoint ta
-              collection. Personne ne sait laquelle avant de la tirer.
-            </p>
-          </div>
+          <Card>
+            <RoomHeader
+              Icon={Lock}
+              name={`${lockedRooms.length} salle${lockedRooms.length > 1 ? "s" : ""} encore scellée${lockedRooms.length > 1 ? "s" : ""}`}
+            />
+            <CardContent>
+              <ul className="divide-y divide-[var(--gap)]">
+                {lockedRooms.map((r) => (
+                  <li
+                    key={r.id}
+                    className="flex items-center gap-2.5 py-2 text-sm font-semibold text-muted-foreground first:pt-0 last:pb-0"
+                  >
+                    <Lock aria-hidden className="size-3.5 shrink-0 text-steel-dark" />
+                    {r.label}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                Chaque salle s&apos;ouvre quand la bonne carte rejoint ta
+                collection. Personne ne sait laquelle avant de la tirer.
+              </p>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>
