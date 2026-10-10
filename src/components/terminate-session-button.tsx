@@ -90,7 +90,16 @@ interface AwakenedGuardian {
   fragmentRarity: Rarity | null;
 }
 
-export function TerminateSessionButton({ sessionId }: { sessionId: number }) {
+export function TerminateSessionButton({
+  sessionId,
+  hasSets: hasSetsNow,
+}: {
+  sessionId: number;
+  /** Ce que la séance affichée sait déjà, tiré du même GET /api/sessions/:id
+   *  que l'éditeur refait après chaque série : le bouton paraît dès la
+   *  première série, sans attendre qu'on quitte et rouvre la page. */
+  hasSets?: boolean;
+}) {
   const [state, setState] = useState<SessionState | null>(null);
   const [busy, setBusy] = useState(false);
   const [reward, setReward] = useState<RewardInfo | null>(null);
@@ -588,7 +597,7 @@ export function TerminateSessionButton({ sessionId }: { sessionId: number }) {
     );
   }
 
-  if (!state.hasSets) return null;
+  if (!(hasSetsNow ?? state.hasSets)) return null;
 
   return (
     <div className="mb-6">

@@ -12,7 +12,7 @@ import { CardioSetRow } from "./cardio-set-row";
 import { AssistedSetForm, type AssistedPayload } from "./assisted-set-form";
 import { AssistedSetRow } from "./assisted-set-row";
 import { RestTimer } from "./rest-timer";
-import { Lock, Unlock, Trophy, ChevronUp, ChevronDown, StickyNote, Check, Trash2, History, Loader2, AlertTriangle, MapPin, ListOrdered, Shield } from "@/components/icons";
+import { Lock, Unlock, Trophy, ChevronUp, ChevronDown, ChevronRight, StickyNote, Check, Trash2, History, Loader2, AlertTriangle, MapPin, ListOrdered, Shield } from "@/components/icons";
 import { cardioMachineFromName } from "@/lib/cardio";
 import { computeSessionPlan } from "@/lib/session-plan";
 import { MascotBackdrop } from "./mascot-backdrop";
@@ -308,9 +308,22 @@ export function ExerciseBlock({
       )}
       <CardHeader className="relative">
         <div>
-          <Link href={`/exercises/${exerciseId}`} className="transition-colors hover:text-primary">
-            <CardTitle className="text-base font-black tracking-tight">{name}</CardTitle>
-          </Link>
+          {/* Le nom mène à l'historique de la machine : souligné et fléché
+              pour qu'on sache qu'il s'ouvre. */}
+          <CardTitle className="text-base font-black tracking-tight">
+            <Link
+              href={`/exercises/${exerciseId}`}
+              className="group/title transition-colors hover:text-primary"
+            >
+              <span className="underline decoration-muted-foreground/50 decoration-1 underline-offset-4 transition-colors group-hover/title:decoration-primary">
+                {name}
+              </span>
+              <ChevronRight
+                aria-hidden="true"
+                className="ml-1 inline size-4 align-[-2px] text-muted-foreground transition-transform group-hover/title:translate-x-0.5 group-hover/title:text-primary"
+              />
+            </Link>
+          </CardTitle>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {/* L'impact du Gardien, en petit : on sait ce que la carte
                 rapportera à la clôture, sans ouvrir sa fiche. */}
@@ -371,17 +384,19 @@ export function ExerciseBlock({
         </div>
         <CardAction className="flex gap-1">
           {!locked && canMoveUp && (
-            <button onClick={onMoveUp} className="flex size-10 items-center justify-center rounded-xl bg-secondary/50 text-muted-foreground transition-colors active:scale-95 hover:text-primary">
+            <button onClick={onMoveUp} aria-label="Monter l'exercice" className="flex size-10 items-center justify-center rounded-xl bg-secondary/50 text-muted-foreground transition-colors active:scale-95 hover:text-primary">
               <ChevronUp className="size-5" />
             </button>
           )}
           {!locked && canMoveDown && (
-            <button onClick={onMoveDown} className="flex size-10 items-center justify-center rounded-xl bg-secondary/50 text-muted-foreground transition-colors active:scale-95 hover:text-primary">
+            <button onClick={onMoveDown} aria-label="Descendre l'exercice" className="flex size-10 items-center justify-center rounded-xl bg-secondary/50 text-muted-foreground transition-colors active:scale-95 hover:text-primary">
               <ChevronDown className="size-5" />
             </button>
           )}
           <button
             onClick={() => setShowNotes(!showNotes)}
+            aria-label="Notes"
+            aria-expanded={notesVisible}
             className={`flex size-10 items-center justify-center rounded-xl transition-colors active:scale-95 ${
               savedNotes ? "bg-primary/15 text-primary" : "bg-secondary/50 text-muted-foreground hover:text-primary"
             }`}
@@ -390,6 +405,7 @@ export function ExerciseBlock({
           </button>
           <button
             onClick={() => onToggleLock(sessionExerciseId, !locked)}
+            aria-label={locked ? "Rouvrir l'exercice" : "Marquer l'exercice terminé"}
             className={`flex size-10 items-center justify-center rounded-xl transition-colors active:scale-95 ${
               locked ? "bg-primary/15 text-primary" : "bg-secondary/50 text-muted-foreground hover:text-primary"
             }`}
@@ -397,7 +413,7 @@ export function ExerciseBlock({
             {locked ? <Lock className="size-5" /> : <Unlock className="size-5" />}
           </button>
           {!locked && (
-            <button onClick={() => setShowDeleteConfirm(true)} className="flex size-10 items-center justify-center rounded-xl bg-secondary/50 text-muted-foreground transition-colors active:scale-95 hover:text-red-500">
+            <button onClick={() => setShowDeleteConfirm(true)} aria-label="Supprimer l'exercice" className="flex size-10 items-center justify-center rounded-xl bg-secondary/50 text-muted-foreground transition-colors active:scale-95 hover:text-red-500">
               <Trash2 className="size-5" />
             </button>
           )}
@@ -475,6 +491,7 @@ export function ExerciseBlock({
               variant="ghost"
               size="icon-xs"
               className="mt-1 shrink-0 text-muted-foreground hover:text-primary"
+              aria-label="Enregistrer la note"
               onClick={() => {
                 const val = notesRef.current?.value || "";
                 onUpdateNotes(sessionExerciseId, val);
@@ -536,6 +553,7 @@ export function ExerciseBlock({
                   onChange={(e) => setNewStep(e.target.value)}
                   inputMode="decimal"
                   placeholder="kg"
+                  aria-label="Nouveau palier en kg"
                   className="h-8 w-16 rounded-lg bg-secondary/50 px-2 text-center font-mono text-xs font-black outline-none focus:ring-1 focus:ring-primary/40"
                 />
                 <button

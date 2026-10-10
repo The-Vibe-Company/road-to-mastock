@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Check, Loader2 } from "@/components/icons";
@@ -46,6 +46,9 @@ export function SetForm({
   const [weight, setWeight] = useState(suggestedWeight?.toString() || "");
   const [reps, setReps] = useState((lastReps ?? defaultReps).toString());
   const [submitting, setSubmitting] = useState(false);
+  // Les mots « kg » et « reps » posés dans les champs sont leurs libellés.
+  const weightId = useId();
+  const repsId = useId();
   // Dès que l'utilisateur touche au champ, on cesse d'y écrire : le parent se
   // re-rend à chaque rafraîchissement de la séance (y compris déclenché par un
   // AUTRE exercice), et sans ce garde-fou sa saisie serait effacée.
@@ -103,6 +106,7 @@ export function SetForm({
     <form onSubmit={handleSubmit} className="flex items-center gap-2">
       <div className="relative flex-1">
         <Input
+          id={weightId}
           type="number"
           inputMode="decimal"
           step="0.5"
@@ -115,13 +119,17 @@ export function SetForm({
           }}
           className="h-11 bg-secondary/50 pr-8 text-center text-base font-bold"
         />
-        <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
+        <label
+          htmlFor={weightId}
+          className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground"
+        >
           kg
-        </span>
+        </label>
       </div>
       <span className="text-lg font-black text-primary/40">x</span>
       <div className="relative flex-1">
         <Input
+          id={repsId}
           type="number"
           inputMode="numeric"
           min="1"
@@ -130,14 +138,18 @@ export function SetForm({
           onChange={(e) => setReps(e.target.value)}
           className="h-11 bg-secondary/50 pr-10 text-center text-base font-bold"
         />
-        <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
+        <label
+          htmlFor={repsId}
+          className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground"
+        >
           reps
-        </span>
+        </label>
       </div>
       <Button
         type="submit"
         size="icon"
         disabled={submitting}
+        aria-label="Ajouter la série"
         className="h-11 w-11 shrink-0 rounded-xl bg-gradient-orange-intense text-black shadow-lg disabled:opacity-100"
       >
         {submitting ? (

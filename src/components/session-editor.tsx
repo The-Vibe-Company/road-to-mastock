@@ -464,7 +464,7 @@ export function SessionEditor({ sessionId }: { sessionId: number }) {
         )}
       </div>
 
-      <TerminateSessionButton sessionId={sessionId} />
+      <TerminateSessionButton sessionId={sessionId} hasSets={totalSets > 0} />
 
       {/* Exercises */}
       {exercises.length === 0 ? (
@@ -539,6 +539,7 @@ export function SessionEditor({ sessionId }: { sessionId: number }) {
             variant="destructive"
             size="icon"
             className="h-12 w-12"
+            aria-label="Supprimer la séance"
             onClick={handleDeleteSession}
             disabled={deletingSession}
           >
