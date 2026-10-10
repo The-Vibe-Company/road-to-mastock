@@ -71,6 +71,7 @@ export function CardioSetRow({
           variant="ghost"
           size="icon-xs"
           onClick={onDelete}
+          aria-label={`Supprimer la série ${setNumber}`}
           className="mt-0.5 shrink-0 text-muted-foreground/50 hover:text-destructive"
         >
           <Trash2 className="size-3.5" />
