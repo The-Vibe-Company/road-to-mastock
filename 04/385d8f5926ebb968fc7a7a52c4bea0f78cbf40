@@ -1,0 +1,19 @@
+src/app/page.tsx
+  s_9f13ff8a0fe04c::t_288f9de0d4fd3e 186,194
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "04385d8f5926ebb968fc7a7a52c4bea0f78cbf40",
+  "prompts": {},
+  "sessions": {
+    "s_9f13ff8a0fe04c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f6f8144-2e0f-4365-a2df-7a153cae490d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
