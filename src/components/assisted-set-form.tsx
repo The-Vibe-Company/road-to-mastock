@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Check, Loader2 } from "@/components/icons";
@@ -21,6 +21,9 @@ export function AssistedSetForm({ bodyweightKg, onAdd, lastAssistance, lastReps 
   const [assistance, setAssistance] = useState(lastAssistance != null ? lastAssistance.toString() : "");
   const [reps, setReps] = useState((lastReps ?? 10).toString());
   const [submitting, setSubmitting] = useState(false);
+  // Les mots « aide » et « reps » posés dans les champs sont leurs libellés.
+  const assistanceId = useId();
+  const repsId = useId();
 
   useEffect(() => {
     if (lastAssistance != null) setAssistance(lastAssistance.toString());
@@ -49,6 +52,7 @@ export function AssistedSetForm({ bodyweightKg, onAdd, lastAssistance, lastReps 
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <Input
+            id={assistanceId}
             type="number"
             inputMode="decimal"
             step="0.5"
@@ -58,13 +62,17 @@ export function AssistedSetForm({ bodyweightKg, onAdd, lastAssistance, lastReps 
             onChange={(e) => setAssistance(e.target.value)}
             className="h-11 bg-secondary/50 pr-12 text-center text-base font-bold"
           />
-          <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
+          <label
+            htmlFor={assistanceId}
+            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground"
+          >
             aide
-          </span>
+          </label>
         </div>
         <span className="text-lg font-black text-primary/40">x</span>
         <div className="relative flex-1">
           <Input
+            id={repsId}
             type="number"
             inputMode="numeric"
             min="1"
@@ -73,14 +81,18 @@ export function AssistedSetForm({ bodyweightKg, onAdd, lastAssistance, lastReps 
             onChange={(e) => setReps(e.target.value)}
             className="h-11 bg-secondary/50 pr-10 text-center text-base font-bold"
           />
-          <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
+          <label
+            htmlFor={repsId}
+            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground"
+          >
             reps
-          </span>
+          </label>
         </div>
         <Button
           type="submit"
           size="icon"
           disabled={submitting || !aValid}
+          aria-label="Ajouter la série"
           className="h-11 w-11 shrink-0 rounded-xl bg-gradient-orange-intense text-black shadow-lg disabled:opacity-100"
         >
           {submitting ? (

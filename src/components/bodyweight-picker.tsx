@@ -61,6 +61,7 @@ export function BodyweightPicker({ open, onOpenChange, value, onChange }: Bodywe
               max="300"
               autoFocus
               placeholder="0"
+              aria-label="Poids de corps en kg"
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               className="h-14 bg-secondary/50 pr-12 text-center text-2xl font-black"
