@@ -1,0 +1,31 @@
+src/components/color-picker.tsx
+  s_9f13ff8a0fe04c::t_3772479a818bc9 33-39,48-51,53-54,56-57,65-71,78-80,82-107,110,114,119,122,132,136,143,145-148
+src/components/logout-button.tsx
+  s_9f13ff8a0fe04c::t_bcebc22739c9c3 21-22,26,29,31-41
+src/components/settings-page.tsx
+  s_7c7d151152e4a5::t_10c337b3ff0f8a 6-10,39-79,83,110-114,117-150,153,155-156,160-161,164-166,169,171-176,179-185,189-260,264,266,271,275-287,294,296,312-314,317,320,324,326,334,336,347-350,354,356,358,362,364,371,373-391
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7a0fc7e9beb45061f314f6b7aaf92901f13a4078",
+  "prompts": {},
+  "sessions": {
+    "s_7c7d151152e4a5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a29eecb1-aff7-46c8-aee7-b990bcc7e60c",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    },
+    "s_9f13ff8a0fe04c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f6f8144-2e0f-4365-a2df-7a153cae490d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
