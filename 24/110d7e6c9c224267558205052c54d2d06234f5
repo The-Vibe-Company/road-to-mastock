@@ -1,0 +1,23 @@
+src/app/page.tsx
+  s_9f13ff8a0fe04c::t_09bda35a020203 144-146
+src/components/home-extras.tsx
+  s_9f13ff8a0fe04c::t_2b17ec8ed83cc4 15,48-50,55-63,196-201,217,243,429,431,434,716-721,881-886,891,999-1004,1009,1303-1308
+src/components/skins-announcement.tsx
+  s_9f13ff8a0fe04c::t_b369066b1f0d9c 12-40,74-77,82,96,106,115,136,176-178,200,205-206,208-209
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "24110d7e6c9c224267558205052c54d2d06234f5",
+  "prompts": {},
+  "sessions": {
+    "s_9f13ff8a0fe04c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f6f8144-2e0f-4365-a2df-7a153cae490d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
