@@ -124,7 +124,7 @@ export function FriendsPage() {
       if (!res.ok) {
         setAddError(body.error);
       } else {
-        setAddSuccess("Demande envoyée !");
+        setAddSuccess("Demande envoyée !");
         setAddEmail("");
         setSearchQuery("");
         setSearchResults([]);
@@ -296,7 +296,7 @@ export function FriendsPage() {
 
                 {noMatch && (
                   <p className="mt-3 px-0.5 text-sm text-muted-foreground">
-                    Personne ne correspond à « {searchQuery} ». Essaie avec son email complet.
+                    Personne ne correspond à « {searchQuery} ». Essaie avec son email complet.
                   </p>
                 )}
                 {addError && (
@@ -402,9 +402,9 @@ export function FriendsPage() {
                   </div>
                 </div>
                 {[
-                  "Cherche un pote par son nom ou son email, dans le champ au-dessus.",
-                  "Envoie-lui une demande : elle attend ici tant qu'il n'a pas répondu.",
-                  "Dès qu'il accepte, ouvre son tableau de bord : séances, volume, charges.",
+                  "Tape le nom ou l'email d'un pote dans le champ de recherche, en haut.",
+                  "Envoie-lui une demande : elle attend ici tant qu'il n'a pas répondu.",
+                  "Dès qu'il accepte, ouvre son tableau de bord : séances, volume, charges.",
                 ].map((step, i) => (
                   <div key={i} className="plate flex items-center gap-3 py-2 pl-2 pr-4">
                     <span className="stamp size-10 shrink-0 text-[22px]">{i + 1}</span>
@@ -413,9 +413,8 @@ export function FriendsPage() {
                 ))}
                 <div className="plate flex justify-center px-4 py-3">
                   <Button
-                    variant="secondary"
                     onClick={focusSearch}
-                    className="h-10 gap-2 rounded-full px-5 font-heading text-[15px] font-bold uppercase tracking-[0.06em]"
+                    className="h-11 gap-2 rounded-full px-6 font-heading text-[16px] font-bold uppercase tracking-[0.06em]"
                   >
                     <Search />
                     Chercher un ami
