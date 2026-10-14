@@ -192,6 +192,9 @@ export function Dashboard({ friendUserId }: { friendUserId?: number } = {}) {
             <CardTitle className="text-xs font-bold uppercase tracking-widest text-primary/60">
               Records personnels
             </CardTitle>
+            <p className="text-[11px] font-medium text-foreground/60">
+              Courbe : volume par séance, lissé sur 3 séances
+            </p>
           </CardHeader>
           <CardContent>
             <div className="max-h-72 overflow-y-auto pr-1">
@@ -199,21 +202,6 @@ export function Dashboard({ friendUserId }: { friendUserId?: number } = {}) {
                 <tbody>
                   {stats.topExercises.map((ex, i) => {
                     const spark = stats.sparklines[ex.name] || [];
-                    const sparkW = 48;
-                    const sparkH = 18;
-                    let sparkPath = "";
-                    if (spark.length > 1) {
-                      const min = Math.min(...spark);
-                      const max = Math.max(...spark);
-                      const range = max - min || 1;
-                      sparkPath = spark
-                        .map((v, j) => {
-                          const x = (j / (spark.length - 1)) * sparkW;
-                          const y = sparkH - ((v - min) / range) * (sparkH - 2) - 1;
-                          return `${j === 0 ? "M" : "L"} ${x} ${y}`;
-                        })
-                        .join(" ");
-                    }
                     return (
                       <tr key={i} className="transition-colors hover:bg-secondary/30">
                         <td className="py-2 pl-2 pr-2">
@@ -223,11 +211,7 @@ export function Dashboard({ friendUserId }: { friendUserId?: number } = {}) {
                           <p className="truncate text-sm font-bold">{ex.name}</p>
                         </td>
                         <td className="py-2 pr-2">
-                          {sparkPath && (
-                            <svg width={sparkW} height={sparkH} viewBox={`0 0 ${sparkW} ${sparkH}`}>
-                              <path d={sparkPath} fill="none" stroke="var(--primary)" strokeWidth="1.5" strokeLinecap="round" />
-                            </svg>
-                          )}
+                          <VolumeSparkline values={spark} />
                         </td>
                         <td className="whitespace-nowrap py-2 pr-2 text-right text-sm font-black text-primary">
                           {ex.maxWeight} kg
@@ -339,5 +323,60 @@ export function Dashboard({ friendUserId }: { friendUserId?: number } = {}) {
         );
       })()}
     </div>
+  );
+}
+
+// La moyenne mobile sur 3 séances, comme les courbes lissées des pages
+// d'évolution : la tendance du volume, sans le bruit d'une seule séance.
+function smoothVolumes(values: number[]) {
+  return values.map((_, i) => {
+    const window = values.slice(Math.max(0, i - 2), i + 1);
+    return window.reduce((a, b) => a + b, 0) / window.length;
+  });
+}
+
+function VolumeSparkline({ values }: { values: number[] }) {
+  if (values.length < 2 || Math.max(...values) <= 0) return null;
+  const W = 96;
+  const H = 28;
+  const PAD = 3;
+  const smoothed = smoothVolumes(values);
+  const min = Math.min(...smoothed);
+  const range = Math.max(...smoothed) - min || 1;
+  const pts = smoothed.map((v, i) => ({
+    x: PAD + (i / (smoothed.length - 1)) * (W - PAD * 2),
+    y: H - PAD - ((v - min) / range) * (H - PAD * 2),
+  }));
+  // Pas d'angles : chaque point sert de contrôle et le tracé passe par les
+  // milieux entre deux séances.
+  let line = `M ${pts[0].x} ${pts[0].y}`;
+  for (let i = 1; i < pts.length - 1; i++) {
+    const mx = (pts[i].x + pts[i + 1].x) / 2;
+    const my = (pts[i].y + pts[i + 1].y) / 2;
+    line += ` Q ${pts[i].x} ${pts[i].y} ${mx} ${my}`;
+  }
+  const last = pts[pts.length - 1];
+  line += ` L ${last.x} ${last.y}`;
+  const area = `${line} L ${last.x} ${H} L ${pts[0].x} ${H} Z`;
+
+  return (
+    <svg
+      width={W}
+      height={H}
+      viewBox={`0 0 ${W} ${H}`}
+      role="img"
+      aria-label="Volume par séance, lissé sur 3 séances"
+    >
+      <path d={area} fill="var(--primary)" fillOpacity={0.15} />
+      <path
+        d={line}
+        fill="none"
+        stroke="var(--primary)"
+        strokeWidth={2.25}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx={last.x} cy={last.y} r={2.75} fill="var(--primary)" />
+    </svg>
   );
 }

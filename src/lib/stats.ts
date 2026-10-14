@@ -64,8 +64,10 @@ export async function getUserStats(userId: number) {
       WHERE user_id = ${userId}
       ORDER BY date DESC
     `),
+    // Le volume de chaque séance sur la machine (kg × reps), pour les
+    // mini-courbes de l'accueil.
     db.execute(sql`
-      SELECT e.name, s.date, MAX(st.weight_kg) AS max_weight
+      SELECT e.name, s.date, COALESCE(SUM(st.weight_kg * st.reps), 0) AS volume
       FROM exercises e
       JOIN session_exercises se ON se.exercise_id = e.id
       JOIN sessions s ON s.id = se.session_id
@@ -106,15 +108,15 @@ export async function getUserStats(userId: number) {
   const topExercises = (topExercisesRes.rows ?? topExercisesRes) as unknown as { name: string; max_weight: number; total_volume: number; date: string }[];
   const muscleDistribution = (muscleRes.rows ?? muscleRes) as unknown as { muscle_group: string; set_count: number }[];
   const dates = (datesRes.rows ?? datesRes) as unknown as { date: string }[];
-  const sparklineRows = (sparklineRes.rows ?? sparklineRes) as unknown as { name: string; max_weight: number }[];
+  const sparklineRows = (sparklineRes.rows ?? sparklineRes) as unknown as { name: string; volume: number }[];
   const suggestionRows = (suggestionsRes.rows ?? suggestionsRes) as unknown as { muscle_group: string; last_date: string }[];
   const muscleWeeklyRows = (muscleWeeklyRes.rows ?? muscleWeeklyRes) as unknown as { week_start: string; muscle_group: string; volume: number }[];
 
   const sparklines: Record<string, number[]> = {};
   for (const row of sparklineRows) {
     if (!sparklines[row.name]) sparklines[row.name] = [];
-    if (sparklines[row.name].length < 8) {
-      sparklines[row.name].push(Number(row.max_weight));
+    if (sparklines[row.name].length < 10) {
+      sparklines[row.name].push(Math.round(Number(row.volume)));
     }
   }
   for (const key of Object.keys(sparklines)) {
