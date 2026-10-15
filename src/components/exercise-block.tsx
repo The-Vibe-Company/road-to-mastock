@@ -235,9 +235,9 @@ export function ExerciseBlock({
     }
   };
 
-  // Reps par série : 20 sur les machines d'endurance comme le Marteau Haltères
-  // (10 par bras), 10 ailleurs.
-  const defaultReps = name.toLowerCase().includes("marteau") ? 20 : 10;
+  // Reps par série : 20 sur les haltères (Marteau Haltères, Épaule Haltères…),
+  // notées pour les deux bras, soit 10 par bras ; 10 ailleurs.
+  const defaultReps = /marteau|halt[eè]re/i.test(name) ? 20 : 10;
 
   // Programme du jour, déduit des paliers et de la dernière séance faite.
   // Pas pour le cardio (pas de poids) ni pour l'assisté (poids dérivé du corps).
