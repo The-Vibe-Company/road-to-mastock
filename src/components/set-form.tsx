@@ -16,6 +16,8 @@ interface SetFormProps {
   /** Poids prévu par le programme du jour pour cette série. Prioritaire sur la
    *  simple montée d'un palier. */
   plannedWeight?: number;
+  /** Reps prévues par le programme du jour pour cette série. */
+  plannedReps?: number;
   /** Change à chaque appui sur « Appliquer » pour réimposer le poids prévu,
    *  même si l'utilisateur avait saisi autre chose. */
   applyToken?: number;
@@ -35,6 +37,7 @@ export function SetForm({
   defaultReps = 10,
   knownWeights = [],
   plannedWeight,
+  plannedReps,
   applyToken,
 }: SetFormProps) {
   const suggestedWeight =
@@ -44,12 +47,13 @@ export function SetForm({
       : undefined);
 
   const [weight, setWeight] = useState(suggestedWeight?.toString() || "");
-  const [reps, setReps] = useState((lastReps ?? defaultReps).toString());
+  const [reps, setReps] = useState((plannedReps ?? lastReps ?? defaultReps).toString());
   const [submitting, setSubmitting] = useState(false);
   // Dès que l'utilisateur touche au champ, on cesse d'y écrire : le parent se
   // re-rend à chaque rafraîchissement de la séance (y compris déclenché par un
   // AUTRE exercice), et sans ce garde-fou sa saisie serait effacée.
   const [edited, setEdited] = useState(false);
+  const [repsEdited, setRepsEdited] = useState(false);
   // Lu dans les effets sans en être une dépendance : le tableau change
   // d'identité à chaque rafraîchissement alors que son contenu est stable.
   const knownWeightsRef = useRef(knownWeights);
@@ -65,8 +69,9 @@ export function SetForm({
   useEffect(() => {
     const next = suggestFor(lastWeight);
     if (next != null) setWeight(next.toString());
-    setReps("10");
+    setReps((plannedReps ?? 10).toString());
     setEdited(false);
+    setRepsEdited(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastWeight, lastReps]);
 
@@ -76,12 +81,21 @@ export function SetForm({
     setWeight(plannedWeight.toString());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plannedWeight]);
+  useEffect(() => {
+    if (repsEdited || plannedReps == null) return;
+    setReps(plannedReps.toString());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plannedReps]);
 
-  // « Appliquer » : on réimpose le poids prévu, sans toucher aux reps saisies.
+  // « Appliquer » : on réimpose la série prévue, poids et reps.
   useEffect(() => {
     if (applyToken == null || plannedWeight == null) return;
     setWeight(plannedWeight.toString());
     setEdited(false);
+    if (plannedReps != null) {
+      setReps(plannedReps.toString());
+      setRepsEdited(false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applyToken]);
 
@@ -127,7 +141,10 @@ export function SetForm({
           min="1"
           placeholder="0"
           value={reps}
-          onChange={(e) => setReps(e.target.value)}
+          onChange={(e) => {
+            setReps(e.target.value);
+            setRepsEdited(true);
+          }}
           className="h-11 bg-secondary/50 pr-10 text-center text-base font-bold"
         />
         <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">

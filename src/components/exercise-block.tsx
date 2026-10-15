@@ -14,7 +14,7 @@ import { AssistedSetRow } from "./assisted-set-row";
 import { RestTimer } from "./rest-timer";
 import { Lock, Unlock, Trophy, ChevronUp, ChevronDown, StickyNote, Check, Trash2, History, Loader2, AlertTriangle, MapPin, ListOrdered, Shield } from "@/components/icons";
 import { cardioMachineFromName } from "@/lib/cardio";
-import { computeSessionPlan } from "@/lib/session-plan";
+import { computeSessionPlan, type PlanRole } from "@/lib/session-plan";
 import { MascotBackdrop } from "./mascot-backdrop";
 import type { Mascot } from "@/lib/mascot-types";
 import { powerLabel, powerShorts } from "@/lib/powers";
@@ -78,9 +78,17 @@ interface ExerciseBlockProps {
   onMoveDown: () => void;
   // Rafraîchit la séance après un ajout de palier depuis le plan du jour.
   onRefresh?: () => void | Promise<void>;
+  /** Premier exercice de muscu de la séance : le plan s'échauffe plus léger. */
+  firstOfSession?: boolean;
 }
 
 // "exercice" est masculin : 1er, puis 2e, 3e...
+const PLAN_ROLE_LABEL: Record<PlanRole, string> = {
+  echauffement: "Échauff.",
+  montee: "Montée",
+  travail: "Travail",
+};
+
 function ordinal(n: number): string {
   return n === 1 ? "1ᵉʳ" : `${n}ᵉ`;
 }
@@ -152,6 +160,7 @@ export function ExerciseBlock({
   onMoveUp,
   onMoveDown,
   onRefresh,
+  firstOfSession = false,
 }: ExerciseBlockProps) {
   const isCardio = kind === "cardio";
   const cardioMachine = isCardio ? cardioMachineFromName(name) : null;
@@ -226,14 +235,21 @@ export function ExerciseBlock({
     }
   };
 
+  // Reps par série : 20 sur les haltères (Marteau Haltères, Épaule Haltères…),
+  // notées pour les deux bras, soit 10 par bras ; 10 ailleurs.
+  const defaultReps = /marteau|halt[eè]re/i.test(name) ? 20 : 10;
+
   // Programme du jour, déduit des paliers et de la dernière séance faite.
   // Pas pour le cardio (pas de poids) ni pour l'assisté (poids dérivé du corps).
   const plan = useMemo(
     () =>
       isCardio || isAssisted
         ? null
-        : computeSessionPlan(knownWeights, lastPerf?.sets ?? null),
-    [isCardio, isAssisted, knownWeights, lastPerf],
+        : computeSessionPlan(knownWeights, lastPerf?.sets ?? null, {
+            targetReps: defaultReps,
+            firstOfSession,
+          }),
+    [isCardio, isAssisted, knownWeights, lastPerf, defaultReps, firstOfSession],
   );
   // Si une série enregistrée s'écarte du programme, on cesse de prescrire :
   // continuer à proposer plan[i] serait faux, et barrer plan[0] comme « fait »
@@ -245,12 +261,12 @@ export function ExerciseBlock({
       // optimiste vient du JS. Une comparaison stricte ferait clignoter le
       // bandeau en « Hors plan » le temps du rafraîchissement.
       (s, i) =>
-        i >= plan.weights.length ||
-        Math.abs((s.weightKg ?? 0) - plan.weights[i]) < 0.01,
+        i >= plan.sets.length ||
+        Math.abs((s.weightKg ?? 0) - plan.sets[i].weightKg) < 0.01,
     );
-  const plannedWeight =
-    plan && onPlan && sets.length < plan.weights.length
-      ? plan.weights[sets.length]
+  const plannedSet =
+    plan && onPlan && sets.length < plan.sets.length
+      ? plan.sets[sets.length]
       : undefined;
 
   const handleAddSet = async (w: number, r: number) => {
@@ -498,8 +514,8 @@ export function ExerciseBlock({
               <span className="ml-auto text-[10px] font-bold text-primary/50">
                 {!onPlan
                   ? "Hors plan"
-                  : `${plan.pattern === "ascendant" ? "Montée" : "Pyramide"}${
-                      plan.shifted ? " · +1 palier" : ""
+                  : `Travail ${plan.workingWeight} kg${
+                      plan.shifted ? " · +1 palier" : plan.firstTime ? " · à ajuster" : ""
                     }`}
               </span>
             </div>
@@ -547,14 +563,17 @@ export function ExerciseBlock({
                 </button>
               </form>
             )}
-            <div className="mt-2 flex flex-wrap items-center gap-1">
-              {plan.weights.map((w, i) => {
+            <div
+              className="mt-2 grid gap-1"
+              style={{ gridTemplateColumns: `repeat(${plan.sets.length}, minmax(0, 1fr))` }}
+            >
+              {plan.sets.map((p, i) => {
                 const done = onPlan && i < sets.length;
                 const current = onPlan && i === sets.length;
                 return (
                   <span
                     key={i}
-                    className={`rounded-md px-2 py-1 text-xs font-black tabular-nums ${
+                    className={`flex min-w-0 flex-col items-center rounded-md px-1 py-1 tabular-nums ${
                       done
                         ? "bg-secondary/40 text-muted-foreground line-through"
                         : current
@@ -562,20 +581,37 @@ export function ExerciseBlock({
                           : "bg-secondary/50 text-primary/70"
                     }`}
                   >
-                    {w}
+                    <span
+                      className={`text-[8px] font-bold uppercase tracking-wider ${
+                        current ? "text-black/60" : "text-muted-foreground/70"
+                      }`}
+                    >
+                      {PLAN_ROLE_LABEL[p.role]}
+                    </span>
+                    <span className="whitespace-nowrap text-xs font-black">
+                      {p.weightKg}
+                      <span className="font-bold opacity-60">×{p.reps}</span>
+                    </span>
                   </span>
                 );
               })}
-              {plannedWeight != null && (
-                <button
-                  type="button"
-                  onClick={() => setApplyToken((n) => n + 1)}
-                  className="ml-auto rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-primary/60 transition-colors hover:text-primary active:scale-95"
-                >
-                  Appliquer
-                </button>
-              )}
             </div>
+            {onPlan && (
+              <div className="mt-2 flex items-center gap-2">
+                <p className="text-[10px] font-medium leading-snug text-muted-foreground">
+                  Les 3 séries de travail à {defaultReps} reps : +1 palier la prochaine fois.
+                </p>
+                {plannedSet != null && (
+                  <button
+                    type="button"
+                    onClick={() => setApplyToken((n) => n + 1)}
+                    className="ml-auto shrink-0 rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-primary/60 transition-colors hover:text-primary active:scale-95"
+                  >
+                    Appliquer
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -691,9 +727,10 @@ export function ExerciseBlock({
             onAdd={handleAddSet}
             lastWeight={lastSet?.weightKg ?? undefined}
             lastReps={lastSet?.reps ?? undefined}
-            defaultReps={name.toLowerCase().includes("marteau") ? 20 : 10}
+            defaultReps={defaultReps}
             knownWeights={knownWeights}
-            plannedWeight={plannedWeight}
+            plannedWeight={plannedSet?.weightKg}
+            plannedReps={plannedSet?.reps}
             applyToken={applyToken}
           />
         )}
