@@ -2,11 +2,14 @@
 //
 // Toujours le même déroulé, pour ne rien inventer en salle :
 //
-//   1. échauffement  : environ la moitié de la charge de travail, reps faciles
-//   2. montée        : environ les trois quarts, quelques reps seulement
+//   1. échauffement  : environ 40 % de la charge de travail, 10 reps faciles
+//   2. montée        : environ 70 %, 10 reps
 //   3. 4. 5. travail : trois séries à la même charge, celles qui sont dures
 //
-//   ex. charge de travail 59 kg  ->  32 × 10 · 45 × 5 · 59 × 10 · 59 × 10 · 59 × 10
+//   ex. charge de travail 80 kg  ->  30 × 10 · 55 × 10 · 80 × 10 · 80 × 10 · 80 × 10
+//
+// Une série d'approche qui tomberait au-dessus de 80 % de la charge de travail
+// (machine avec peu de paliers) passe à 5 reps, pour ne pas arriver fatigué.
 //
 // Progression : quand les trois séries de travail atteignent les reps cibles,
 // la charge de travail monte d'un palier à la séance suivante. Sinon on garde
@@ -47,8 +50,10 @@ export interface PlannedSet {
 const MIN_STEPS = 3;
 export const TARGET_REPS = 10;
 const WORK_SETS = 3;
-const WARMUP_RATIO = 0.5;
-const RAMP_RATIO = 0.75;
+const WARMUP_RATIO = 0.4;
+const RAMP_RATIO = 0.7;
+/** Au-dessus, une série d'approche est raccourcie. */
+const HEAVY_RATIO = 0.8;
 
 const same = (a: number, b: number) => Math.abs(a - b) < 0.01;
 
@@ -90,28 +95,24 @@ function previousWorkingWeight(previous: PlannedSet[], target: number): number {
 
 /** Séries d'approche sous la charge de travail, prises parmi les paliers. */
 function approachSets(below: number[], working: number, target: number): PlanSet[] {
-  const easy = target;
   const short = Math.max(3, Math.round(target / 2));
+  const repsFor = (w: number) => (w > working * HEAVY_RATIO ? short : target);
   if (below.length === 0) return [];
   if (below.length === 1) {
-    // Un seul palier dessous : un échauffement, court s'il est déjà proche.
-    const w = below[0];
-    return [{ weightKg: w, reps: w <= working * 0.6 ? easy : short, role: "echauffement" }];
+    // Un seul palier dessous : un seul échauffement.
+    return [{ weightKg: below[0], reps: repsFor(below[0]), role: "echauffement" }];
   }
   const ramp = below[nearestStepIndex(below, working * RAMP_RATIO)];
   const lighter = below.filter((w) => w < ramp);
-  if (lighter.length === 0) {
-    // La montée est déjà au plus bas : l'échauffement prend ce palier, la
-    // montée le suivant.
-    return [
-      { weightKg: below[0], reps: easy, role: "echauffement" },
-      { weightKg: below[1], reps: short, role: "montee" },
-    ];
-  }
-  const warm = lighter[nearestStepIndex(lighter, working * WARMUP_RATIO)];
+  // La montée tombe déjà au plus bas : l'échauffement prend ce palier, la
+  // montée le suivant.
+  const [warm, up] =
+    lighter.length === 0
+      ? [below[0], below[1]]
+      : [lighter[nearestStepIndex(lighter, working * WARMUP_RATIO)], ramp];
   return [
-    { weightKg: warm, reps: easy, role: "echauffement" },
-    { weightKg: ramp, reps: short, role: "montee" },
+    { weightKg: warm, reps: repsFor(warm), role: "echauffement" },
+    { weightKg: up, reps: repsFor(up), role: "montee" },
   ];
 }
 

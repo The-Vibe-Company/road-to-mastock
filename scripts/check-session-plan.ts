@@ -65,17 +65,20 @@ console.log("Programme de séance\n");
 console.log(" déroulé");
 check("sans historique : deux paliers d'approche, travail au troisième", P, null,
   { plan: "32x10 39x5 45x10 45x10 45x10", workingWeight: 45, firstTime: true, shifted: false });
-check("échauffement vers la moitié, montée vers les trois quarts", P,
+check("échauffement vers 40 %, montée vers 70 %, 10 reps chacune", P,
   session(32, 45, 59, [9, 8, 8]),
-  { plan: "32x10 45x5 59x10 59x10 59x10", workingWeight: 59, shifted: false, firstTime: false });
+  { plan: "32x10 39x10 59x10 59x10 59x10", workingWeight: 59, shifted: false, firstTime: false });
+check("l'exemple conseillé : 30 × 10, 55 × 10 puis 3 × 80 × 10", [20, 30, 40, 55, 65, 80, 90],
+  sets([30, 55, 80, 80, 80], [10, 10, 9, 8, 8]),
+  { plan: "30x10 55x10 80x10 80x10 80x10", workingWeight: 80 });
 check("les trois séries de travail portent la même charge", P,
   session(39, 52, 73, [8, 8, 7]),
-  { plan: "39x10 52x5 73x10 73x10 73x10" });
+  { plan: "32x10 52x10 73x10 73x10 73x10" });
 
 console.log("\n progression");
 check("trois séries à 10 reps : la charge de travail monte d'un palier", P,
   session(32, 45, 59, [10, 10, 10]),
-  { plan: "32x10 52x5 66x10 66x10 66x10", workingWeight: 66, shifted: true });
+  { plan: "32x10 45x10 66x10 66x10 66x10", workingWeight: 66, shifted: true });
 check("au-delà de 10 reps, séance bouclée aussi", P,
   session(32, 45, 59, [12, 11, 10]), { workingWeight: 66, shifted: true });
 check("une seule série de travail sous la cible : on garde la charge", P,
@@ -112,15 +115,15 @@ check("que des séries courtes : le single est ignoré", P,
 console.log("\n peu de paliers sous la charge");
 check("charge au premier palier : pas d'approche, trois séries de travail",
   [32, 39, 45], sets([32, 32, 32], [8, 8, 8]), { plan: "32x10 32x10 32x10" });
-check("un seul palier dessous, proche : échauffement court",
+check("un seul palier dessous, au-dessus de 80 % : échauffement court",
   [50, 55, 60], sets([55, 55, 55], [8, 8, 8]), { plan: "50x5 55x10 55x10 55x10" });
-check("deux paliers dessous, tous deux lourds : échauffement puis montée",
-  [50, 55, 60, 65], sets([60, 60, 60], [8, 8, 8]), { plan: "50x10 55x5 60x10 60x10 60x10" });
+check("deux paliers dessous, tous deux au-dessus de 80 % : approches courtes",
+  [50, 55, 60, 65], sets([60, 60, 60], [8, 8, 8]), { plan: "50x5 55x5 60x10 60x10 60x10" });
 
 console.log("\n haltères (20 reps notées = 10 par bras)");
 check("la cible suit les reps de la machine", [8, 10, 12, 14, 16, 18],
   sets([8, 12, 16, 16, 16], [20, 10, 20, 20, 20]),
-  { plan: "8x20 14x10 18x20 18x20 18x20", shifted: true }, 20);
+  { plan: "8x20 12x20 18x20 18x20 18x20", shifted: true }, 20);
 check("à 10 reps notées, une série d'haltères n'est pas bouclée", [8, 10, 12, 14, 16, 18],
   sets([8, 12, 16, 16, 16], [20, 10, 10, 10, 10]), { workingWeight: 16, shifted: false }, 20);
 
