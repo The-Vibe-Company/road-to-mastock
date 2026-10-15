@@ -78,6 +78,8 @@ interface ExerciseBlockProps {
   onMoveDown: () => void;
   // Rafraîchit la séance après un ajout de palier depuis le plan du jour.
   onRefresh?: () => void | Promise<void>;
+  /** Premier exercice de muscu de la séance : le plan s'échauffe plus léger. */
+  firstOfSession?: boolean;
 }
 
 // "exercice" est masculin : 1er, puis 2e, 3e...
@@ -158,6 +160,7 @@ export function ExerciseBlock({
   onMoveUp,
   onMoveDown,
   onRefresh,
+  firstOfSession = false,
 }: ExerciseBlockProps) {
   const isCardio = kind === "cardio";
   const cardioMachine = isCardio ? cardioMachineFromName(name) : null;
@@ -242,8 +245,11 @@ export function ExerciseBlock({
     () =>
       isCardio || isAssisted
         ? null
-        : computeSessionPlan(knownWeights, lastPerf?.sets ?? null, defaultReps),
-    [isCardio, isAssisted, knownWeights, lastPerf, defaultReps],
+        : computeSessionPlan(knownWeights, lastPerf?.sets ?? null, {
+            targetReps: defaultReps,
+            firstOfSession,
+          }),
+    [isCardio, isAssisted, knownWeights, lastPerf, defaultReps, firstOfSession],
   );
   // Si une série enregistrée s'écarte du programme, on cesse de prescrire :
   // continuer à proposer plan[i] serait faux, et barrer plan[0] comme « fait »

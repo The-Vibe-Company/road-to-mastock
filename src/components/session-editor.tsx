@@ -363,6 +363,9 @@ export function SessionEditor({ sessionId }: { sessionId: number }) {
   if (!session) return null;
 
   const exercises = session.exercises || [];
+  // Premier exercice de muscu de la séance : son plan s'échauffe plus léger,
+  // rien n'est encore chaud. Le cardio d'échauffement ne compte pas.
+  const firstMuscuId = exercises.find((ex) => ex.kind !== "cardio")?.sessionExerciseId;
   const date = new Date(session.date).toLocaleDateString("fr-FR", {
     weekday: "long",
     day: "numeric",
@@ -518,6 +521,7 @@ export function SessionEditor({ sessionId }: { sessionId: number }) {
                 onMoveUp={() => handleMoveExercise(i, "up")}
                 onMoveDown={() => handleMoveExercise(i, "down")}
                 onRefresh={refreshSession}
+                firstOfSession={ex.sessionExerciseId === firstMuscuId}
               />
             </div>
           ))}

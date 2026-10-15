@@ -2,11 +2,14 @@
 //
 // Toujours le même déroulé, pour ne rien inventer en salle :
 //
-//   1. échauffement  : environ 40 % de la charge de travail, 10 reps faciles
+//   1. échauffement  : environ 30 % de la charge de travail sur le premier
+//                      exercice de la séance (rien n'est encore chaud), 50 %
+//                      sur les suivants, 10 reps faciles
 //   2. montée        : environ 70 %, 10 reps
 //   3. 4. 5. travail : trois séries à la même charge, celles qui sont dures
 //
-//   ex. charge de travail 80 kg  ->  30 × 10 · 55 × 10 · 80 × 10 · 80 × 10 · 80 × 10
+//   ex. charge de travail 80 kg, premier exercice  ->  30 × 10 · 55 × 10 · 3 × 80 × 10
+//       même charge, exercice suivant             ->  40 × 10 · 55 × 10 · 3 × 80 × 10
 //
 // Une série d'approche qui tomberait au-dessus de 80 % de la charge de travail
 // (machine avec peu de paliers) passe à 5 reps, pour ne pas arriver fatigué.
@@ -50,7 +53,8 @@ export interface PlannedSet {
 const MIN_STEPS = 3;
 export const TARGET_REPS = 10;
 const WORK_SETS = 3;
-const WARMUP_RATIO = 0.4;
+const FIRST_WARMUP_RATIO = 0.3;
+const WARMUP_RATIO = 0.5;
 const RAMP_RATIO = 0.7;
 /** Au-dessus, une série d'approche est raccourcie. */
 const HEAVY_RATIO = 0.8;
@@ -94,7 +98,12 @@ function previousWorkingWeight(previous: PlannedSet[], target: number): number {
 }
 
 /** Séries d'approche sous la charge de travail, prises parmi les paliers. */
-function approachSets(below: number[], working: number, target: number): PlanSet[] {
+function approachSets(
+  below: number[],
+  working: number,
+  target: number,
+  warmupRatio: number,
+): PlanSet[] {
   const short = Math.max(3, Math.round(target / 2));
   const repsFor = (w: number) => (w > working * HEAVY_RATIO ? short : target);
   if (below.length === 0) return [];
@@ -109,17 +118,24 @@ function approachSets(below: number[], working: number, target: number): PlanSet
   const [warm, up] =
     lighter.length === 0
       ? [below[0], below[1]]
-      : [lighter[nearestStepIndex(lighter, working * WARMUP_RATIO)], ramp];
+      : [lighter[nearestStepIndex(lighter, working * warmupRatio)], ramp];
   return [
     { weightKg: warm, reps: repsFor(warm), role: "echauffement" },
     { weightKg: up, reps: repsFor(up), role: "montee" },
   ];
 }
 
+export interface PlanOptions {
+  /** Reps visées par série : 20 sur les haltères (10 par bras), 10 ailleurs. */
+  targetReps?: number;
+  /** Premier exercice de muscu de la séance : échauffement plus léger. */
+  firstOfSession?: boolean;
+}
+
 export function computeSessionPlan(
   knownWeights: number[],
   lastSets: PlannedSet[] | null | undefined,
-  targetReps: number = TARGET_REPS,
+  { targetReps = TARGET_REPS, firstOfSession = false }: PlanOptions = {},
 ): SessionPlan | null {
   const steps = [...new Set(knownWeights)].sort((a, b) => a - b);
   if (steps.length < MIN_STEPS) return null;
@@ -152,7 +168,12 @@ export function computeSessionPlan(
 
   const working = steps[workIndex];
   const sets: PlanSet[] = [
-    ...approachSets(steps.slice(0, workIndex), working, targetReps),
+    ...approachSets(
+      steps.slice(0, workIndex),
+      working,
+      targetReps,
+      firstOfSession ? FIRST_WARMUP_RATIO : WARMUP_RATIO,
+    ),
     ...Array.from({ length: WORK_SETS }, () => ({
       weightKg: working,
       reps: targetReps,

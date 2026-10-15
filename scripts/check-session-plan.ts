@@ -8,7 +8,7 @@
  *
  *   pnpm check:plan
  */
-import { computeSessionPlan, type SessionPlan } from "../src/lib/session-plan";
+import { computeSessionPlan, type PlanOptions, type SessionPlan } from "../src/lib/session-plan";
 
 type LoggedSet = { weightKg: number; reps: number };
 const sets = (weights: number[], reps: number[]): LoggedSet[] =>
@@ -31,9 +31,9 @@ function check(
   steps: number[],
   last: LoggedSet[] | null,
   expected: Expected | null,
-  target?: number,
+  options?: PlanOptions,
 ) {
-  const plan = computeSessionPlan(steps, last, target);
+  const plan = computeSessionPlan(steps, last, options);
   const mismatch: string[] = [];
 
   if (expected === null) {
@@ -65,15 +65,22 @@ console.log("Programme de séance\n");
 console.log(" déroulé");
 check("sans historique : deux paliers d'approche, travail au troisième", P, null,
   { plan: "32x10 39x5 45x10 45x10 45x10", workingWeight: 45, firstTime: true, shifted: false });
-check("échauffement vers 40 %, montée vers 70 %, 10 reps chacune", P,
+check("échauffement vers 50 %, montée vers 70 %, 10 reps chacune", P,
   session(32, 45, 59, [9, 8, 8]),
   { plan: "32x10 39x10 59x10 59x10 59x10", workingWeight: 59, shifted: false, firstTime: false });
-check("l'exemple conseillé : 30 × 10, 55 × 10 puis 3 × 80 × 10", [20, 30, 40, 55, 65, 80, 90],
-  sets([30, 55, 80, 80, 80], [10, 10, 9, 8, 8]),
-  { plan: "30x10 55x10 80x10 80x10 80x10", workingWeight: 80 });
 check("les trois séries de travail portent la même charge", P,
   session(39, 52, 73, [8, 8, 7]),
-  { plan: "32x10 52x10 73x10 73x10 73x10" });
+  { plan: "39x10 52x10 73x10 73x10 73x10" });
+
+console.log("\n premier exercice de la séance");
+const EX = [30, 40, 55, 65, 80, 90];
+const at80 = sets([30, 55, 80, 80, 80], [10, 10, 9, 8, 8]);
+check("premier exercice : l'exemple conseillé, 30 × 10, 55 × 10 puis 3 × 80 × 10", EX, at80,
+  { plan: "30x10 55x10 80x10 80x10 80x10", workingWeight: 80 }, { firstOfSession: true });
+check("exercice suivant, même charge : échauffement à 50 %", EX, at80,
+  { plan: "40x10 55x10 80x10 80x10 80x10", workingWeight: 80 });
+check("premier exercice : l'échauffement descend, la montée ne bouge pas", P,
+  session(39, 52, 73, [8, 8, 7]), { plan: "32x10 52x10 73x10 73x10 73x10" }, { firstOfSession: true });
 
 console.log("\n progression");
 check("trois séries à 10 reps : la charge de travail monte d'un palier", P,
@@ -123,9 +130,9 @@ check("deux paliers dessous, tous deux au-dessus de 80 % : approches courtes",
 console.log("\n haltères (20 reps notées = 10 par bras)");
 check("la cible suit les reps de la machine", [8, 10, 12, 14, 16, 18],
   sets([8, 12, 16, 16, 16], [20, 10, 20, 20, 20]),
-  { plan: "8x20 12x20 18x20 18x20 18x20", shifted: true }, 20);
+  { plan: "8x20 12x20 18x20 18x20 18x20", shifted: true }, { targetReps: 20 });
 check("à 10 reps notées, une série d'haltères n'est pas bouclée", [8, 10, 12, 14, 16, 18],
-  sets([8, 12, 16, 16, 16], [20, 10, 10, 10, 10]), { workingWeight: 16, shifted: false }, 20);
+  sets([8, 12, 16, 16, 16], [20, 10, 10, 10, 10]), { workingWeight: 16, shifted: false }, { targetReps: 20 });
 
 console.log("\n garde-fous");
 check("moins de trois paliers connus : pas de programme", [40, 50], null, null);
