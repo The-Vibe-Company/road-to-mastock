@@ -1,30 +1,41 @@
 // Programme de séance pour un exercice de muscu.
 //
-// Méthode suivie : on travaille sur les paliers de la machine, en alternant
-// une séance sur deux entre deux motifs.
+// Toujours le même déroulé, pour ne rien inventer en salle :
 //
-//   ascendant : paliers 1 2 3 4 5   ->  32 39 45 52 59
-//   pyramide  : paliers 1 2 5 4 3   ->  32 39 59 52 45
+//   1. échauffement  : environ la moitié de la charge de travail, reps faciles
+//   2. montée        : environ les trois quarts, quelques reps seulement
+//   3. 4. 5. travail : trois séries à la même charge, celles qui sont dures
 //
-// Et dès qu'une séance est bouclée avec le nombre de reps cible sur **toutes**
-// les séries, on décale le point de départ d'un palier pour durcir la suivante.
+//   ex. charge de travail 59 kg  ->  32 × 10 · 45 × 5 · 59 × 10 · 59 × 10 · 59 × 10
 //
-// Tout est déduit de l'historique, il n'y a rien à stocker : le motif du jour
-// est l'inverse de celui de la dernière séance, et le palier de départ vient de
-// la dernière séance faite.
+// Progression : quand les trois séries de travail atteignent les reps cibles,
+// la charge de travail monte d'un palier à la séance suivante. Sinon on garde
+// la même charge et on cherche à gagner des reps.
+//
+// Tout est déduit des paliers de la machine et de la dernière séance faite, il
+// n'y a rien à stocker.
 
-export type PlanPattern = "ascendant" | "pyramide";
+export type PlanRole = "echauffement" | "montee" | "travail";
+
+export interface PlanSet {
+  weightKg: number;
+  reps: number;
+  role: PlanRole;
+}
 
 export interface SessionPlan {
-  weights: number[];
-  pattern: PlanPattern;
-  /** Le départ a réellement monté d'un palier par rapport à la dernière séance. */
+  sets: PlanSet[];
+  /** Charge des trois séries de travail. */
+  workingWeight: number;
+  /** La charge de travail a monté d'un palier par rapport à la dernière séance. */
   shifted: boolean;
   /**
-   * Les paliers connus ne suffisent plus : le programme a été raccourci ou son
-   * départ ramené vers le bas. Il faut déclarer des paliers pour continuer.
+   * Les trois séries de travail ont été bouclées au palier le plus haut connu :
+   * il faut déclarer un palier au-dessus pour continuer à progresser.
    */
   atCeiling: boolean;
+  /** Pas encore d'historique : la charge de travail est une proposition à ajuster. */
+  firstTime: boolean;
 }
 
 export interface PlannedSet {
@@ -34,23 +45,12 @@ export interface PlannedSet {
 
 /** En dessous de 3 paliers connus, un programme n'a pas de sens. */
 const MIN_STEPS = 3;
-const DEFAULT_SET_COUNT = 5;
 export const TARGET_REPS = 10;
+const WORK_SETS = 3;
+const WARMUP_RATIO = 0.5;
+const RAMP_RATIO = 0.75;
 
-/**
- * Ordre des paliers pour la pyramide : deux crans de montée, on va au sommet,
- * puis on redescend. Sur 3 séries la montée se réduit à un seul cran.
- */
-function pyramidOrder(count: number): number[] {
-  const head = count >= 4 ? [0, 1] : [0];
-  const rest: number[] = [];
-  for (let i = count - 1; i >= head.length; i--) rest.push(i);
-  return [...head, ...rest];
-}
-
-function ascendingOrder(count: number): number[] {
-  return Array.from({ length: count }, (_, i) => i);
-}
+const same = (a: number, b: number) => Math.abs(a - b) < 0.01;
 
 /** Palier le plus proche du poids donné. À égalité, on prend le plus léger. */
 function nearestStepIndex(steps: number[], target: number): number {
@@ -66,80 +66,98 @@ function nearestStepIndex(steps: number[], target: number): number {
   return best;
 }
 
+/**
+ * Charge de travail de la dernière séance.
+ *
+ * Au nouveau format, c'est la charge répétée sur les séries de travail. Sur une
+ * ancienne séance en pyramide, la plus lourde n'a été faite qu'une fois, jusqu'à
+ * l'échec : la reprendre pour trois séries serait trop lourd. On retient donc la
+ * plus lourde des charges répétées ou tenues au moins `target - 2` reps, ce qui
+ * ancre la transition sur une charge vraiment faisable.
+ */
+function previousWorkingWeight(previous: PlannedSet[], target: number): number {
+  const counts = new Map<number, number>();
+  for (const s of previous) counts.set(s.weightKg, (counts.get(s.weightKg) ?? 0) + 1);
+  const solid = previous
+    .filter((s) => (counts.get(s.weightKg) ?? 0) >= 2 || s.reps >= target - 2)
+    .map((s) => s.weightKg);
+  if (solid.length > 0) return Math.max(...solid);
+  // Que des séries courtes : on ignore les singles pour qu'un test de force
+  // isolé ne tire pas tout le programme vers le haut.
+  const worked = previous.filter((s) => s.reps >= target / 2).map((s) => s.weightKg);
+  return Math.max(...(worked.length > 0 ? worked : previous.map((s) => s.weightKg)));
+}
+
+/** Séries d'approche sous la charge de travail, prises parmi les paliers. */
+function approachSets(below: number[], working: number, target: number): PlanSet[] {
+  const easy = target;
+  const short = Math.max(3, Math.round(target / 2));
+  if (below.length === 0) return [];
+  if (below.length === 1) {
+    // Un seul palier dessous : un échauffement, court s'il est déjà proche.
+    const w = below[0];
+    return [{ weightKg: w, reps: w <= working * 0.6 ? easy : short, role: "echauffement" }];
+  }
+  const ramp = below[nearestStepIndex(below, working * RAMP_RATIO)];
+  const lighter = below.filter((w) => w < ramp);
+  if (lighter.length === 0) {
+    // La montée est déjà au plus bas : l'échauffement prend ce palier, la
+    // montée le suivant.
+    return [
+      { weightKg: below[0], reps: easy, role: "echauffement" },
+      { weightKg: below[1], reps: short, role: "montee" },
+    ];
+  }
+  const warm = lighter[nearestStepIndex(lighter, working * WARMUP_RATIO)];
+  return [
+    { weightKg: warm, reps: easy, role: "echauffement" },
+    { weightKg: ramp, reps: short, role: "montee" },
+  ];
+}
+
 export function computeSessionPlan(
   knownWeights: number[],
   lastSets: PlannedSet[] | null | undefined,
+  targetReps: number = TARGET_REPS,
 ): SessionPlan | null {
   const steps = [...new Set(knownWeights)].sort((a, b) => a - b);
   if (steps.length < MIN_STEPS) return null;
 
   const previous = lastSets && lastSets.length > 0 ? lastSets : null;
 
-  // Toujours cinq séries, raccourci seulement si les paliers manquent.
-  //
-  // Une première version calquait le volume sur la séance précédente. Mauvaise
-  // idée : quand le plafond raccourcissait un programme, ce raccourcissement
-  // se retrouvait dans l'historique et devenait permanent — le volume ne
-  // remontait jamais, même après avoir déclaré de nouveaux paliers. Et avec un
-  // seul historique en entrée, rien ne permet de distinguer « trois séries
-  // parce que le plafond a tronqué » de « trois séries par choix ».
-  let count = Math.min(DEFAULT_SET_COUNT, steps.length);
-
-  // On alterne. Une pyramide se reconnaît à sa redescente : c'est plus robuste
-  // que d'exiger une suite strictement croissante, qui classait « ascendante »
-  // toute séance un peu irrégulière et bloquait l'alternance.
-  const lastWasPyramid =
-    previous !== null &&
-    previous.some((s, i) => i > 0 && s.weightKg < previous[i - 1].weightKg);
-  const pattern: PlanPattern =
-    previous === null ? "ascendant" : lastWasPyramid ? "ascendant" : "pyramide";
-
-  // Palier de départ, déduit de la dernière séance. On ancre sur la série la
-  // plus LOURDE et non la plus légère : une série d'échauffement n'est jamais
-  // la plus lourde, alors qu'elle tirerait l'ancre basse plusieurs paliers trop
-  // bas. On ignore les séries très courtes pour qu'un test de force isolé ne
-  // tire pas tout le programme vers le haut. Et on retient le palier le plus
-  // proche, pas le premier au-dessus, pour ne pas sauter deux crans après un
-  // poids hors paliers.
-  let previousBase = 0;
-  let allSetsAtTarget = false;
-  if (previous) {
-    const worked = previous.filter((s) => s.reps >= TARGET_REPS / 2);
-    const reference = worked.length > 0 ? worked : previous;
-    const heaviest = Math.max(...reference.map((s) => s.weightKg));
-    // Reconstruit le départ de la séance précédente avec SON nombre de séries,
-    // et non celui du jour : sinon `shifted` compare deux points de référence
-    // différents et annonce une progression qui n'a pas eu lieu.
-    previousBase = Math.max(
-      0,
-      nearestStepIndex(steps, heaviest) - (previous.length - 1),
-    );
-    allSetsAtTarget = previous.every((s) => s.reps >= TARGET_REPS);
-  }
-
-  let base = previousBase + (allSetsAtTarget ? 1 : 0);
+  let workIndex: number;
+  let shifted = false;
   let atCeiling = false;
 
-  // Au plafond, on raccourcit le programme plutôt que de le faire redescendre :
-  // repartir d'en bas après une séance bouclée en haut serait un recul. La
-  // perte de séries est signalée dès qu'elle a lieu.
-  if (base + count > steps.length) {
-    const room = Math.max(MIN_STEPS, steps.length - base);
-    if (room < count) atCeiling = true;
-    count = room;
-  }
-  if (base + count > steps.length) {
-    base = Math.max(0, steps.length - count);
-    atCeiling = true;
+  if (previous === null) {
+    // Première fois : troisième palier, au-dessus de deux paliers d'approche.
+    workIndex = Math.min(2, steps.length - 1);
+  } else {
+    const prevWeight = previousWorkingWeight(previous, targetReps);
+    const prevIndex = nearestStepIndex(steps, prevWeight);
+    const workSets = previous.filter((s) => same(s.weightKg, prevWeight));
+    const done =
+      workSets.length >= WORK_SETS && workSets.every((s) => s.reps >= targetReps);
+    workIndex = prevIndex;
+    if (done) {
+      if (prevIndex < steps.length - 1) {
+        workIndex = prevIndex + 1;
+        shifted = true;
+      } else {
+        atCeiling = true;
+      }
+    }
   }
 
-  const order = pattern === "ascendant" ? ascendingOrder(count) : pyramidOrder(count);
-  return {
-    weights: order.map((i) => steps[base + i]),
-    pattern,
-    // Après plafonnement, le départ peut ne pas avoir bougé : on ne prétend pas
-    // le contraire.
-    shifted: previous !== null && base > previousBase,
-    atCeiling,
-  };
+  const working = steps[workIndex];
+  const sets: PlanSet[] = [
+    ...approachSets(steps.slice(0, workIndex), working, targetReps),
+    ...Array.from({ length: WORK_SETS }, () => ({
+      weightKg: working,
+      reps: targetReps,
+      role: "travail" as const,
+    })),
+  ];
+
+  return { sets, workingWeight: working, shifted, atCeiling, firstTime: previous === null };
 }
