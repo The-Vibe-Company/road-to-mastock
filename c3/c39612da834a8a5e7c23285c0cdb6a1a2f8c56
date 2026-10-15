@@ -1,0 +1,26 @@
+src/components/session-editor.tsx
+  s_9f13ff8a0fe04c::t_3aee7b205b45df 366-368
+  s_9f13ff8a0fe04c::t_4ccc560975de80 524
+src/components/exercise-block.tsx
+  s_9f13ff8a0fe04c::t_4ccc560975de80 81-82,163,248-252
+src/lib/session-plan.ts
+  s_9f13ff8a0fe04c::t_4ccc560975de80 5-7,11-12,56-57,101-106,121,128-134,138,171-176
+scripts/check-session-plan.ts
+  s_9f13ff8a0fe04c::t_1a1742af4fd02f 11,34,36,68,73-83,133,135
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c3c39612da834a8a5e7c23285c0cdb6a1a2f8c56",
+  "prompts": {},
+  "sessions": {
+    "s_9f13ff8a0fe04c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f6f8144-2e0f-4365-a2df-7a153cae490d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Zewed <dewez.antoine2@gmail.com>"
+    }
+  }
+}
